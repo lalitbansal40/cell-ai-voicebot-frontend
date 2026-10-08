@@ -64,7 +64,13 @@ See [src/README.md](src/README.md). Key stack: React Router (data router), React
 
 ## Environment variables
 
-_To be filled (T0.10)._
+Copy `.env.example` → `.env.local` (gitignored). **Every `VITE_*` variable is public** — it is compiled into the browser bundle, so never put a secret here. Policy: [secrets.md](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/secrets.md).
+
+| Variable        | Required               | Description                                                  |
+| --------------- | ---------------------- | ------------------------------------------------------------ |
+| `VITE_API_URL`  | no (default `/api/v1`) | API base URL; default uses the dev proxy to `:5100`          |
+| `VITE_WS_URL`   | yes (Phase 1+)         | Dashboard WebSocket URL (`ws://localhost:3100/ws` via proxy) |
+| `VITE_APP_NAME` | no                     | Display name of the app                                      |
 
 ## Docs
 
