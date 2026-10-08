@@ -30,23 +30,35 @@ npm run dev   # http://localhost:3100
 
 ## Scripts
 
-| Script                  | What it does                               |
-| ----------------------- | ------------------------------------------ |
-| `npm run dev`           | Vite dev server with HMR on port 3100      |
-| `npm run build`         | Type-check (`tsc -b`) and build to `dist/` |
-| `npm run preview`       | Serve the production build on port 3101    |
-| `npm run typecheck`     | Type-check all TS projects                 |
-| `npm run lint`          | ESLint (type-aware), fails on any warning  |
-| `npm run lint:fix`      | ESLint with auto-fix                       |
-| `npm run format`        | Prettier write                             |
-| `npm run format:check`  | Prettier check                             |
-| `npm test`              | Run all tests once (Vitest + jsdom)        |
-| `npm run test:watch`    | Vitest watch mode                          |
-| `npm run test:coverage` | Tests + coverage report in `coverage/`     |
+| Script                  | What it does                                       |
+| ----------------------- | -------------------------------------------------- |
+| `npm run dev`           | Vite dev server with HMR on port 3100              |
+| `npm run build`         | Type-check (`tsc -b`) and build to `dist/`         |
+| `npm run preview`       | Serve the production build on port 3101            |
+| `npm run typecheck`     | Type-check all TS projects                         |
+| `npm run lint`          | ESLint (type-aware), fails on any warning          |
+| `npm run lint:fix`      | ESLint with auto-fix                               |
+| `npm run format`        | Prettier write                                     |
+| `npm run format:check`  | Prettier check                                     |
+| `npm test`              | Run all tests once (Vitest + jsdom)                |
+| `npm run test:watch`    | Vitest watch mode                                  |
+| `npm run test:coverage` | Tests + coverage report in `coverage/`             |
+| `npm run gen:api`       | Regenerate API types from the backend OpenAPI spec |
 
 ## Folder structure
 
 See [src/README.md](src/README.md). Key stack: React Router (data router), React Query, MUI (light + dark color schemes), notistack, axios, zod, react-hook-form.
+
+## API types
+
+Request/response types are generated from the backend OpenAPI spec ([ADR 0029](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/adr/0029-shared-api-types-via-openapi.md)) — never hand-written.
+
+1. In the backend repo: `npm run gen:openapi` (updates `openapi/openapi.json`).
+2. Here: `npm run gen:api` → regenerates `src/services/api/schema.gen.ts` (committed; do not edit).
+   - Default spec path: `../cell-ai-voicebot-backend/openapi/openapi.json`; override with `OPENAPI_SPEC=/path/to/openapi.json npm run gen:api`.
+3. Use friendly aliases from `src/services/api/types.ts` (e.g. `AppInfo`, `ApiErrorEnvelope`).
+
+`openapi-typescript` officially declares `typescript ^5`; `package.json` → `overrides` makes it use the project's TypeScript 6 (verified working — see ADR 0029).
 
 ## Testing
 

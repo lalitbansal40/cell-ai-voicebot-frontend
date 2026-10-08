@@ -4,3 +4,4 @@ node_modules
 package-lock.json
 *.pdf
 poc/**/output
+src/services/api/schema.gen.ts
