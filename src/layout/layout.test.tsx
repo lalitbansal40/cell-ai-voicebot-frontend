@@ -52,7 +52,7 @@ describe('AppLayout', () => {
   it('shows the menu for an owner (no superadmin section)', () => {
     signInAs('owner');
     renderWithProviders({ route: '/' });
-    expect(navLabels()).toEqual(['Dashboard', 'Team', 'Settings']);
+    expect(navLabels()).toEqual(['Dashboard', 'Contacts', 'Team', 'Settings']);
     expect(screen.queryByText('Superadmin')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeInTheDocument();
     expect(screen.getByText('Welcome, Asha Verma')).toBeInTheDocument();
@@ -61,7 +61,7 @@ describe('AppLayout', () => {
   it('hides Team for agents and viewers ("roles se menu badle")', () => {
     signInAs('viewer');
     renderWithProviders({ route: '/' });
-    expect(navLabels()).toEqual(['Dashboard', 'Settings']);
+    expect(navLabels()).toEqual(['Dashboard', 'Contacts', 'Settings']);
   });
 
   it('shows the superadmin section to platform admins', () => {

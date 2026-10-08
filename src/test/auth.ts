@@ -15,6 +15,7 @@ const ALL = [
   'contacts.write',
   'contacts.import',
   'contacts.export',
+  'dnd.manage',
   'wallet.read',
   'wallet.topup',
   'agents.read',

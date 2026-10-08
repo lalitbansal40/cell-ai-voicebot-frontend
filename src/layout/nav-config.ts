@@ -104,7 +104,7 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 /** The phase currently shipped — items of later phases are hidden. */
-export const LIVE_PHASE = 2;
+export const LIVE_PHASE = 3;
 
 export const visibleNavItems = (
   can: (permission: string) => boolean,

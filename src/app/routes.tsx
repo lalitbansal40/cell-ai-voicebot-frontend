@@ -16,6 +16,7 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
 import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
+import { ContactsPage } from '@/pages/contacts/ContactsPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ErrorPage } from '@/pages/ErrorPage';
 import { ForbiddenPage } from '@/pages/ForbiddenPage';
@@ -94,6 +95,18 @@ export const routes: RouteObject[] = [
                 <TeamPage />
               </RequirePermission>
             ),
+          },
+          {
+            path: '/contacts',
+            element: (
+              <RequirePermission perm="contacts.read">
+                <Outlet />
+              </RequirePermission>
+            ),
+            children: [
+              { index: true, element: <Navigate to="/contacts/all" replace /> },
+              { path: ':tab', element: <ContactsPage /> },
+            ],
           },
           { path: '/settings', element: <Navigate to="/settings/profile" replace /> },
           { path: '/settings/:tab', element: <SettingsPage /> },

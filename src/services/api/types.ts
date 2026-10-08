@@ -34,6 +34,21 @@ export type AuditEntry = Schemas['AuditEntry'];
 export type AdminAccountRow = Schemas['AdminAccountRow'];
 export type AdminAccountDetail = Schemas['AdminAccountDetail'];
 
+/** Contacts (Phase 3). */
+export type Contact = Schemas['Contact'];
+export type ContactList = Schemas['ContactList'];
+export type ContactFilter = Schemas['ContactFilter'];
+export type ContactFilterCondition = Schemas['ContactFilterCondition'];
+export type CustomField = Schemas['CustomField'];
+export type FieldType = Schemas['FieldType'];
+export type Segment = Schemas['Segment'];
+export type SegmentPreview = Schemas['SegmentPreview'];
+export type DndEntry = Schemas['DndEntry'];
+export type ImportJob = Schemas['ImportJob'];
+export type ImportColumnMapping = Schemas['ImportColumnMapping'];
+export type ImportOptions = Schemas['ImportOptions'];
+export type ExportJob = Schemas['ExportJob'];
+
 /** Success envelope with list meta. */
 export interface ListEnvelope<T, M> {
   success: true;
