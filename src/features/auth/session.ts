@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 
+import { adminApi } from '@/services/api/admin';
 import { authApi } from '@/services/api/auth';
 import { emitAuthEvent } from '@/services/api/auth-events';
 import { installAuthHooks } from '@/services/api/client';
@@ -86,3 +87,13 @@ export const reloadMe = async (): Promise<void> => {
 
 /** WS ticket provider for the realtime client (stable function). */
 export const getWsTicket = async (): Promise<string> => (await authApi.issueWsTicket()).ticket;
+
+/**
+ * Ends an impersonation: tells the server (audit, best effort) with the
+ * impersonation token, then restores the superadmin session.
+ */
+export const endImpersonation = async (queryClient?: QueryClient): Promise<void> => {
+  await adminApi.stopImpersonation().catch(() => undefined);
+  useAuthStore.getState().stopImpersonation();
+  queryClient?.clear();
+};

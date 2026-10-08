@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { enqueueSnackbar, SnackbarProvider } from 'notistack';
 import { useState, type ReactNode } from 'react';
 
+import { ConfirmProvider } from '@/components/ConfirmProvider';
 import { getWsTicket } from '@/features/auth/session';
 import { useAuthStore } from '@/features/auth/store';
 import { RealtimeProvider } from '@/services/realtime';
@@ -44,7 +45,9 @@ export function Providers({ children }: ProvidersProps) {
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
         <SnackbarProvider maxSnack={3} autoHideDuration={4000} preventDuplicate>
-          <AuthRealtime>{children}</AuthRealtime>
+          <ConfirmProvider>
+            <AuthRealtime>{children}</AuthRealtime>
+          </ConfirmProvider>
         </SnackbarProvider>
         {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>

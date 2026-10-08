@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
+import { signInAs } from '@/test/auth';
 import { renderWithProviders } from '@/test/render';
 
 describe('NotFoundPage', () => {
@@ -12,12 +13,11 @@ describe('NotFoundPage', () => {
 
   it('links back to the home page', async () => {
     const user = userEvent.setup();
+    signInAs('viewer');
     renderWithProviders({ route: '/does-not-exist' });
 
     await user.click(screen.getByRole('link', { name: 'Go to home' }));
 
-    expect(
-      await screen.findByRole('heading', { level: 1, name: 'Cell AI Voicebot' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Dashboard' })).toBeInTheDocument();
   });
 });

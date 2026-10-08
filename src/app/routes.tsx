@@ -1,14 +1,17 @@
 import { Outlet, type RouteObject } from 'react-router';
 
 import { AuthBootstrap } from '@/features/auth/AuthBootstrap';
-import { RedirectIfAuthed } from '@/features/auth/guards';
+import { RedirectIfAuthed, RequireAuth } from '@/features/auth/guards';
+import { AppLayout } from '@/layout/AppLayout';
 import { AcceptInvitePage } from '@/pages/auth/AcceptInvitePage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
 import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
-import { HomePage } from '@/pages/HomePage';
+import { DashboardPage } from '@/pages/DashboardPage';
+import { ErrorPage } from '@/pages/ErrorPage';
+import { ForbiddenPage } from '@/pages/ForbiddenPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
 /** DEV-only tools — the dynamic import is dropped from production builds. */
@@ -30,6 +33,7 @@ export const routes: RouteObject[] = [
         <Outlet />
       </AuthBootstrap>
     ),
+    errorElement: <ErrorPage />,
     children: [
       {
         path: '/login',
@@ -65,7 +69,17 @@ export const routes: RouteObject[] = [
       },
       { path: '/reset-password', element: <ResetPasswordPage /> },
       { path: '/accept-invite', element: <AcceptInvitePage /> },
-      { path: '/', element: <HomePage /> },
+      {
+        element: (
+          <RequireAuth>
+            <AppLayout />
+          </RequireAuth>
+        ),
+        children: [
+          { path: '/', element: <DashboardPage /> },
+          { path: '/403', element: <ForbiddenPage /> },
+        ],
+      },
       ...devRoutes,
       { path: '*', element: <NotFoundPage /> },
     ],

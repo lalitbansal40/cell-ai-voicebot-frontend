@@ -1,6 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+import type * as SessionModule from '@/features/auth/session';
+import { signInAs } from '@/test/auth';
+
 import { App } from './App';
 
 vi.mock('@/services/api/system', () => ({
@@ -13,11 +16,21 @@ vi.mock('@/services/api/system', () => ({
     }),
   ),
 }));
+vi.mock('@/features/auth/session', async (importOriginal) => ({
+  ...(await importOriginal<typeof SessionModule>()),
+  getWsTicket: vi.fn(() => new Promise(() => undefined)),
+}));
 
 describe('App', () => {
-  it('renders the home page with all providers', async () => {
+  it('shows the sign-in page when signed out', async () => {
     render(<App />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Cell AI Voicebot' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sign in' })).toBeInTheDocument();
+  });
+
+  it('renders the dashboard with all providers when signed in', async () => {
+    signInAs('owner');
+    render(<App />);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Dashboard' })).toBeInTheDocument();
     expect(await screen.findByText('cell-ai-voicebot-backend')).toBeInTheDocument();
   });
 });

@@ -6,6 +6,7 @@ import { SnackbarProvider } from 'notistack';
 import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-router';
 
 import { routes as appRoutes } from '@/app/routes';
+import { ConfirmProvider } from '@/components/ConfirmProvider';
 import { theme } from '@/theme';
 
 interface RenderOptions {
@@ -32,7 +33,9 @@ export function renderWithProviders({
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
         <SnackbarProvider maxSnack={3}>
-          <RouterProvider router={router} />
+          <ConfirmProvider>
+            <RouterProvider router={router} />
+          </ConfirmProvider>
         </SnackbarProvider>
       </QueryClientProvider>
     </ThemeProvider>,

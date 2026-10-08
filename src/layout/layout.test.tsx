@@ -1,0 +1,157 @@
+import { screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { useAuthStore } from '@/features/auth/store';
+import { adminApi } from '@/services/api/admin';
+import { authApi } from '@/services/api/auth';
+import { fakeSession, signInAs } from '@/test/auth';
+import { renderWithProviders } from '@/test/render';
+
+import { NAV_ITEMS, visibleNavItems } from './nav-config';
+
+vi.mock('@/services/api/system', () => ({
+  getSystemInfo: vi.fn(() => new Promise(() => undefined)),
+}));
+vi.mock('@/services/api/auth', () => ({
+  authApi: {
+    logout: vi.fn(() => Promise.resolve()),
+    logoutAll: vi.fn(() => Promise.resolve()),
+    refresh: vi.fn(() => Promise.reject(new Error('x'))),
+  },
+}));
+vi.mock('@/services/api/admin', () => ({
+  adminApi: { stopImpersonation: vi.fn(() => Promise.resolve()) },
+}));
+
+afterEach(() => vi.clearAllMocks());
+
+const navLabels = () =>
+  within(screen.getAllByRole('navigation', { name: 'Main' })[0] as HTMLElement)
+    .getAllByRole('link')
+    .map((l) => l.textContent);
+
+describe('nav config', () => {
+  it('hides items of future phases, without permission, and admin-only items', () => {
+    const can = (p: string) => p === 'team.read';
+    expect(visibleNavItems(can, false).map((i) => i.key)).toEqual([
+      'dashboard',
+      'team',
+      'settings',
+    ]);
+    expect(visibleNavItems(() => false, true).map((i) => i.key)).toEqual([
+      'dashboard',
+      'settings',
+      'admin',
+    ]);
+    expect(visibleNavItems(() => true, false, 99)).toHaveLength(NAV_ITEMS.length - 1);
+  });
+});
+
+describe('AppLayout', () => {
+  it('shows the menu for an owner (no superadmin section)', () => {
+    signInAs('owner');
+    renderWithProviders({ route: '/' });
+    expect(navLabels()).toEqual(['Dashboard', 'Team', 'Settings']);
+    expect(screen.queryByText('Superadmin')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeInTheDocument();
+    expect(screen.getByText('Welcome, Asha Verma')).toBeInTheDocument();
+  });
+
+  it('hides Team for agents and viewers ("roles se menu badle")', () => {
+    signInAs('viewer');
+    renderWithProviders({ route: '/' });
+    expect(navLabels()).toEqual(['Dashboard', 'Settings']);
+  });
+
+  it('shows the superadmin section to platform admins', () => {
+    signInAs('superadmin');
+    renderWithProviders({ route: '/' });
+    expect(screen.getAllByText('Superadmin')[0]).toBeInTheDocument();
+    expect(navLabels()).toContain('Accounts');
+  });
+
+  it('opens the mobile drawer from the header', async () => {
+    signInAs('owner');
+    renderWithProviders({ route: '/' });
+    await userEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(screen.getAllByRole('navigation', { name: 'Main' }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('shows the live-updates status and toggles the theme', async () => {
+    signInAs('owner');
+    renderWithProviders({ route: '/' });
+    expect(screen.getByRole('status', { name: 'Live updates off' })).toBeInTheDocument();
+    const toggle = screen.getByRole('button', { name: /Switch to (dark|light) mode/ });
+    const before = toggle.getAttribute('aria-label');
+    await userEvent.click(toggle);
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole('button', { name: /Switch to (dark|light) mode/ })
+          .getAttribute('aria-label'),
+      ).not.toBe(before),
+    );
+  });
+
+  it('signs out from the account menu', async () => {
+    signInAs('owner');
+    renderWithProviders({ route: '/' });
+    await userEvent.click(screen.getByRole('button', { name: 'Account menu' }));
+    expect(screen.getByText('asha@example.com · Owner')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Sign out' }));
+    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
+    expect(authApi.logout).toHaveBeenCalled();
+    expect(useAuthStore.getState().status).toBe('anonymous');
+  });
+
+  it('asks before signing out everywhere', async () => {
+    signInAs('owner');
+    renderWithProviders({ route: '/' });
+    await userEvent.click(screen.getByRole('button', { name: 'Account menu' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Sign out everywhere' }));
+    expect(screen.getByRole('dialog', { name: 'Sign out everywhere?' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(authApi.logoutAll).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'Account menu' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Sign out everywhere' }));
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Sign out everywhere' }),
+    );
+    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
+    expect(authApi.logoutAll).toHaveBeenCalled();
+  });
+
+  it('shows the suspended banner', () => {
+    const base = fakeSession('owner');
+    signInAs('owner', {
+      account: { ...base.account, status: 'suspended', suspendReason: 'Unpaid invoice' },
+    });
+    renderWithProviders({ route: '/' });
+    expect(
+      screen.getByText(/This account is suspended — it is read-only\. Reason: Unpaid invoice\./),
+    ).toBeInTheDocument();
+  });
+
+  it('shows the impersonation banner and Stop restores the superadmin', async () => {
+    signInAs('superadmin');
+    useAuthStore.getState().startImpersonation(
+      fakeSession('owner', {
+        accessToken: 'imp',
+        impersonation: { impersonatorId: 'u1', expiresAt: '2026-10-08T01:00:00Z' },
+      }),
+    );
+    renderWithProviders({ route: '/' });
+    expect(screen.getByText(/Viewing as Asha Verma \(Demo Finance\)/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Stop' }));
+    await waitFor(() => expect(useAuthStore.getState().session?.impersonation).toBeNull());
+    expect(adminApi.stopImpersonation).toHaveBeenCalled();
+  });
+
+  it('redirects to 403 page content', () => {
+    signInAs('viewer');
+    renderWithProviders({ route: '/403' });
+    expect(screen.getByRole('heading', { name: '403' })).toBeInTheDocument();
+  });
+});
