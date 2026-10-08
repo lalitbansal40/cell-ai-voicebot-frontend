@@ -81,3 +81,4 @@ All project docs (plans, ADRs, conventions) live in the **backend repo** `docs/`
 
 - [Definition of Done](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/definition-of-done.md)
 - [Architecture Decision Records](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/adr/README.md)
+- [API conventions](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/api.md) · [Error codes](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/error-codes.md) · [WebSocket](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/websocket.md) · [Data](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/data.md) · [Code style](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/code-style.md)
