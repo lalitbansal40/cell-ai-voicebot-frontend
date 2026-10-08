@@ -42,3 +42,7 @@ yarn-error.log*
 pnpm-debug.log*
 *.suo
 *.sw?
+
+# playwright
+playwright-report/
+test-results/

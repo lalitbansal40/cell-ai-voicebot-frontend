@@ -1,7 +1,7 @@
 {
   "name": "cell-ai-voicebot-frontend",
   "version": "0.0.1",
-  "description": "Cell AI Voicebot — dashboard for the multi-tenant AI voice calling platform",
+  "description": "Cell AI Voicebot \u2014 dashboard for the multi-tenant AI voice calling platform",
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
@@ -21,7 +21,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "gen:api": "node scripts/gen-api.mjs"
+    "gen:api": "node scripts/gen-api.mjs",
+    "e2e": "playwright test",
+    "e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
@@ -46,6 +48,7 @@
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "1.64.0",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
