@@ -32,7 +32,17 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
       include: ['src/**'],
-      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/**/README.md', 'src/vite-env.d.ts'],
+      // main.tsx only mounts <App /> into the DOM (App itself is tested).
+      exclude: [
+        'src/**/*.test.{ts,tsx}',
+        'src/test/**',
+        'src/**/README.md',
+        'src/vite-env.d.ts',
+        'src/main.tsx',
+      ],
+      // Gate = measured coverage at Phase 1 sign-off rounded down to the nearest 5
+      // (90.9 / 86.9 / 84.0 / 94.1) — CI fails if coverage drops below it.
+      thresholds: { statements: 90, branches: 85, functions: 80, lines: 90 },
     },
   },
 });

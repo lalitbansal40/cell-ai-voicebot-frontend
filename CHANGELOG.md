@@ -15,5 +15,10 @@ All notable changes to this project are documented here. Format: [Keep a Changel
   - Home page API status card (`SystemInfoCard`).
   - Tests: 7 → 81.
 
+- **Phase 1 · T1.16** — 2026-10-08
+  - Tests for the provider wiring (global toast, realtime off until Phase 2) and the full `App`.
+  - Coverage gate (statements 90 · branches 85 · functions 80 · lines 90) in `vite.config.ts`; CI runs `npm run test:coverage`.
+  - Tests: 81 → 85.
+
 - **Phase 0** — 2026-10-08
   - Vite 8 + React 19 + MUI 9 + React Router 8 + React Query + notistack scaffold, ESLint 9 / Prettier / Husky / commitlint, Vitest + RTL, generated API types from the backend OpenAPI spec (`npm run gen:api`), GitHub Actions CI.

@@ -76,6 +76,7 @@ Request/response types are generated from the backend OpenAPI spec ([ADR 0029](h
 - `src/test/setup.ts` registers matchers and cleans up after each test.
 - `src/test/render.tsx` → `renderWithProviders({ route, routes, queryClient })` renders the real app routes with theme + React Query (retries off) + notistack on a memory router.
 - `src/test/fake-websocket.ts` → `FakeWebSocket` for realtime tests (no extra test dependencies; HTTP fakes use an axios `adapter`).
+- **Coverage gate:** `npm run test:coverage` enforces thresholds in `vite.config.ts` (statements 90 · branches 85 · functions 80 · lines 90 — Phase 1 sign-off values rounded down). CI runs it.
 - E2E (Playwright) is added after Phase 2.
 
 ## Code quality
@@ -90,12 +91,12 @@ Request/response types are generated from the backend OpenAPI spec ([ADR 0029](h
 
 GitHub Actions (`.github/workflows/ci.yml`) on every pull request and on pushes to `main` / `dev`:
 
-- **verify** — `npm ci`, lint, format check, typecheck, tests, build (Node from `.nvmrc`).
+- **verify** — `npm ci`, lint, format check, typecheck, tests **with the coverage gate**, build (Node from `.nvmrc`).
 - **secrets-scan** — gitleaks over the full git history (`.gitleaks.toml`).
 - **audit** — `npm audit --audit-level=high` (informational, non-blocking).
 - **commitlint** — checks every commit message in a PR.
 
-Run the same checks locally: `npm run lint && npm run format:check && npm run typecheck && npm test && npm run build`.
+Run the same checks locally: `npm run lint && npm run format:check && npm run typecheck && npm run test:coverage && npm run build`.
 Dependabot (`.github/dependabot.yml`) opens weekly grouped update PRs. Repo settings to apply by hand: [GitHub settings](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/setup/github-settings.md).
 
 ## Environment variables
