@@ -80,6 +80,9 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen: boolean; onClose:
         open
         sx={{
           display: { xs: 'none', md: 'block' },
+          // The paper is position: fixed — the docked root reserves its width in the flex row.
+          width: DRAWER_WIDTH,
+          flexShrink: 0,
           '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box' },
         }}
       >
