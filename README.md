@@ -21,21 +21,21 @@ npm run dev   # http://localhost:3100
 
 ## Ports
 
-| What | Port |
-| --- | --- |
-| Vite dev server | 3100 |
-| `vite preview` | 3101 |
-| Proxy `/api` → backend API | 5100 |
+| What                            | Port |
+| ------------------------------- | ---- |
+| Vite dev server                 | 3100 |
+| `vite preview`                  | 3101 |
+| Proxy `/api` → backend API      | 5100 |
 | Proxy `/ws` → backend WebSocket | 5100 |
 
 ## Scripts
 
-| Script | What it does |
-| --- | --- |
-| `npm run dev` | Vite dev server with HMR on port 3100 |
-| `npm run build` | Type-check (`tsc -b`) and build to `dist/` |
-| `npm run preview` | Serve the production build on port 3101 |
-| `npm run typecheck` | Type-check all TS projects |
+| Script              | What it does                               |
+| ------------------- | ------------------------------------------ |
+| `npm run dev`       | Vite dev server with HMR on port 3100      |
+| `npm run build`     | Type-check (`tsc -b`) and build to `dist/` |
+| `npm run preview`   | Serve the production build on port 3101    |
+| `npm run typecheck` | Type-check all TS projects                 |
 
 ## Folder structure
 
