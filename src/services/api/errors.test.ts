@@ -180,6 +180,24 @@ describe('applyFieldErrors', () => {
     expect(setError).toHaveBeenCalledWith('name', { type: 'server', message: 'Required' });
   });
 
+  it('strips the body. / query. / params. prefix of server paths', () => {
+    const setError = vi.fn();
+    applyFieldErrors(
+      setError,
+      httpError(
+        422,
+        envelope('VALIDATION_FAILED', 'Invalid', {
+          details: [
+            { path: 'body.password', message: 'Too short' },
+            { path: 'query.page', message: 'Bad' },
+          ],
+        }),
+      ),
+    );
+    expect(setError).toHaveBeenCalledWith('password', { type: 'server', message: 'Too short' });
+    expect(setError).toHaveBeenCalledWith('page', { type: 'server', message: 'Bad' });
+  });
+
   it('returns false when there are no details', () => {
     const setError = vi.fn();
     expect(applyFieldErrors(setError, httpError(409, envelope('CONFLICT_DUPLICATE', 'x')))).toBe(

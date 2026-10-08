@@ -176,7 +176,8 @@ export const applyFieldErrors = <T extends FieldValues>(
 ): boolean => {
   const { details } = toApiError(err);
   for (const { path, message } of details) {
-    setError(path as Path<T>, { type: 'server', message });
+    // Server paths are prefixed with the request part (`body.email`) — forms use `email`.
+    setError(path.replace(/^(body|query|params)\./, '') as Path<T>, { type: 'server', message });
   }
   return details.length > 0;
 };
