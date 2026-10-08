@@ -5,6 +5,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { enqueueSnackbar, SnackbarProvider } from 'notistack';
 import { useState, type ReactNode } from 'react';
 
+import { getWsTicket } from '@/features/auth/session';
+import { useAuthStore } from '@/features/auth/store';
 import { RealtimeProvider } from '@/services/realtime';
 import { theme } from '@/theme';
 
@@ -18,6 +20,22 @@ const notify = (message: string, variant: 'error') => {
   enqueueSnackbar(message, { variant });
 };
 
+/**
+ * Realtime only while signed in; a new user / account (login, impersonation)
+ * gets a fresh connection (key).
+ */
+function AuthRealtime({ children }: { children: ReactNode }) {
+  const status = useAuthStore((s) => s.status);
+  const identity = useAuthStore((s) =>
+    s.session ? `${s.session.account.id}:${s.session.user.id}` : 'none',
+  );
+  return (
+    <RealtimeProvider key={identity} getTicket={status === 'authenticated' ? getWsTicket : null}>
+      {children}
+    </RealtimeProvider>
+  );
+}
+
 export function Providers({ children }: ProvidersProps) {
   const [queryClient] = useState(() => createQueryClient({ notify }));
 
@@ -26,8 +44,7 @@ export function Providers({ children }: ProvidersProps) {
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
         <SnackbarProvider maxSnack={3} autoHideDuration={4000} preventDuplicate>
-          {/* Phase 2: ticket provider (POST /api/v1/ws/tickets) turns realtime on. */}
-          <RealtimeProvider getTicket={null}>{children}</RealtimeProvider>
+          <AuthRealtime>{children}</AuthRealtime>
         </SnackbarProvider>
         {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>

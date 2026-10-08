@@ -17,3 +17,26 @@ export interface SuccessEnvelope<T> {
   success: true;
   data: T;
 }
+
+/** Auth + account (Phase 2). */
+export type AuthSession = Schemas['AuthSession'];
+export type AuthMe = Schemas['AuthMe'];
+export type PublicUser = Schemas['PublicUser'];
+export type PublicAccount = Schemas['PublicAccount'];
+export type Session = Schemas['Session'];
+export type WsTicket = Schemas['WsTicket'];
+export type RbacCatalog = Schemas['RbacCatalog'];
+export type TeamMember = Schemas['TeamMember'];
+export type InviteInfo = Schemas['InviteInfo'];
+export type ApiKey = Schemas['ApiKey'];
+export type CreatedApiKey = Schemas['CreatedApiKey'];
+export type AuditEntry = Schemas['AuditEntry'];
+export type AdminAccountRow = Schemas['AdminAccountRow'];
+export type AdminAccountDetail = Schemas['AdminAccountDetail'];
+
+/** Success envelope with list meta. */
+export interface ListEnvelope<T, M> {
+  success: true;
+  data: T[];
+  meta: M;
+}

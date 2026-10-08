@@ -20,6 +20,18 @@
 | `assets/`            | Static assets imported by code                                                                                                                                                                    |
 | `test/`              | Test setup, `renderWithProviders`, `FakeWebSocket`                                                                                                                                                |
 
+## Authentication (Phase 2)
+
+- `features/auth/store.ts` (Zustand, **memory only**): `status` (`loading | authenticated | anonymous`), `session` (access token, user, account, role, permissions, impersonation), `savedSession` (superadmin session while impersonating).
+- Page load: `AuthBootstrap` (root route) restores the session from the httpOnly refresh cookie (`POST /auth/refresh`).
+- HTTP: `services/api/client.ts` adds `Authorization: Bearer …`; on `401 AUTH_TOKEN_EXPIRED / AUTH_UNAUTHENTICATED` it refreshes **once** (single-flight in the tab, Web Locks across tabs — rotating refresh tokens must never be used twice) and retries the request once; otherwise the user is signed out (`/login?next=…`).
+- Guards: `RequireAuth`, `RedirectIfAuthed`, `RequirePermission perm|anyOf`, `RequirePlatformAdmin`; hooks `useSession`, `usePermission`, `useCan`, `useIsPlatformAdmin`.
+- Realtime connects only while signed in (`getWsTicket` → `POST /ws/tickets`); `session.revoked` signs out, `user.updated` / `account.*` reload `/auth/me`.
+
+## Query keys
+
+`['<feature>', '<entity>', params?]`, defined in `features/<feature>/keys.ts` (e.g. `teamKeys.list(params)`). Signing out clears the whole cache.
+
 ## Rules
 
 - Server state → React Query hooks inside the feature folder; no Redux ([ADR 0012](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/adr/0012-frontend-state.md)).

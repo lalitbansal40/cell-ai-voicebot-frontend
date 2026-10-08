@@ -39,6 +39,12 @@ export interface WsEventMap {
   'import.progress': { importJobId: string; processed: number; total: number; status: string };
   'notification.created': { notificationId: string; title: string };
   'presence.changed': { userId: string; status: 'online' | 'offline' };
+  'session.revoked': { reason: string };
+  'account.updated': { fields: string[] };
+  'account.suspended': { reason: string };
+  'account.enabled': Record<string, never>;
+  'user.updated': { userId: string };
+  'team.changed': Record<string, never>;
 }
 
 export type WsEventType = keyof WsEventMap;
@@ -56,6 +62,12 @@ export const WS_EVENT_TYPES: readonly WsEventType[] = [
   'import.progress',
   'notification.created',
   'presence.changed',
+  'session.revoked',
+  'account.updated',
+  'account.suspended',
+  'account.enabled',
+  'user.updated',
+  'team.changed',
 ];
 
 export type WsEvent<K extends WsEventType = WsEventType> = WsEventEnvelope<WsEventMap[K]> & {

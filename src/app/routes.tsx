@@ -1,5 +1,6 @@
-import type { RouteObject } from 'react-router';
+import { Outlet, type RouteObject } from 'react-router';
 
+import { AuthBootstrap } from '@/features/auth/AuthBootstrap';
 import { HomePage } from '@/pages/HomePage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -16,7 +17,16 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
   : [];
 
 export const routes: RouteObject[] = [
-  { path: '/', element: <HomePage /> },
-  ...devRoutes,
-  { path: '*', element: <NotFoundPage /> },
+  {
+    element: (
+      <AuthBootstrap>
+        <Outlet />
+      </AuthBootstrap>
+    ),
+    children: [
+      { path: '/', element: <HomePage /> },
+      ...devRoutes,
+      { path: '*', element: <NotFoundPage /> },
+    ],
+  },
 ];
