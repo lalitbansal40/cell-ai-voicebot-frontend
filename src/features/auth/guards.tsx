@@ -48,9 +48,15 @@ export function RequirePermission({
   return <>{children}</>;
 }
 
-/** Platform superadmins only (not while impersonating). */
+/**
+ * Platform superadmins only. While impersonating, admin pages send you to the
+ * customer's dashboard (the banner has "Stop") — this is also where starting
+ * an impersonation lands.
+ */
 export function RequirePlatformAdmin({ children }: { children: ReactNode }) {
   const allowed = useIsPlatformAdmin();
+  const impersonating = useAuthStore((s) => Boolean(s.session?.impersonation));
+  if (impersonating) return <Navigate to="/" replace />;
   if (!allowed) return <Navigate to="/403" replace />;
   return <>{children}</>;
 }

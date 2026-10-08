@@ -1,8 +1,15 @@
 import { Navigate, Outlet, type RouteObject } from 'react-router';
 
 import { AuthBootstrap } from '@/features/auth/AuthBootstrap';
-import { RedirectIfAuthed, RequireAuth, RequirePermission } from '@/features/auth/guards';
+import {
+  RedirectIfAuthed,
+  RequireAuth,
+  RequirePermission,
+  RequirePlatformAdmin,
+} from '@/features/auth/guards';
 import { AppLayout } from '@/layout/AppLayout';
+import { AdminAccountDetailPage } from '@/pages/admin/AdminAccountDetailPage';
+import { AdminAccountsPage } from '@/pages/admin/AdminAccountsPage';
 import { AcceptInvitePage } from '@/pages/auth/AcceptInvitePage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -90,6 +97,19 @@ export const routes: RouteObject[] = [
           },
           { path: '/settings', element: <Navigate to="/settings/profile" replace /> },
           { path: '/settings/:tab', element: <SettingsPage /> },
+          {
+            path: '/admin',
+            element: (
+              <RequirePlatformAdmin>
+                <Outlet />
+              </RequirePlatformAdmin>
+            ),
+            children: [
+              { index: true, element: <Navigate to="/admin/accounts" replace /> },
+              { path: 'accounts', element: <AdminAccountsPage /> },
+              { path: 'accounts/:id', element: <AdminAccountDetailPage /> },
+            ],
+          },
         ],
       },
       ...devRoutes,

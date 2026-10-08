@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { DataTable } from '@/components/DataTable';
 import { useAuthStore } from '@/features/auth/store';
 import { auditApi } from '@/services/api/audit';
-import type { AuditEntry } from '@/services/api/types';
+import { auditActorText, auditMetaText } from '@/utils/audit-format';
 import { formatInAccountTz } from '@/utils/datetime';
 
 import { settingsKeys } from './keys';
@@ -21,20 +21,6 @@ const GROUPS = [
   { value: 'apikey.*', label: 'API keys' },
   { value: 'admin.*', label: 'Support access' },
 ];
-
-const actorText = (e: AuditEntry) => {
-  if (e.actor.type === 'api_key') return 'API key';
-  if (e.actor.type === 'system') return 'System';
-  const who = e.actor.name ?? (e.actor.platform ? 'Platform admin' : 'User');
-  return e.actor.impersonatorId ? `${who} (via support)` : who;
-};
-
-const metaText = (meta: AuditEntry['meta']) =>
-  meta
-    ? Object.entries(meta)
-        .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`)
-        .join(' · ')
-    : '';
 
 export function AuditTab() {
   const timezone = useAuthStore((s) => s.session?.account.timezone ?? 'Asia/Kolkata');
@@ -74,9 +60,9 @@ export function AuditTab() {
             render: (e) => formatInAccountTz(e.at, timezone),
             width: 170,
           },
-          { key: 'actor', header: 'Who', render: actorText },
+          { key: 'actor', header: 'Who', render: auditActorText },
           { key: 'action', header: 'What', render: (e) => <code>{e.action}</code> },
-          { key: 'meta', header: 'Details', render: (e) => metaText(e.meta) },
+          { key: 'meta', header: 'Details', render: (e) => auditMetaText(e.meta) },
           { key: 'ip', header: 'IP', render: (e) => e.ip ?? '—' },
         ]}
         rows={rows}
