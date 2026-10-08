@@ -74,6 +74,20 @@ Request/response types are generated from the backend OpenAPI spec ([ADR 0029](h
 - Husky hooks: `pre-commit` → lint-staged; `commit-msg` → commitlint (Conventional Commits).
 - npm 11 install-script approvals live in `package.json` → `allowScripts` (`unrs-resolver: true`, `fsevents: false`). Review new ones with `npm approve-scripts --allow-scripts-pending`.
 
+## CI
+
+<!-- CI badge: add after the first run — see https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/setup/github-settings.md -->
+
+GitHub Actions (`.github/workflows/ci.yml`) on every pull request and on pushes to `main` / `dev`:
+
+- **verify** — `npm ci`, lint, format check, typecheck, tests, build (Node from `.nvmrc`).
+- **secrets-scan** — gitleaks over the full git history (`.gitleaks.toml`).
+- **audit** — `npm audit --audit-level=high` (informational, non-blocking).
+- **commitlint** — checks every commit message in a PR.
+
+Run the same checks locally: `npm run lint && npm run format:check && npm run typecheck && npm test && npm run build`.
+Dependabot (`.github/dependabot.yml`) opens weekly grouped update PRs. Repo settings to apply by hand: [GitHub settings](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/setup/github-settings.md).
+
 ## Environment variables
 
 Copy `.env.example` → `.env.local` (gitignored). **Every `VITE_*` variable is public** — it is compiled into the browser bundle, so never put a secret here. Policy: [secrets.md](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/secrets.md).
