@@ -4,7 +4,7 @@ Dashboard for the multi-tenant AI voice calling platform (React 19 + TypeScript 
 
 ## Status
 
-Phase 0 — setup & architecture decisions.
+Phase 1 — foundation: typed API errors, React Query error policy, realtime (`/ws/events`) client, API status card. Changes: [CHANGELOG.md](CHANGELOG.md).
 
 ## Prerequisites
 
@@ -18,6 +18,15 @@ Phase 0 — setup & architecture decisions.
 npm ci        # install exact dependencies from the lockfile
 npm run dev   # http://localhost:3100
 ```
+
+With the backend running (`npm run infra:up && npm run dev` in `cell-ai-voicebot-backend`) the home page shows the API status card; Swagger UI is also reachable through the proxy at <http://localhost:3100/api/docs>.
+
+## API errors & realtime
+
+- **Errors:** every failed request rejects with an `ApiError` (`status`, `code`, `message`, `details`, `requestId`, `kind`). Client-only codes `NETWORK_ERROR`, `TIMEOUT`, `REQUEST_CANCELED`, `UNKNOWN_ERROR` are documented in the backend [error codes](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/error-codes.md).
+- **React Query:** queries retry network / timeout / 5xx only (max 2); mutations never retry; unexpected errors show a toast with a short request reference.
+- **Realtime:** `RealtimeProvider` + hooks (`useWsStatus`, `useWsEvent`, `useWsTopic`) — see [websocket.md §11](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/websocket.md). It stays **off until Phase 2** provides the ticket endpoint.
+- **DEV tool `/dev/realtime`:** in the backend run `npm run ws:dev-ticket`, change the port in the printed URL to `3100` (Vite proxy), paste it on <http://localhost:3100/dev/realtime>, click Connect, then publish a test event (e.g. `docker exec cav-redis redis-cli PUBLISH ws:fanout '{"target":{"accountId":"dev-account"},"event":{"id":"evt_1","type":"wallet.updated","ts":"2026-10-08T00:00:00Z","data":{"balanceMicros":1}}}'`). Tickets are single use — paste a new one to reconnect. Not included in production builds.
 
 ## Ports
 
@@ -65,7 +74,8 @@ Request/response types are generated from the backend OpenAPI spec ([ADR 0029](h
 - **Runner:** Vitest with `jsdom` + React Testing Library (`@testing-library/jest-dom` matchers, `user-event`).
 - Tests live next to the code: `src/**/*.test.tsx`.
 - `src/test/setup.ts` registers matchers and cleans up after each test.
-- `src/test/render.tsx` → `renderWithProviders({ route })` renders the real app routes with theme + React Query (retries off) on a memory router.
+- `src/test/render.tsx` → `renderWithProviders({ route, routes, queryClient })` renders the real app routes with theme + React Query (retries off) + notistack on a memory router.
+- `src/test/fake-websocket.ts` → `FakeWebSocket` for realtime tests (no extra test dependencies; HTTP fakes use an axios `adapter`).
 - E2E (Playwright) is added after Phase 2.
 
 ## Code quality
@@ -92,11 +102,11 @@ Dependabot (`.github/dependabot.yml`) opens weekly grouped update PRs. Repo sett
 
 Copy `.env.example` → `.env.local` (gitignored). **Every `VITE_*` variable is public** — it is compiled into the browser bundle, so never put a secret here. Policy: [secrets.md](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/secrets.md).
 
-| Variable        | Required               | Description                                                  |
-| --------------- | ---------------------- | ------------------------------------------------------------ |
-| `VITE_API_URL`  | no (default `/api/v1`) | API base URL; default uses the dev proxy to `:5100`          |
-| `VITE_WS_URL`   | yes (Phase 1+)         | Dashboard WebSocket URL (`ws://localhost:3100/ws` via proxy) |
-| `VITE_APP_NAME` | no                     | Display name of the app                                      |
+| Variable        | Required                          | Description                                                                               |
+| --------------- | --------------------------------- | ----------------------------------------------------------------------------------------- |
+| `VITE_API_URL`  | no (default `/api/v1`)            | API base URL; default uses the dev proxy to `:5100`                                       |
+| `VITE_WS_URL`   | no (default: page origin + `/ws`) | WebSocket **base** URL (`ws://localhost:3100/ws` via proxy); the client appends `/events` |
+| `VITE_APP_NAME` | no                                | Display name of the app                                                                   |
 
 ## Docs
 
