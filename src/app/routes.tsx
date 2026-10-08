@@ -16,8 +16,10 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
 import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
+import { ActivityPage } from '@/pages/contacts/ActivityPage';
 import { ContactDetailPage } from '@/pages/contacts/ContactDetailPage';
 import { ContactsPage } from '@/pages/contacts/ContactsPage';
+import { ImportWizardPage } from '@/pages/contacts/ImportWizardPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ErrorPage } from '@/pages/ErrorPage';
 import { ForbiddenPage } from '@/pages/ForbiddenPage';
@@ -107,6 +109,23 @@ export const routes: RouteObject[] = [
             children: [
               { index: true, element: <Navigate to="/contacts/all" replace /> },
               { path: 'c/:id', element: <ContactDetailPage /> },
+              { path: 'activity', element: <ActivityPage /> },
+              {
+                path: 'import',
+                element: (
+                  <RequirePermission perm="contacts.import">
+                    <ImportWizardPage />
+                  </RequirePermission>
+                ),
+              },
+              {
+                path: 'import/:jobId',
+                element: (
+                  <RequirePermission perm="contacts.import">
+                    <ImportWizardPage />
+                  </RequirePermission>
+                ),
+              },
               { path: ':tab', element: <ContactsPage /> },
             ],
           },

@@ -2447,6 +2447,7 @@ export interface paths {
         content: {
           'application/json': {
             sheet?: string;
+            /** @description Empty together with a new `sheet` = only switch the sheet (returns its columns + suggested mapping) */
             columns: components['schemas']['ImportColumnMapping'][];
             options?: components['schemas']['ImportOptions'] & unknown;
           };

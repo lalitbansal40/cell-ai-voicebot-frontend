@@ -44,9 +44,10 @@ export type FieldType = Schemas['FieldType'];
 export type Segment = Schemas['Segment'];
 export type SegmentPreview = Schemas['SegmentPreview'];
 export type DndEntry = Schemas['DndEntry'];
-export type ImportJob = Schemas['ImportJob'];
 export type ImportColumnMapping = Schemas['ImportColumnMapping'];
 export type ImportOptions = Schemas['ImportOptions'];
+/** The generator renders the nullable `options` ref as `ImportOptions & (… | null)`; it is `null` until set. */
+export type ImportJob = Omit<Schemas['ImportJob'], 'options'> & { options: ImportOptions | null };
 export type ExportJob = Schemas['ExportJob'];
 
 /** Success envelope with list meta. */
