@@ -7,6 +7,7 @@ import { Link as RouterLink, Navigate, useNavigate, useParams } from 'react-rout
 import { EmptyState } from '@/components/EmptyState';
 import { PageHeader } from '@/components/PageHeader';
 import { useCan } from '@/features/auth/hooks';
+import { ContactsTab } from '@/features/contacts/ContactsTab';
 import {
   CONTACT_TAB_LABELS,
   CONTACT_TABS,
@@ -17,6 +18,7 @@ import { useContactsLiveUpdates } from '@/features/contacts/useContactsLiveUpdat
 
 /** Tab bodies — filled in by the contacts feature (T3.14 / T3.17). */
 function TabBody({ tab }: { tab: ContactTab }) {
+  if (tab === 'all') return <ContactsTab />;
   return <EmptyState title={CONTACT_TAB_LABELS[tab]} />;
 }
 

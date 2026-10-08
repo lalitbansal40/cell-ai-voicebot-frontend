@@ -20,6 +20,8 @@ export type ApiErrorKind = 'http' | 'network' | 'timeout' | 'canceled' | 'unknow
 export interface ApiErrorDetail {
   path: string;
   message: string;
+  /** On `CONFLICT_DUPLICATE`: id of the record that already exists. */
+  existingId?: string;
 }
 
 interface ApiErrorInit {
@@ -61,7 +63,9 @@ const ErrorEnvelopeSchema = z.object({
   error: z.object({
     code: z.string().min(1),
     message: z.string(),
-    details: z.array(z.object({ path: z.string(), message: z.string() })).optional(),
+    details: z
+      .array(z.object({ path: z.string(), message: z.string(), existingId: z.string().optional() }))
+      .optional(),
     requestId: z.string().optional(),
   }),
 });

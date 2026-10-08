@@ -17,6 +17,21 @@ vi.mock('@/services/api/auth', () => ({
 vi.mock('@/services/api/system', () => ({
   getSystemInfo: vi.fn(() => new Promise(() => undefined)),
 }));
+vi.mock('@/services/api/contacts', () => ({
+  contactsApi: {
+    list: vi.fn(() => new Promise(() => undefined)),
+    tags: vi.fn(() => new Promise(() => undefined)),
+  },
+}));
+vi.mock('@/services/api/custom-fields', () => ({
+  customFieldsApi: { list: vi.fn(() => new Promise(() => undefined)) },
+}));
+vi.mock('@/services/api/contact-lists', () => ({
+  contactListsApi: { list: vi.fn(() => new Promise(() => undefined)) },
+}));
+vi.mock('@/services/api/segments', () => ({
+  segmentsApi: { list: vi.fn(() => new Promise(() => undefined)) },
+}));
 
 afterEach(() => vi.clearAllMocks());
 
