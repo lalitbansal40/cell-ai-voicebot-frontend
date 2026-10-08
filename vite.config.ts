@@ -40,9 +40,9 @@ export default defineConfig({
         'src/vite-env.d.ts',
         'src/main.tsx',
       ],
-      // Gate = measured coverage at Phase 1 sign-off rounded down to the nearest 5
-      // (90.9 / 86.9 / 84.0 / 94.1) — CI fails if coverage drops below it.
-      thresholds: { statements: 90, branches: 85, functions: 80, lines: 90 },
+      // Gate = measured coverage at Phase 2 sign-off rounded down to the nearest 5
+      // (91.9 / 87.9 / 86.2 / 93.8) — CI fails if coverage drops below it.
+      thresholds: { statements: 90, branches: 85, functions: 85, lines: 90 },
     },
   },
 });

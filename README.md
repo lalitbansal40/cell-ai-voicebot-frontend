@@ -4,13 +4,13 @@ Dashboard for the multi-tenant AI voice calling platform (React 19 + TypeScript 
 
 ## Status
 
-Phase 1 — foundation: typed API errors, React Query error policy, realtime (`/ws/events`) client, API status card. Changes: [CHANGELOG.md](CHANGELOG.md).
+Phase 2 — auth, accounts, RBAC and the app shell: sign-up with email code, sign-in / sessions, team management, settings (account, profile, security, API keys, audit log), superadmin accounts + impersonation, live updates over `/ws/events`, Playwright E2E. Changes: [CHANGELOG.md](CHANGELOG.md).
 
 ## Prerequisites
 
 - **Node.js 24 LTS** (`.nvmrc` = `24`; `engine-strict=true` blocks other versions)
 - **npm ≥ 10**
-- Backend API running on `http://localhost:5100` (from Phase 1) — the dev server proxies `/api` and `/ws` to it.
+- Backend API running on `http://localhost:5100` — the dev server proxies `/api` and `/ws` to it.
 
 ## Getting started
 
@@ -19,13 +19,21 @@ npm ci        # install exact dependencies from the lockfile
 npm run dev   # http://localhost:3100
 ```
 
-With the backend running (`npm run infra:up && npm run dev` in `cell-ai-voicebot-backend`) the home page shows the API status card; Swagger UI is also reachable through the proxy at <http://localhost:3100/api/docs>.
+With the backend running (`npm run infra:up && npm run db:migrate && npm run dev` in `cell-ai-voicebot-backend`), open <http://localhost:3100>, choose **Create an account**, and enter the 6-digit code from Mailpit (<http://localhost:8025>). Seeded demo users: `npm run db:seed` in the backend. Superadmin: `npm run superadmin:create -- you@example.com` in the backend, then sign in → **Accounts** in the menu. Swagger UI is also reachable through the proxy at <http://localhost:3100/api/docs>.
+
+## Authentication & permissions
+
+- The access token lives **in memory only** (Zustand store); the refresh token is an `HttpOnly` cookie. On load `AuthBootstrap` refreshes the session; a reload keeps you signed in.
+- One refresh at a time across tabs (Web Locks); a request that fails with `401` is retried once after a refresh. A failed refresh signs out and returns to `/login?next=…`.
+- Routes: `RequireAuth`, `RedirectIfAuthed`, `RequirePermission perm="…"` (→ `/403`), `RequirePlatformAdmin`. Menu items declare their permission and hide without it; items of later phases stay hidden (`LIVE_PHASE` in `src/layout/nav-config.ts`).
+- **Impersonation** (superadmin → account owner, 30 min) keeps the admin session aside; the banner's **Stop** returns to it. The impersonation token is memory-only, so a full page reload also returns to the admin session.
+- Live updates: the header dot shows the WebSocket state; role / account changes refresh the session, `session.revoked` signs out.
 
 ## API errors & realtime
 
 - **Errors:** every failed request rejects with an `ApiError` (`status`, `code`, `message`, `details`, `requestId`, `kind`). Client-only codes `NETWORK_ERROR`, `TIMEOUT`, `REQUEST_CANCELED`, `UNKNOWN_ERROR` are documented in the backend [error codes](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/error-codes.md).
 - **React Query:** queries retry network / timeout / 5xx only (max 2); mutations never retry; unexpected errors show a toast with a short request reference.
-- **Realtime:** `RealtimeProvider` + hooks (`useWsStatus`, `useWsEvent`, `useWsTopic`) — see [websocket.md §11](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/websocket.md). It stays **off until Phase 2** provides the ticket endpoint.
+- **Realtime:** `RealtimeProvider` + hooks (`useWsStatus`, `useWsEvent`, `useWsTopic`) — see [websocket.md §11](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/websocket.md). On while signed in (ticket from `POST /api/v1/ws/tickets`).
 - **DEV tool `/dev/realtime`:** in the backend run `npm run ws:dev-ticket`, change the port in the printed URL to `3100` (Vite proxy), paste it on <http://localhost:3100/dev/realtime>, click Connect, then publish a test event (e.g. `docker exec cav-redis redis-cli PUBLISH ws:fanout '{"target":{"accountId":"dev-account"},"event":{"id":"evt_1","type":"wallet.updated","ts":"2026-10-08T00:00:00Z","data":{"balanceMicros":1}}}'`). Tickets are single use — paste a new one to reconnect. Not included in production builds.
 
 ## Ports
@@ -53,6 +61,8 @@ With the backend running (`npm run infra:up && npm run dev` in `cell-ai-voicebot
 | `npm run test:watch`    | Vitest watch mode                                  |
 | `npm run test:coverage` | Tests + coverage report in `coverage/`             |
 | `npm run gen:api`       | Regenerate API types from the backend OpenAPI spec |
+| `npm run e2e`           | Playwright E2E (starts backend + frontend)         |
+| `npm run e2e:report`    | Open the last Playwright HTML report               |
 
 ## Folder structure
 
@@ -76,8 +86,18 @@ Request/response types are generated from the backend OpenAPI spec ([ADR 0029](h
 - `src/test/setup.ts` registers matchers and cleans up after each test.
 - `src/test/render.tsx` → `renderWithProviders({ route, routes, queryClient })` renders the real app routes with theme + React Query (retries off) + notistack on a memory router.
 - `src/test/fake-websocket.ts` → `FakeWebSocket` for realtime tests (no extra test dependencies; HTTP fakes use an axios `adapter`).
-- **Coverage gate:** `npm run test:coverage` enforces thresholds in `vite.config.ts` (statements 90 · branches 85 · functions 80 · lines 90 — Phase 1 sign-off values rounded down). CI runs it.
-- E2E (Playwright) is added after Phase 2.
+- `src/test/auth.ts` → `signInAs(role)`, `fakeSession(role)` (role permissions mirror the backend system roles); tests start signed out.
+- **Coverage gate:** `npm run test:coverage` enforces thresholds in `vite.config.ts` (statements 90 · branches 85 · functions 85 · lines 90 — Phase 2 sign-off values rounded down). CI runs it.
+
+### End-to-end (Playwright)
+
+`e2e/` — Chromium against the **real backend** (sibling folder `../cell-ai-voicebot-backend`) and Mailpit:
+
+1. In the backend: `npm run infra:up` (MongoDB, Redis, Mailpit). Ports 5100 and 3100 must be free — stop your dev servers.
+2. Once: `npx playwright install chromium`.
+3. `npm run e2e` — Playwright starts the backend with an **isolated database `cav_e2e` and Redis db 5** (wiped, migrated and given a test superadmin on every run by `e2e/prepare-backend.mjs`; your dev data is untouched) plus the Vite dev server, and reads codes / links from the Mailpit API.
+
+Scenarios: sign-up → code → dashboard → sign-out / sign-in; owner invites a manager → menu and pages follow the role → viewer → disabled; superadmin suspends / enables; forgot → reset (other sessions end, link single-use) → change password; impersonation start / blocked actions / stop. `E2E_BACKEND_LOGS=1 npm run e2e` prints backend logs (used for the secrets-in-logs check). In CI: the manual **E2E** workflow (`.github/workflows/e2e.yml`).
 
 ## Code quality
 
@@ -95,6 +115,8 @@ GitHub Actions (`.github/workflows/ci.yml`) on every pull request and on pushes 
 - **secrets-scan** — gitleaks over the full git history (`.gitleaks.toml`).
 - **audit** — `npm audit --audit-level=high` (informational, non-blocking).
 - **commitlint** — checks every commit message in a PR.
+
+`.github/workflows/e2e.yml` (**manual**, `workflow_dispatch`) checks out the backend next to this repo and runs the Playwright suite; needs a `BACKEND_REPO_TOKEN` secret while the backend repo is private.
 
 Run the same checks locally: `npm run lint && npm run format:check && npm run typecheck && npm run test:coverage && npm run build`.
 Dependabot (`.github/dependabot.yml`) opens weekly grouped update PRs. Repo settings to apply by hand: [GitHub settings](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/setup/github-settings.md).
