@@ -6,8 +6,16 @@ import { extractLink, waitForEmail } from './mailpit';
 
 const NEW_PASSWORD = 'green-falcon-lake-77';
 
-test('forgot password → emailed link → new password works, old one does not', async ({ page }) => {
+test('forgot password → emailed link → new password works; old password and sessions do not', async ({
+  page,
+  browser,
+}) => {
   const owner = await signUpOwner(page, 'password');
+  // A second device that stays signed in through the reset.
+  const otherContext = await browser.newContext();
+  const other = await otherContext.newPage();
+  await signIn(other, owner.email, PASSWORD);
+  await expect(other.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible();
   await signOut(page);
 
   await page.getByRole('link', { name: /forgot/i }).click();
@@ -23,6 +31,11 @@ test('forgot password → emailed link → new password works, old one does not'
   await page.getByRole('button', { name: 'Change password' }).click();
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
   await waitForEmail(owner.email, /password was changed/i);
+
+  // Every existing session ended with the reset.
+  await other.reload();
+  await expect(other.getByRole('heading', { name: 'Sign in' })).toBeVisible();
+  await otherContext.close();
 
   // The link is single-use.
   await page.goto(link);

@@ -12,6 +12,8 @@ import {
 
 const backendDir = fileURLToPath(new URL('../cell-ai-voicebot-backend', import.meta.url));
 const prepareScript = fileURLToPath(new URL('./e2e/prepare-backend.mjs', import.meta.url));
+/** `E2E_BACKEND_LOGS=1` prints backend logs (info) — used by the secret-in-logs check. */
+const backendLogs = Boolean(process.env.E2E_BACKEND_LOGS);
 
 /**
  * End-to-end tests against the real backend (isolated `cav_e2e` database,
@@ -44,13 +46,13 @@ export default defineConfig({
       url: BACKEND_HEALTH_URL,
       reuseExistingServer: false,
       timeout: 180_000,
-      stdout: 'ignore',
+      stdout: backendLogs ? 'pipe' : 'ignore',
       stderr: 'pipe',
       // Real env vars win over the backend's .env file.
       env: {
         NODE_ENV: 'development',
         PORT: '5100',
-        LOG_LEVEL: 'warn',
+        LOG_LEVEL: backendLogs ? 'info' : 'warn',
         FRONTEND_URL,
         CORS_ORIGINS: FRONTEND_URL,
         MONGODB_URI: E2E_MONGODB_URI,
