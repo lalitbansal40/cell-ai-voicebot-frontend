@@ -16,6 +16,7 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
 import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
+import { ContactDetailPage } from '@/pages/contacts/ContactDetailPage';
 import { ContactsPage } from '@/pages/contacts/ContactsPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ErrorPage } from '@/pages/ErrorPage';
@@ -105,6 +106,7 @@ export const routes: RouteObject[] = [
             ),
             children: [
               { index: true, element: <Navigate to="/contacts/all" replace /> },
+              { path: 'c/:id', element: <ContactDetailPage /> },
               { path: ':tab', element: <ContactsPage /> },
             ],
           },
