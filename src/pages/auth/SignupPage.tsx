@@ -13,14 +13,7 @@ import { PasswordField } from '@/features/auth/PasswordField';
 import { PASSWORD_MIN, signupSchema, type SignupValues } from '@/features/auth/schemas';
 import { authApi } from '@/services/api/auth';
 import { applyFieldErrors, getErrorMessage } from '@/services/api/errors';
-
-const browserTimezone = () => {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
-  } catch {
-    return 'Asia/Kolkata';
-  }
-};
+import { browserTimezone } from '@/utils/timezone';
 
 export function SignupPage() {
   const navigate = useNavigate();

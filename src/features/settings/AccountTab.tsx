@@ -20,15 +20,9 @@ import { reloadMe } from '@/features/auth/session';
 import { accountApi } from '@/services/api/account';
 import { getErrorMessage } from '@/services/api/errors';
 import type { PublicAccount } from '@/services/api/types';
+import { timezoneOptions } from '@/utils/timezone';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const timezones = (): string[] => {
-  try {
-    return Intl.supportedValuesOf('timeZone');
-  } catch {
-    return ['Asia/Kolkata', 'UTC'];
-  }
-};
 
 type Draft = Pick<PublicAccount, 'name' | 'timezone' | 'country' | 'defaultLanguage' | 'settings'>;
 const draftOf = (a: PublicAccount): Draft => ({
@@ -59,7 +53,7 @@ export function AccountTab() {
 
 function AccountForm({ account, canEdit }: { account: PublicAccount; canEdit: boolean }) {
   const [draft, setDraft] = useState<Draft>(() => draftOf(account));
-  const zones = useMemo(() => timezones(), []);
+  const zones = useMemo(() => timezoneOptions(), []);
   const save = useMutation({
     mutationFn: (d: Draft) => accountApi.update(d),
     meta: { silent: true },
