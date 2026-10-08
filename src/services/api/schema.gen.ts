@@ -2,6 +2,95 @@
 // Source of truth: cell-ai-voicebot-backend/openapi/openapi.json (ADR 0029).
 
 export interface paths {
+  '/health': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Liveness — the process is up (no dependency checks) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Alive */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Health'];
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/ready': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Readiness — MongoDB and Redis reachable and not shutting down */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Ready */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Readiness'];
+            };
+          };
+        };
+        /** @description A dependency is down or the server is shutting down (PROVIDER_UNAVAILABLE) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/system/info': {
     parameters: {
       query?: never;
@@ -83,6 +172,25 @@ export interface components {
     CursorPageMeta: {
       nextCursor: string | null;
       hasMore: boolean;
+    };
+    Health: {
+      /** @enum {string} */
+      status: 'ok';
+      /** @example 3600 */
+      uptimeSec: number;
+    };
+    Readiness: {
+      /** @enum {string} */
+      status: 'ready';
+      /**
+       * @example {
+       *       "mongo": "up",
+       *       "redis": "up"
+       *     }
+       */
+      checks: {
+        [key: string]: 'up';
+      };
     };
     AppInfo: {
       /** @example cell-ai-voicebot-backend */
