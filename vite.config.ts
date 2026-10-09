@@ -42,7 +42,7 @@ export default defineConfig({
       ],
       // Gate = measured coverage at Phase 2 sign-off rounded down to the nearest 5
       // (91.9 / 87.9 / 86.2 / 93.8) — CI fails if coverage drops below it.
-      thresholds: { statements: 90, branches: 85, functions: 85, lines: 90 },
+      thresholds: { statements: 95, branches: 90, functions: 90, lines: 95 },
     },
   },
 });

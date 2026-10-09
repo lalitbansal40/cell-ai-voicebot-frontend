@@ -6,6 +6,16 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 3 · Contacts (T3.13–T3.18)** — 2026-10-09
+  - API clients for contacts, lists, segments, DND, custom fields, imports and exports; `formatCurrencyMicros`, `formatDateOnly`, phone helpers (`libphonenumber-js/min`); Contacts in the menu (`LIVE_PHASE = 3`).
+  - Contacts tab: search, filters, sort, column picker, row selection + "select all matching", bulk actions (tags, lists, DND, delete, export), create / edit dialog with typed fields; advanced filter (segment builder, in the URL, save as segment).
+  - Contact detail: typed variables, tags / lists inline, opt-out / undo, DND, delete.
+  - Import wizard (CSV / XLSX, mapping with new fields, date formats, sheet switch, options, check report + error CSV, live progress with polling fallback, resume, cancel) and DND uploads; Imports & exports page.
+  - Lists, Segments (builder, live count), Do-not-call, Fields (reorder, type lock) tabs; export dialog (scopes, columns, progress, fresh download link; hidden while impersonating).
+  - Playwright: 5 contact scenarios (sample import "Done when", XLSX, segment + bulk + export, DND roles, agent read-only); `E2E_FRONTEND_PORT`.
+  - Fixed: the segment preview re-rendered forever (debounced object identity); fields / lists / DND created by an import showed up only after a reload.
+  - Coverage gate: 95 / 90 / 90 / 95. Tests: 187 → 287.
+
 - **Phase 2 · T2.18 — E2E + sign-off** — 2026-10-08
   - Playwright 1.64 (`e2e/`, Chromium): sign-up → code → dashboard; invite manager → menu by role → viewer → disabled; suspend / enable; forgot → reset (other sessions end) → change password; impersonation. Isolated backend DB (`cav_e2e`) + Redis db 5, codes / links from Mailpit. Manual CI workflow `e2e.yml`.
   - Fixed: sidebar covered the left of every page (≥ md); timezones shown / sent by current IANA name (`Asia/Kolkata`).

@@ -6,6 +6,7 @@ import {
   BACKEND_HEALTH_URL,
   E2E_MONGODB_URI,
   E2E_REDIS_URL,
+  FRONTEND_PORT,
   FRONTEND_URL,
   SUPERADMIN,
 } from './e2e/env';
@@ -68,7 +69,7 @@ export default defineConfig({
     },
     {
       name: 'frontend',
-      command: 'npm run dev',
+      command: `npm run dev -- --port ${FRONTEND_PORT} --strictPort`,
       url: FRONTEND_URL,
       reuseExistingServer: false,
       timeout: 60_000,

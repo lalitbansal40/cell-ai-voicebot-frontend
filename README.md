@@ -4,7 +4,7 @@ Dashboard for the multi-tenant AI voice calling platform (React 19 + TypeScript 
 
 ## Status
 
-Phase 2 — auth, accounts, RBAC and the app shell: sign-up with email code, sign-in / sessions, team management, settings (account, profile, security, API keys, audit log), superadmin accounts + impersonation, live updates over `/ws/events`, Playwright E2E. Changes: [CHANGELOG.md](CHANGELOG.md).
+Phase 3 — contacts: table with search / filters / bulk actions, contact detail, CSV / XLSX import wizard, lists, segments (builder), do-not-call, custom fields, CSV export, imports & exports history. Phase 2 (auth, accounts, RBAC, app shell, team, settings, superadmin) underneath. Playwright E2E. Changes: [CHANGELOG.md](CHANGELOG.md).
 
 ## Prerequisites
 
@@ -28,6 +28,14 @@ With the backend running (`npm run infra:up && npm run db:migrate && npm run dev
 - Routes: `RequireAuth`, `RedirectIfAuthed`, `RequirePermission perm="…"` (→ `/403`), `RequirePlatformAdmin`. Menu items declare their permission and hide without it; items of later phases stay hidden (`LIVE_PHASE` in `src/layout/nav-config.ts`).
 - **Impersonation** (superadmin → account owner, 30 min) keeps the admin session aside; the banner's **Stop** returns to it. The impersonation token is memory-only, so a full page reload also returns to the admin session.
 - Live updates: the header dot shows the WebSocket state; role / account changes refresh the session, `session.revoked` signs out.
+
+## Contacts
+
+- `/contacts/:tab` — **Contacts** (search, list / tag / DND / opted-out / segment filters, **Advanced filter** = the segment builder, kept in the URL as `?f=…` and savable as a segment; column picker per user; bulk actions by selection or "all matching"; Export), **Lists**, **Segments** (builder with operators per field type and a live count), **Do-not-call** (only `dnd.manage` removes numbers), **Fields** (reorder, key never changes, type locked once used).
+- `/contacts/c/:id` — detail with typed variables (₹ amounts from micros, dates never shifted by a timezone), tags / lists, opt-out, DND, delete.
+- `/contacts/import` (`?kind=dnd` for do-not-call files) → upload → mapping (suggested, new fields inline, date format, sheet) → options → check (totals, problem rows, error report) → import with live progress (WebSocket, polling every 3 s when offline) → summary. `/contacts/import/:jobId` resumes any step.
+- `/contacts/activity` — imports and exports history (exports kept 24 h; downloads always fetch a fresh signed link). Exports are hidden while impersonating.
+- Try it with the backend sample sheets in `../cell-ai-voicebot-backend/docs/samples` (expected totals in their README).
 
 ## API errors & realtime
 
@@ -86,18 +94,19 @@ Request/response types are generated from the backend OpenAPI spec ([ADR 0029](h
 - `src/test/setup.ts` registers matchers and cleans up after each test.
 - `src/test/render.tsx` → `renderWithProviders({ route, routes, queryClient })` renders the real app routes with theme + React Query (retries off) + notistack on a memory router.
 - `src/test/fake-websocket.ts` → `FakeWebSocket` for realtime tests (no extra test dependencies; HTTP fakes use an axios `adapter`).
+- `src/test/realtime.ts` → `fakeRealtime()` gives a client to pass as `renderWithProviders({ realtime })` and an `emit(type, data)` to push events.
 - `src/test/auth.ts` → `signInAs(role)`, `fakeSession(role)` (role permissions mirror the backend system roles); tests start signed out.
-- **Coverage gate:** `npm run test:coverage` enforces thresholds in `vite.config.ts` (statements 90 · branches 85 · functions 85 · lines 90 — Phase 2 sign-off values rounded down). CI runs it.
+- **Coverage gate:** `npm run test:coverage` enforces thresholds in `vite.config.ts` (statements 95 · branches 90 · functions 90 · lines 95 — Phase 3 sign-off values rounded down). CI runs it.
 
 ### End-to-end (Playwright)
 
 `e2e/` — Chromium against the **real backend** (sibling folder `../cell-ai-voicebot-backend`) and Mailpit:
 
-1. In the backend: `npm run infra:up` (MongoDB, Redis, Mailpit). Ports 5100 and 3100 must be free — stop your dev servers.
+1. In the backend: `npm run infra:up` (MongoDB, Redis, Mailpit). Ports 5100 and 3100 must be free — stop your dev servers (if something else holds 3100: `E2E_FRONTEND_PORT=3150 npm run e2e`).
 2. Once: `npx playwright install chromium`.
 3. `npm run e2e` — Playwright starts the backend with an **isolated database `cav_e2e` and Redis db 5** (wiped, migrated and given a test superadmin on every run by `e2e/prepare-backend.mjs`; your dev data is untouched) plus the Vite dev server, and reads codes / links from the Mailpit API.
 
-Scenarios: sign-up → code → dashboard → sign-out / sign-in; owner invites a manager → menu and pages follow the role → viewer → disabled; superadmin suspends / enables; forgot → reset (other sessions end, link single-use) → change password; impersonation start / blocked actions / stop. `E2E_BACKEND_LOGS=1 npm run e2e` prints backend logs (used for the secrets-in-logs check). In CI: the manual **E2E** workflow (`.github/workflows/e2e.yml`).
+Scenarios: sign-up → code → dashboard → sign-out / sign-in; owner invites a manager → menu and pages follow the role → viewer → disabled; superadmin suspends / enables; forgot → reset (other sessions end, link single-use) → change password; impersonation start / blocked actions / stop; **contacts** — the 100-row sample CSV with a required field, existing contacts and DND numbers (exact totals, error report CSV, typed values on the contact page), XLSX with a sheet switch, segment "DPD > 30" → bulk tag → CSV export (BOM, formula escaping), do-not-call roles (manager adds, owner removes, opt-out survives a re-import), agent read-only. The contacts specs read `../cell-ai-voicebot-backend/docs/samples`. `E2E_BACKEND_LOGS=1 npm run e2e` prints backend logs (used for the secrets-in-logs check). In CI: the manual **E2E** workflow (`.github/workflows/e2e.yml`).
 
 ## Code quality
 

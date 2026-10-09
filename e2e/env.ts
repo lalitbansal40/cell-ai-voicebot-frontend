@@ -1,5 +1,7 @@
 /** Settings shared by the Playwright config, helpers and specs. */
-export const FRONTEND_URL = 'http://localhost:3100';
+/** `E2E_FRONTEND_PORT` overrides the dev-server port when 3100 is taken by something else. */
+export const FRONTEND_PORT = process.env.E2E_FRONTEND_PORT ?? '3100';
+export const FRONTEND_URL = `http://localhost:${FRONTEND_PORT}`;
 export const BACKEND_HEALTH_URL = 'http://127.0.0.1:5100/health';
 export const MAILPIT_URL = 'http://127.0.0.1:8025';
 
