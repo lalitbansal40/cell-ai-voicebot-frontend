@@ -13,21 +13,24 @@ import Typography from '@mui/material/Typography';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
 import { useState, type ReactNode } from 'react';
-import { Link as RouterLink, useNavigate, useParams } from 'react-router';
+import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'react-router';
 
 import { useConfirm } from '@/components/confirm-context';
 import { DataTable } from '@/components/DataTable';
-import { EmptyState } from '@/components/EmptyState';
 import { PageHeader } from '@/components/PageHeader';
 import { StatusChip } from '@/components/StatusChip';
 import { adminKeys } from '@/features/admin/keys';
 import { SuspendDialog } from '@/features/admin/SuspendDialog';
+import { AccountRatesTab } from '@/features/admin-billing/AccountRatesTab';
+import { AccountWalletTab } from '@/features/admin-billing/AccountWalletTab';
 import { useAuthStore } from '@/features/auth/store';
 import { adminApi } from '@/services/api/admin';
 import { getErrorMessage } from '@/services/api/errors';
 import type { AdminAccountDetail } from '@/services/api/types';
 import { auditActorText, auditMetaText } from '@/utils/audit-format';
 import { formatInAccountTz } from '@/utils/datetime';
+
+const TAB_KEYS = ['overview', 'rates', 'wallet'] as const;
 
 const LANGUAGES: Record<string, string> = { hi: 'Hindi', en: 'English', hinglish: 'Hinglish' };
 
@@ -109,7 +112,8 @@ export function AdminAccountDetailPage() {
   const navigate = useNavigate();
   const confirm = useConfirm();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<'overview' | 'rates'>('overview');
+  const [params, setParams] = useSearchParams();
+  const tab = TAB_KEYS.find((t) => t === params.get('tab')) ?? 'overview';
   const [suspendOpen, setSuspendOpen] = useState(false);
 
   const detail = useQuery({
@@ -229,19 +233,21 @@ export function AdminAccountDetailPage() {
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs
           value={tab}
-          onChange={(_e, v: 'overview' | 'rates') => setTab(v)}
+          onChange={(_e, v: (typeof TAB_KEYS)[number]) => setParams({ tab: v }, { replace: true })}
           aria-label="Account sections"
         >
           <Tab value="overview" label="Overview" />
           <Tab value="rates" label="Rates" />
+          <Tab value="wallet" label="Wallet" />
         </Tabs>
       </Box>
-      {tab === 'overview' ? (
-        <Overview detail={detail.data} />
-      ) : (
-        <EmptyState
-          title="Per-account rates arrive in Phase 4"
-          description="Call pricing and wallet settings for this account will be managed here."
+      {tab === 'overview' && <Overview detail={detail.data} />}
+      {tab === 'rates' && <AccountRatesTab accountId={account.id} accountName={account.name} />}
+      {tab === 'wallet' && (
+        <AccountWalletTab
+          accountId={account.id}
+          accountName={account.name}
+          timezone={account.timezone}
         />
       )}
       {suspendOpen && (

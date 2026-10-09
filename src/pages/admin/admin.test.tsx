@@ -124,7 +124,7 @@ describe('Admin accounts list', () => {
 });
 
 describe('Admin account detail', () => {
-  it('shows the overview, recent activity and the rates placeholder', async () => {
+  it('shows the overview, recent activity and the billing tabs', async () => {
     signInAs('superadmin');
     api.account.mockResolvedValue(detail());
     renderWithProviders({ route: '/admin/accounts/acc1' });
@@ -136,7 +136,9 @@ describe('Admin account detail', () => {
     expect(screen.getByText('Hinglish')).toBeInTheDocument();
     expect(screen.getByText('email: new@example.com')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Rates' }));
-    expect(screen.getByText('Per-account rates arrive in Phase 4')).toBeInTheDocument();
+    // Rates / Wallet content is covered in features/admin-billing tests
+    expect(screen.getByRole('tab', { name: 'Rates', selected: true })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Wallet' })).toBeInTheDocument();
     expect(api.account).toHaveBeenCalledWith('acc1');
   });
 
