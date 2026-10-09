@@ -10,6 +10,7 @@ import {
 import { AppLayout } from '@/layout/AppLayout';
 import { AdminAccountDetailPage } from '@/pages/admin/AdminAccountDetailPage';
 import { AdminAccountsPage } from '@/pages/admin/AdminAccountsPage';
+import { AdminBillingPage } from '@/pages/admin/AdminBillingPage';
 import { AcceptInvitePage } from '@/pages/auth/AcceptInvitePage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -26,6 +27,7 @@ import { ForbiddenPage } from '@/pages/ForbiddenPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { TeamPage } from '@/pages/TeamPage';
+import { WalletPage } from '@/pages/WalletPage';
 
 /** DEV-only tools — the dynamic import is dropped from production builds. */
 const devRoutes: RouteObject[] = import.meta.env.DEV
@@ -129,6 +131,14 @@ export const routes: RouteObject[] = [
               { path: ':tab', element: <ContactsPage /> },
             ],
           },
+          {
+            path: '/wallet',
+            element: (
+              <RequirePermission perm="wallet.read">
+                <WalletPage />
+              </RequirePermission>
+            ),
+          },
           { path: '/settings', element: <Navigate to="/settings/profile" replace /> },
           { path: '/settings/:tab', element: <SettingsPage /> },
           {
@@ -142,6 +152,7 @@ export const routes: RouteObject[] = [
               { index: true, element: <Navigate to="/admin/accounts" replace /> },
               { path: 'accounts', element: <AdminAccountsPage /> },
               { path: 'accounts/:id', element: <AdminAccountDetailPage /> },
+              { path: 'billing', element: <AdminBillingPage /> },
             ],
           },
         ],

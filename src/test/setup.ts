@@ -1,8 +1,9 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
+import { AxiosError } from 'axios';
 import { afterEach } from 'vitest';
 
-import { installAuthHooks } from '@/services/api/client';
+import { apiClient, installAuthHooks } from '@/services/api/client';
 
 import { signOutStore } from './auth';
 
@@ -14,3 +15,8 @@ afterEach(() => {
 });
 
 signOutStore();
+
+// Unit tests never touch the network: a request no test mocked (e.g. the header
+// bell on a page test) fails at once like an offline browser.
+apiClient.defaults.adapter = (config) =>
+  Promise.reject(new AxiosError('Network Error (tests are offline)', 'ERR_NETWORK', config));

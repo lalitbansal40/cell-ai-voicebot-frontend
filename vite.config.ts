@@ -26,6 +26,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // Long user-flow tests take ~1 s alone but can pass 5 s on a busy machine
+    // under coverage (Phase 4: seen with load average > 10).
+    testTimeout: 15_000,
     css: false,
     include: ['src/**/*.test.{ts,tsx}'],
     coverage: {

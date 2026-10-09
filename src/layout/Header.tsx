@@ -20,6 +20,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useSession } from '@/features/auth/hooks';
 import { signOut } from '@/features/auth/session';
 import { useAuthStore } from '@/features/auth/store';
+import { NotificationsBell } from '@/features/notifications/NotificationsBell';
 import { authApi } from '@/services/api/auth';
 import { getErrorMessage } from '@/services/api/errors';
 import { useWsStatus } from '@/services/realtime';
@@ -102,6 +103,7 @@ export function Header({ onMenu }: { onMenu: () => void }) {
           />
         </Tooltip>
         <ThemeToggle />
+        <NotificationsBell />
         <IconButton
           aria-label="Account menu"
           onClick={(e) => setAnchor(e.currentTarget)}

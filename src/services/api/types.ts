@@ -56,3 +56,30 @@ export interface ListEnvelope<T, M> {
   data: T[];
   meta: M;
 }
+
+/** Wallet, billing & payments (Phase 4). */
+export type Wallet = Schemas['Wallet'];
+export type WalletStatus = Wallet['status'];
+export type RateCardView = Schemas['RateCardView'];
+export type WalletEstimate = Schemas['WalletEstimate'];
+export type LedgerEntry = Schemas['LedgerEntry'];
+export type UsageSeries = Schemas['UsageSeries'];
+export type BillingProfile = Schemas['BillingProfile'];
+/** The generator renders the nullable `profile` ref as `BillingProfile & (… | null)`; it is `null` until saved. */
+export type BillingProfileResponse = Omit<Schemas['BillingProfileResponse'], 'profile'> & {
+  profile: BillingProfile | null;
+};
+export type GstState = Schemas['GstState'];
+export type Invoice = Schemas['Invoice'];
+export type TopupOrder = Schemas['TopupOrder'];
+export type TopupCheckout = Schemas['TopupCheckout'];
+export type Notification = Schemas['Notification'];
+export type RateCardVersion = Schemas['RateCardVersion'];
+export type AccountRateCards = Schemas['AccountRateCards'];
+export type WalletAdjustment = Schemas['WalletAdjustment'];
+export type SimulatedHold = Schemas['SimulatedHold'];
+export type SimulatedCallResult = Schemas['SimulatedCallResult'];
+export type BillingSummary = Schemas['BillingSummary'];
+export type AdminPayment = Schemas['AdminPayment'];
+export type PaymentEvent = Schemas['PaymentEvent'];
+export type AdminBillingConfig = Schemas['AdminBillingConfig'];

@@ -88,6 +88,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'platform.accounts.read',
     'platform.accounts.manage',
     'platform.impersonate',
+    'platform.billing.manage',
   ],
 };
 

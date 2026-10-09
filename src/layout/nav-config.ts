@@ -9,6 +9,7 @@ import ExtensionOutlined from '@mui/icons-material/ExtensionOutlined';
 import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import InsightsOutlined from '@mui/icons-material/InsightsOutlined';
 import PhoneInTalkOutlined from '@mui/icons-material/PhoneInTalkOutlined';
+import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
 import SmartToyOutlined from '@mui/icons-material/SmartToyOutlined';
 
@@ -101,10 +102,18 @@ export const NAV_ITEMS: NavItem[] = [
     icon: DomainOutlined,
     platformOnly: true,
   },
+  {
+    key: 'admin-billing',
+    label: 'Billing',
+    path: '/admin/billing',
+    icon: ReceiptLongOutlined,
+    platformOnly: true,
+    phase: 4,
+  },
 ];
 
 /** The phase currently shipped — items of later phases are hidden. */
-export const LIVE_PHASE = 3;
+export const LIVE_PHASE = 4;
 
 export const visibleNavItems = (
   can: (permission: string) => boolean,

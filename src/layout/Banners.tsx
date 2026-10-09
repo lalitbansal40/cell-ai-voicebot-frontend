@@ -6,8 +6,9 @@ import { useNavigate } from 'react-router';
 import { useSession } from '@/features/auth/hooks';
 import { endImpersonation } from '@/features/auth/session';
 import { useAuthStore } from '@/features/auth/store';
+import { WalletBanner } from '@/features/wallet/WalletBanner';
 
-/** Impersonation + suspended-account banners above the page. */
+/** Impersonation, suspended-account and wallet banners above the page. */
 export function Banners() {
   const session = useSession();
   const savedAccountId = useAuthStore((s) => s.savedSession?.account.id);
@@ -42,6 +43,7 @@ export function Banners() {
           Contact support to restore it.
         </Alert>
       )}
+      <WalletBanner />
     </>
   );
 }
