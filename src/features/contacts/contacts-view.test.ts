@@ -14,6 +14,7 @@ describe('contacts view (URL state)', () => {
       dnd: '',
       optedOut: '',
       segmentId: '',
+      advanced: null,
       sort: { field: 'createdAt', direction: 'desc' },
       page: 1,
       limit: 20,
@@ -44,6 +45,17 @@ describe('contacts view (URL state)', () => {
       optedOut: 'false',
       segmentId: 's1',
     });
+  });
+
+  it('keeps an advanced filter in the URL and uses it as the filter', () => {
+    const advanced = { conditions: [{ key: 'dpd', op: 'gt' as const, value: '30' }] };
+    const view = readView(writeView({ ...readView(new URLSearchParams()), advanced }));
+    expect(view.advanced).toEqual(advanced);
+    expect(hasFilters(view)).toBe(true);
+    expect(toFilter(view)).toEqual(advanced);
+    for (const bad of ['{oops', '[1]', 'null', '7']) {
+      expect(readView(new URLSearchParams({ f: bad })).advanced).toBeNull();
+    }
   });
 
   it('ignores bad values', () => {

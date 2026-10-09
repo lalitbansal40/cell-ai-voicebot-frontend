@@ -2,12 +2,15 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import type { ReactNode } from 'react';
 import { Link as RouterLink, Navigate, useNavigate, useParams } from 'react-router';
 
-import { EmptyState } from '@/components/EmptyState';
 import { PageHeader } from '@/components/PageHeader';
 import { useCan } from '@/features/auth/hooks';
 import { ContactsTab } from '@/features/contacts/ContactsTab';
+import { DndTab } from '@/features/contacts/DndTab';
+import { FieldsTab } from '@/features/contacts/FieldsTab';
+import { ListsTab } from '@/features/contacts/ListsTab';
 import {
   CONTACT_TAB_LABELS,
   CONTACT_TABS,
@@ -15,12 +18,15 @@ import {
   type ContactTab,
 } from '@/features/contacts/tabs';
 import { useContactsLiveUpdates } from '@/features/contacts/useContactsLiveUpdates';
+import { SegmentsTab } from '@/features/segments/SegmentsTab';
 
-/** Tab bodies — filled in by the contacts feature (T3.14 / T3.17). */
-function TabBody({ tab }: { tab: ContactTab }) {
-  if (tab === 'all') return <ContactsTab />;
-  return <EmptyState title={CONTACT_TAB_LABELS[tab]} />;
-}
+const TAB_BODY: Record<ContactTab, () => ReactNode> = {
+  all: () => <ContactsTab />,
+  lists: () => <ListsTab />,
+  segments: () => <SegmentsTab />,
+  dnd: () => <DndTab />,
+  fields: () => <FieldsTab />,
+};
 
 /** `/contacts/:tab` — contacts, lists, segments, do-not-call, fields. */
 export function ContactsPage() {
@@ -60,7 +66,7 @@ export function ContactsPage() {
           ))}
         </Tabs>
       </Box>
-      <TabBody tab={tab} />
+      {TAB_BODY[tab]()}
     </>
   );
 }

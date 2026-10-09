@@ -10,6 +10,8 @@ export interface ContactsView {
   dnd: '' | 'true' | 'false';
   optedOut: '' | 'true' | 'false';
   segmentId: string;
+  /** Advanced filter (segment builder) — replaces the simple filters while set. */
+  advanced: ContactFilter | null;
   sort: TableSort;
   page: number;
   limit: number;
@@ -20,6 +22,16 @@ const LIMITS = [10, 20, 50, 100];
 const SORT_FIELDS = ['createdAt', 'updatedAt', 'name'];
 
 const tri = (v: string | null): '' | 'true' | 'false' => (v === 'true' || v === 'false' ? v : '');
+
+const readAdvanced = (raw: string | null): ContactFilter | null => {
+  if (!raw) return null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+};
 
 export const readView = (params: URLSearchParams): ContactsView => {
   const sortRaw = params.get('sort') ?? '';
@@ -32,6 +44,7 @@ export const readView = (params: URLSearchParams): ContactsView => {
     dnd: tri(params.get('dnd')),
     optedOut: tri(params.get('optedOut')),
     segmentId: params.get('segmentId') ?? '',
+    advanced: readAdvanced(params.get('f')),
     sort: SORT_FIELDS.includes(field)
       ? { field, direction: sortRaw.startsWith('-') ? 'desc' : 'asc' }
       : DEFAULT_SORT,
@@ -49,6 +62,7 @@ export const writeView = (view: ContactsView): URLSearchParams => {
   if (view.dnd) p.set('dnd', view.dnd);
   if (view.optedOut) p.set('optedOut', view.optedOut);
   if (view.segmentId) p.set('segmentId', view.segmentId);
+  if (view.advanced) p.set('f', JSON.stringify(view.advanced));
   const sort = `${view.sort.direction === 'desc' ? '-' : ''}${view.sort.field}`;
   if (sort !== '-createdAt') p.set('sort', sort);
   if (view.page > 1) p.set('page', String(view.page));
@@ -57,7 +71,15 @@ export const writeView = (view: ContactsView): URLSearchParams => {
 };
 
 export const hasFilters = (view: ContactsView): boolean =>
-  Boolean(view.q || view.listId || view.tags.length || view.dnd || view.optedOut || view.segmentId);
+  Boolean(
+    view.q ||
+    view.listId ||
+    view.tags.length ||
+    view.dnd ||
+    view.optedOut ||
+    view.segmentId ||
+    view.advanced,
+  );
 
 export const toQuery = (view: ContactsView): ContactsQuery => ({
   page: view.page,
@@ -77,6 +99,7 @@ export const toQuery = (view: ContactsView): ContactsQuery => ({
  * lists / tags combined with a list / tag filter).
  */
 export const toFilter = (view: ContactsView, segment?: Segment): ContactFilter | null => {
+  if (view.advanced) return view.advanced;
   const base: ContactFilter = segment ? { ...segment.filter } : {};
   if (view.listId) {
     if (base.listIds?.length) return null;

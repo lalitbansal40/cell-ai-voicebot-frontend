@@ -1,3 +1,4 @@
+import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -13,6 +14,11 @@ import { Link as RouterLink, useSearchParams } from 'react-router';
 import { DataTable, type Column } from '@/components/DataTable';
 import { RelativeTime } from '@/components/RelativeTime';
 import { useCan, useSession } from '@/features/auth/hooks';
+import { ExportDialog } from '@/features/contact-exports/ExportDialog';
+import { useCanExport } from '@/features/contact-exports/useExportJob';
+import { AdvancedFilterDialog } from '@/features/segments/AdvancedFilterDialog';
+import { describeFilter, filterSize } from '@/features/segments/segment-filter';
+import { SegmentDialog } from '@/features/segments/SegmentDialog';
 import { contactsApi } from '@/services/api/contacts';
 import type { Contact } from '@/services/api/types';
 import { formatFieldValue } from '@/utils/format';
@@ -56,6 +62,8 @@ export function ContactsTab() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [allMatching, setAllMatching] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
+  const [dialog, setDialog] = useState<'advanced' | 'save-segment' | 'export' | null>(null);
+  const canExport = useCanExport();
   const userId = session?.user.id ?? 'anon';
   const [visible, setVisible] = useState<string[]>(() => readColumns(userId));
 
@@ -64,9 +72,25 @@ export function ContactsTab() {
   const segments = useSegments();
   const tags = useContactTags();
   const query = toQuery(view);
+  const advanced = view.advanced;
   const contacts = useQuery({
-    queryKey: contactKeys.list(query),
-    queryFn: () => contactsApi.list(query),
+    queryKey: advanced
+      ? contactKeys.search({
+          filter: advanced,
+          page: view.page,
+          limit: view.limit,
+          sort: query.sort,
+        })
+      : contactKeys.list(query),
+    queryFn: () =>
+      advanced
+        ? contactsApi.search({
+            filter: advanced,
+            page: view.page,
+            limit: view.limit,
+            sort: query.sort,
+          })
+        : contactsApi.list(query),
     placeholderData: keepPreviousData,
     meta: { silent: true },
   });
@@ -145,76 +169,102 @@ export function ContactsTab() {
         sx={{ mb: 2, flexWrap: 'wrap' }}
         useFlexGap
       >
-        <TextField
-          size="small"
-          label="Search name, phone, e-mail, id"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ minWidth: 240 }}
-        />
-        <TextField
-          size="small"
-          select
-          label="List"
-          value={view.listId}
-          onChange={(e) => update({ listId: e.target.value })}
-          sx={{ minWidth: 160 }}
-        >
-          <MenuItem value="">All lists</MenuItem>
-          {(lists.data ?? []).map((l) => (
-            <MenuItem key={l.id} value={l.id}>
-              {l.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        <Autocomplete
-          multiple
-          size="small"
-          options={(tags.data ?? []).map((t) => t.tag)}
-          value={view.tags}
-          onChange={(_e, v) => update({ tags: v })}
-          renderInput={(p) => <TextField {...p} label="Tags (any)" />}
-          sx={{ minWidth: 200 }}
-        />
-        <TextField
-          size="small"
-          select
-          label="Do-not-call"
-          value={view.dnd}
-          onChange={(e) => update({ dnd: e.target.value as ContactsView['dnd'] })}
-          sx={{ minWidth: 140 }}
-        >
-          <MenuItem value="">All</MenuItem>
-          <MenuItem value="true">On the list</MenuItem>
-          <MenuItem value="false">Not on the list</MenuItem>
-        </TextField>
-        <TextField
-          size="small"
-          select
-          label="Opted out"
-          value={view.optedOut}
-          onChange={(e) => update({ optedOut: e.target.value as ContactsView['optedOut'] })}
-          sx={{ minWidth: 130 }}
-        >
-          <MenuItem value="">All</MenuItem>
-          <MenuItem value="true">Opted out</MenuItem>
-          <MenuItem value="false">Not opted out</MenuItem>
-        </TextField>
-        <TextField
-          size="small"
-          select
-          label="Segment"
-          value={view.segmentId}
-          onChange={(e) => update({ segmentId: e.target.value })}
-          sx={{ minWidth: 160 }}
-        >
-          <MenuItem value="">None</MenuItem>
-          {(segments.data ?? []).map((s) => (
-            <MenuItem key={s.id} value={s.id}>
-              {s.name}
-            </MenuItem>
-          ))}
-        </TextField>
+        {advanced ? (
+          <Alert
+            severity="info"
+            sx={{ flexGrow: 1, py: 0 }}
+            action={
+              <>
+                <Button size="small" onClick={() => setDialog('advanced')}>
+                  Edit
+                </Button>
+                {can('contacts.write') && (
+                  <Button size="small" onClick={() => setDialog('save-segment')}>
+                    Save as segment
+                  </Button>
+                )}
+              </>
+            }
+          >
+            Advanced filter: {describeFilter(advanced, fields.data ?? [])}
+          </Alert>
+        ) : (
+          <>
+            <TextField
+              size="small"
+              label="Search name, phone, e-mail, id"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              sx={{ minWidth: 240 }}
+            />
+            <TextField
+              size="small"
+              select
+              label="List"
+              value={view.listId}
+              onChange={(e) => update({ listId: e.target.value })}
+              sx={{ minWidth: 160 }}
+            >
+              <MenuItem value="">All lists</MenuItem>
+              {(lists.data ?? []).map((l) => (
+                <MenuItem key={l.id} value={l.id}>
+                  {l.name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Autocomplete
+              multiple
+              size="small"
+              options={(tags.data ?? []).map((t) => t.tag)}
+              value={view.tags}
+              onChange={(_e, v) => update({ tags: v })}
+              renderInput={(p) => <TextField {...p} label="Tags (any)" />}
+              sx={{ minWidth: 200 }}
+            />
+            <TextField
+              size="small"
+              select
+              label="Do-not-call"
+              value={view.dnd}
+              onChange={(e) => update({ dnd: e.target.value as ContactsView['dnd'] })}
+              sx={{ minWidth: 140 }}
+            >
+              <MenuItem value="">All</MenuItem>
+              <MenuItem value="true">On the list</MenuItem>
+              <MenuItem value="false">Not on the list</MenuItem>
+            </TextField>
+            <TextField
+              size="small"
+              select
+              label="Opted out"
+              value={view.optedOut}
+              onChange={(e) => update({ optedOut: e.target.value as ContactsView['optedOut'] })}
+              sx={{ minWidth: 130 }}
+            >
+              <MenuItem value="">All</MenuItem>
+              <MenuItem value="true">Opted out</MenuItem>
+              <MenuItem value="false">Not opted out</MenuItem>
+            </TextField>
+            <TextField
+              size="small"
+              select
+              label="Segment"
+              value={view.segmentId}
+              onChange={(e) => update({ segmentId: e.target.value })}
+              sx={{ minWidth: 160 }}
+            >
+              <MenuItem value="">None</MenuItem>
+              {(segments.data ?? []).map((s) => (
+                <MenuItem key={s.id} value={s.id}>
+                  {s.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </>
+        )}
+        <Button onClick={() => setDialog('advanced')}>
+          {advanced ? `Advanced filter (${filterSize(advanced)})` : 'Advanced filter'}
+        </Button>
         {filtered && (
           <Button
             onClick={() => {
@@ -236,6 +286,11 @@ export function ContactsTab() {
             saveColumns(userId, keys);
           }}
         />
+        {canExport && (
+          <Button variant="outlined" onClick={() => setDialog('export')}>
+            Export
+          </Button>
+        )}
         {can('contacts.write') && (
           <Button variant="outlined" onClick={() => setFormOpen(true)}>
             Add contact
@@ -254,6 +309,9 @@ export function ContactsTab() {
             setSelected(new Set());
             setAllMatching(false);
           }}
+          extraActions={
+            canExport ? <Button onClick={() => setDialog('export')}>Export</Button> : undefined
+          }
         />
       )}
 
@@ -297,6 +355,44 @@ export function ContactsTab() {
       />
       {formOpen && (
         <ContactFormDialog open onClose={() => setFormOpen(false)} fields={fields.data ?? []} />
+      )}
+      {dialog === 'advanced' && (
+        <AdvancedFilterDialog
+          initial={advanced ?? filter ?? {}}
+          fields={fields.data ?? []}
+          onClose={() => setDialog(null)}
+          onApply={(next) => {
+            setDialog(null);
+            setSearch('');
+            update({
+              advanced: next,
+              q: '',
+              listId: '',
+              tags: [],
+              dnd: '',
+              optedOut: '',
+              segmentId: '',
+            });
+          }}
+        />
+      )}
+      {dialog === 'save-segment' && advanced && (
+        <SegmentDialog
+          open
+          onClose={() => setDialog(null)}
+          fields={fields.data ?? []}
+          initialFilter={advanced}
+          onSaved={(saved) => update({ advanced: null, segmentId: saved.id })}
+        />
+      )}
+      {dialog === 'export' && (
+        <ExportDialog
+          open
+          onClose={() => setDialog(null)}
+          ids={allMatching ? undefined : [...selected]}
+          filter={filter}
+          filterCount={total}
+        />
       )}
     </>
   );
