@@ -6,6 +6,17 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 4 · Wallet & billing (T4.11–T4.15)** — 2026-10-09
+  - API clients for wallet, top-ups, billing profile, invoices, notifications and superadmin billing; `utils/money.ts` (rupee input ⇄ micros with string arithmetic, GST preview, basis points), GSTIN hints; Wallet in the menu (`LIVE_PHASE = 4`), `/admin/billing` for platform admins.
+  - Notifications bell in the header (unread badge, latest 20, mark read / all, live count); low / exhausted wallet banner; `wallet.updated` patches the cached wallet without a refetch.
+  - Wallet: overview cards, budgets, prices, alerts & budgets dialog; Add money (presets, limits, billing details step, GST review, Razorpay Checkout loader + verify, test payment dialog, confirming poll, done / failed / cancelled); dashboard wallet card.
+  - Transactions (URL filters, Load more, details drawer, CSV export), Usage chart (lazy-loaded), Invoices (fresh signed download), Settings → Billing details.
+  - Superadmin: account Rates and Wallet tabs (edit / default rates, adjust with confirm and one Idempotency-Key, credit limit, billing simulator), Billing page (month summary with GST, top accounts, payments, payment events, default prices).
+  - The platform account has no wallet menu, banner, card or page.
+  - Unit tests run offline (unmocked requests fail at once) with a 15 s per-test timeout; the E2E frontend forces same-origin API / WebSocket (a local `VITE_WS_URL` pointed at :3100 broke live updates on :3150).
+  - E2E: 5 wallet scenarios (top-up + invoice + receipt, charges with hold / release, alerts, adjustments, roles); all 15 green twice.
+  - Tests: 287 → 412.
+
 - **Phase 3 · Contacts (T3.13–T3.18)** — 2026-10-09
   - API clients for contacts, lists, segments, DND, custom fields, imports and exports; `formatCurrencyMicros`, `formatDateOnly`, phone helpers (`libphonenumber-js/min`); Contacts in the menu (`LIVE_PHASE = 3`).
   - Contacts tab: search, filters, sort, column picker, row selection + "select all matching", bulk actions (tags, lists, DND, delete, export), create / edit dialog with typed fields; advanced filter (segment builder, in the URL, save as segment).

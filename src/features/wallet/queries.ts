@@ -7,10 +7,20 @@ import { walletApi } from '@/services/api/wallet';
 
 import { billingKeys, walletKeys } from './keys';
 
-/** The account wallet (only fetched with `wallet.read`; WS keeps it fresh). */
-export const useWallet = () => {
+/**
+ * Can this user see a wallet? `wallet.read`, and never in the platform account
+ * (it pays nothing — superadmins see billing under /admin/billing).
+ */
+export const useHasWallet = (): boolean => {
   const canRead = usePermission('wallet.read');
-  return useQuery({ queryKey: walletKeys.wallet, queryFn: walletApi.get, enabled: canRead });
+  const platform = useAuthStore((s) => Boolean(s.session?.account.isPlatform));
+  return canRead && !platform;
+};
+
+/** The account wallet (only fetched when the user has one; WS keeps it fresh). */
+export const useWallet = () => {
+  const hasWallet = useHasWallet();
+  return useQuery({ queryKey: walletKeys.wallet, queryFn: walletApi.get, enabled: hasWallet });
 };
 
 export const useRates = () => useQuery({ queryKey: walletKeys.rates, queryFn: walletApi.rates });

@@ -4,7 +4,7 @@ Dashboard for the multi-tenant AI voice calling platform (React 19 + TypeScript 
 
 ## Status
 
-Phase 3 — contacts: table with search / filters / bulk actions, contact detail, CSV / XLSX import wizard, lists, segments (builder), do-not-call, custom fields, CSV export, imports & exports history. Phase 2 (auth, accounts, RBAC, app shell, team, settings, superadmin) underneath. Playwright E2E. Changes: [CHANGELOG.md](CHANGELOG.md).
+Phase 4 — wallet & billing: prepaid wallet (overview, budgets, prices), Add money with GST and Razorpay / test payments, transactions, usage chart, GST invoices, billing details, notifications bell, low-balance banner, superadmin rates / wallet / simulator / billing pages. Phase 3 (contacts) and Phase 2 (auth, accounts, RBAC, app shell, team, settings, superadmin) underneath. Playwright E2E. Changes: [CHANGELOG.md](CHANGELOG.md).
 
 ## Prerequisites
 
@@ -36,6 +36,16 @@ With the backend running (`npm run infra:up && npm run db:migrate && npm run dev
 - `/contacts/import` (`?kind=dnd` for do-not-call files) → upload → mapping (suggested, new fields inline, date format, sheet) → options → check (totals, problem rows, error report) → import with live progress (WebSocket, polling every 3 s when offline) → summary. `/contacts/import/:jobId` resumes any step.
 - `/contacts/activity` — imports and exports history (exports kept 24 h; downloads always fetch a fresh signed link). Exports are hidden while impersonating.
 - Try it with the backend sample sheets in `../cell-ai-voicebot-backend/docs/samples` (expected totals in their README).
+
+## Wallet & billing
+
+- **Wallet** (`/wallet`, `wallet.read` — owner, admin, manager, viewer; never in the platform account): tabs in the URL (`?tab=overview|transactions|usage|invoices`). Overview: balance, on hold, available (incl. credit limit) with OK / Low / Exhausted, this month's spend, budget bars, "Your prices". Owners / admins (`wallet.topup`, not while impersonating) get **Add money** and **Alerts & budgets**.
+- **Add money**: amount (presets or whole rupees, ₹100 – ₹5,00,000) → billing details if missing → GST review (CGST + SGST in the seller's state, IGST otherwise) → payment → "Confirming payment…" (polls the order every 2 s, up to 60 s) → done / failed / cancelled. One `Idempotency-Key` per attempt. Razorpay Checkout loads on demand from `checkout.razorpay.com` (allow it in any production CSP).
+- **Test payments**: with the backend's `PAYMENT_PROVIDER=fake` (dev / E2E) a "Test mode — no real money" dialog replaces the checkout: **Pay (test)** or **Fail payment**.
+- **Transactions**: filters (type, status, dates in the account timezone) in the URL, "Load more", details drawer with the call price breakdown, CSV export (≤ 1 year). **Usage**: daily stacked chart (`@mui/x-charts`, loaded in its own chunk). **Invoices**: fresh 15-minute download link per click. **Settings → Billing details**: GST details (Latin text, GSTIN check), read-only without `wallet.topup`.
+- **Live**: `wallet.updated` patches the cached wallet; low / exhausted show a banner (with Add money for owners) and a snackbar; the header **bell** shows unread notifications (latest 20, mark read / all).
+- **Superadmin**: account page → **Rates** (prices in force, history, edit, back to default) and **Wallet** (balances, ledger, adjust with confirm, credit limit, **billing simulator** when the server enables it); **Billing** (`/admin/billing`): IST month summary with GST, top accounts, payments, payment events, platform default prices.
+- Money is always integer micros: inputs go through `utils/money.ts` (string arithmetic, no floats), display through `formatCurrencyMicros`.
 
 ## API errors & realtime
 
@@ -102,11 +112,11 @@ Request/response types are generated from the backend OpenAPI spec ([ADR 0029](h
 
 `e2e/` — Chromium against the **real backend** (sibling folder `../cell-ai-voicebot-backend`) and Mailpit:
 
-1. In the backend: `npm run infra:up` (MongoDB, Redis, Mailpit). Ports 5100 and 3100 must be free — stop your dev servers (if something else holds 3100: `E2E_FRONTEND_PORT=3150 npm run e2e`).
+1. In the backend: `npm run infra:up` (MongoDB, Redis, Mailpit). Ports 5100 and 3100 must be free — stop your dev servers (if something else holds 3100: `E2E_FRONTEND_PORT=3150 npm run e2e`; the E2E frontend always uses same-origin API / WebSocket, whatever `.env.local` says).
 2. Once: `npx playwright install chromium`.
 3. `npm run e2e` — Playwright starts the backend with an **isolated database `cav_e2e` and Redis db 5** (wiped, migrated and given a test superadmin on every run by `e2e/prepare-backend.mjs`; your dev data is untouched) plus the Vite dev server, and reads codes / links from the Mailpit API.
 
-Scenarios: sign-up → code → dashboard → sign-out / sign-in; owner invites a manager → menu and pages follow the role → viewer → disabled; superadmin suspends / enables; forgot → reset (other sessions end, link single-use) → change password; impersonation start / blocked actions / stop; **contacts** — the 100-row sample CSV with a required field, existing contacts and DND numbers (exact totals, error report CSV, typed values on the contact page), XLSX with a sheet switch, segment "DPD > 30" → bulk tag → CSV export (BOM, formula escaping), do-not-call roles (manager adds, owner removes, opt-out survives a re-import), agent read-only. The contacts specs read `../cell-ai-voicebot-backend/docs/samples`. `E2E_BACKEND_LOGS=1 npm run e2e` prints backend logs (used for the secrets-in-logs check). In CI: the manual **E2E** workflow (`.github/workflows/e2e.yml`).
+Scenarios: sign-up → code → dashboard → sign-out / sign-in; owner invites a manager → menu and pages follow the role → viewer → disabled; superadmin suspends / enables; forgot → reset (other sessions end, link single-use) → change password; impersonation start / blocked actions / stop; **contacts** — the 100-row sample CSV with a required field, existing contacts and DND numbers (exact totals, error report CSV, typed values on the contact page), XLSX with a sheet switch, segment "DPD > 30" → bulk tag → CSV export (BOM, formula escaping), do-not-call roles (manager adds, owner removes, opt-out survives a re-import), agent read-only; **wallet** — owner adds ₹1,000 by test payment (GST ₹180, invoice `CAV/…`, PDF via the signed link, receipt in Mailpit), superadmin sets account rates and a simulated 90 s call is charged ₹4.00 with hold / release, low-balance and exhausted alerts (banner, bell, email; no calls at ₹0), manual credit / debit with audit on both sides, wallet roles (manager read-only, agent 403, impersonator cannot top up). The contacts specs read `../cell-ai-voicebot-backend/docs/samples`. `E2E_BACKEND_LOGS=1 npm run e2e` prints backend logs (used for the secrets-in-logs check). In CI: the manual **E2E** workflow (`.github/workflows/e2e.yml`).
 
 ## Code quality
 

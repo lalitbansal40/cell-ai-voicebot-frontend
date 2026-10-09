@@ -4,8 +4,9 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 
 import { PageHeader } from '@/components/PageHeader';
-import { usePermission, useSession } from '@/features/auth/hooks';
+import { useSession } from '@/features/auth/hooks';
 import { SystemInfoCard } from '@/features/system/SystemInfoCard';
+import { useHasWallet } from '@/features/wallet/queries';
 import { WalletCard } from '@/features/wallet/WalletCard';
 
 const UPCOMING = [
@@ -15,7 +16,7 @@ const UPCOMING = [
 
 export function DashboardPage() {
   const session = useSession();
-  const canSeeWallet = usePermission('wallet.read');
+  const canSeeWallet = useHasWallet();
   return (
     <>
       <PageHeader title="Dashboard" subtitle={`Welcome, ${session?.user.name ?? ''}`} />

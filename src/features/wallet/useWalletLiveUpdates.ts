@@ -1,12 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
 
-import { usePermission } from '@/features/auth/hooks';
 import type { Wallet } from '@/services/api/types';
 import { useWsEvent } from '@/services/realtime';
 import { formatCurrencyMicros } from '@/utils/format';
 
 import { invoiceKeys, walletKeys } from './keys';
+import { useHasWallet } from './queries';
 
 /**
  * Keeps wallet data live (mounted once in the app layout):
@@ -16,7 +16,7 @@ import { invoiceKeys, walletKeys } from './keys';
  */
 export const useWalletLiveUpdates = (): void => {
   const queryClient = useQueryClient();
-  const canRead = usePermission('wallet.read');
+  const canRead = useHasWallet();
 
   useWsEvent('wallet.updated', (event) => {
     if (!canRead) return;

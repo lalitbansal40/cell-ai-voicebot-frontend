@@ -2,14 +2,13 @@ import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router';
 
-import { usePermission } from '@/features/auth/hooks';
 import { formatCurrencyMicros } from '@/utils/format';
 
-import { useCanTopUp, useWallet } from './queries';
+import { useCanTopUp, useHasWallet, useWallet } from './queries';
 
 /** Low / exhausted wallet banner (users with `wallet.read`; "Add money" with `wallet.topup`). */
 export function WalletBanner() {
-  const canRead = usePermission('wallet.read');
+  const canRead = useHasWallet();
   const canTopUp = useCanTopUp();
   const wallet = useWallet();
   const navigate = useNavigate();
@@ -28,7 +27,7 @@ export function WalletBanner() {
       }
     >
       {exhausted
-        ? 'Your wallet balance is used up — calls cannot start until money is added.'
+        ? 'No money available in the wallet — calls cannot start until money is added.'
         : `Low wallet balance: ${formatCurrencyMicros(wallet.data.availableMicros)} available.`}
     </Alert>
   );

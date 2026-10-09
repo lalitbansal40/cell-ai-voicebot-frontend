@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import { NavLink, useLocation } from 'react-router';
 
 import { useCan, useIsPlatformAdmin } from '@/features/auth/hooks';
+import { useAuthStore } from '@/features/auth/store';
 
 import { visibleNavItems, type NavItem } from './nav-config';
 
@@ -24,7 +25,12 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const can = useCan();
   const platformAdmin = useIsPlatformAdmin();
   const { pathname } = useLocation();
-  const items = visibleNavItems(can, platformAdmin);
+  const platformAccount = useAuthStore((st) => Boolean(st.session?.account.isPlatform));
+  // the platform account has no wallet (billing lives under /admin/billing)
+  const items = visibleNavItems(
+    (perm) => can(perm) && !(platformAccount && perm.startsWith('wallet.')),
+    platformAdmin,
+  );
   const main = items.filter((i) => !i.platformOnly);
   const admin = items.filter((i) => i.platformOnly);
   const render = (item: NavItem) => (

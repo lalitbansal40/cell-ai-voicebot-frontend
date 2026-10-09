@@ -155,7 +155,7 @@ describe('wallet banner', () => {
     signInAs('manager');
     wallet.get.mockResolvedValue(walletFixture({ status: 'exhausted', availableMicros: 0 }));
     const view = renderWithProviders({ route: '/' });
-    expect(await screen.findByText(/wallet balance is used up/)).toBeInTheDocument();
+    expect(await screen.findByText(/No money available in the wallet/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Add money' })).not.toBeInTheDocument();
     view.unmount();
 
@@ -163,7 +163,7 @@ describe('wallet banner', () => {
       impersonation: { impersonatorId: 'sa', expiresAt: '2026-10-09T01:00:00Z' },
     });
     renderWithProviders({ route: '/' });
-    expect(await screen.findByText(/wallet balance is used up/)).toBeInTheDocument();
+    expect(await screen.findByText(/No money available in the wallet/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Add money' })).not.toBeInTheDocument();
   });
 
@@ -189,7 +189,7 @@ describe('live wallet updates', () => {
       currency: 'INR',
       status: 'exhausted',
     });
-    expect(await screen.findByText(/wallet balance is used up/)).toBeInTheDocument();
+    expect(await screen.findByText(/No money available in the wallet/)).toBeInTheDocument();
     expect(wallet.get).toHaveBeenCalledTimes(1);
     rt.emit('wallet.low_balance', { availableMicros: 120 * R, thresholdMicros: 500 * R });
     expect(await screen.findByText('Low wallet balance: ₹120.00 available')).toBeInTheDocument();
@@ -219,6 +219,29 @@ describe('live wallet updates', () => {
     expect(WS_EVENT_TYPES).toEqual(
       expect.arrayContaining(['wallet.updated', 'wallet.low_balance', 'wallet.exhausted']),
     );
+  });
+});
+
+describe('the platform account', () => {
+  it('has no wallet menu, banner, card or wallet page for superadmins', async () => {
+    signInAs('superadmin');
+    renderWithProviders({ route: '/' });
+    await screen.findByRole('heading', { level: 1, name: 'Dashboard' });
+    const nav = screen.getAllByRole('navigation', { name: 'Main' })[0];
+    expect(nav).toBeDefined();
+    expect(
+      within(nav as HTMLElement).queryByRole('link', { name: 'Wallet' }),
+    ).not.toBeInTheDocument();
+    expect(within(nav as HTMLElement).getByRole('link', { name: 'Billing' })).toBeInTheDocument();
+    expect(wallet.get).not.toHaveBeenCalled();
+    expect(screen.queryByRole('link', { name: 'Open wallet' })).not.toBeInTheDocument();
+  });
+
+  it('explains instead of showing a wallet', async () => {
+    signInAs('superadmin');
+    renderWithProviders({ route: '/wallet' });
+    expect(await screen.findByText('The platform account has no wallet')).toBeInTheDocument();
+    expect(wallet.get).not.toHaveBeenCalled();
   });
 });
 

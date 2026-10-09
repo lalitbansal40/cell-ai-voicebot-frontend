@@ -63,6 +63,10 @@ export default defineConfig({
         SMTP_HOST: '127.0.0.1',
         SMTP_PORT: '1025',
         SMTP_SECURE: 'false',
+        // Phase 4: test payments + the billing simulator (never in production)
+        PAYMENT_PROVIDER: 'fake',
+        BILLING_SIMULATOR_ENABLED: 'true',
+        BILLING_SELLER_STATE_CODE: '08',
         E2E_SUPERADMIN_EMAIL: SUPERADMIN.email,
         E2E_SUPERADMIN_PASSWORD: SUPERADMIN.password,
       },
@@ -74,6 +78,9 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 60_000,
       stdout: 'ignore',
+      // Same origin for API + WebSocket (through the Vite proxy) whatever the port —
+      // a developer's .env.local may point VITE_WS_URL at :3100.
+      env: { VITE_API_URL: '/api/v1', VITE_WS_URL: '' },
     },
   ],
 });
