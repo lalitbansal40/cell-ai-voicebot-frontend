@@ -252,6 +252,15 @@ describe('SettingsPage', () => {
     const tabs = within(await screen.findByRole('tablist', { name: 'Settings sections' }))
       .getAllByRole('tab')
       .map((t) => t.textContent);
+    expect(tabs).toEqual(['Profile', 'Security', 'Account', 'Billing details']);
+  });
+
+  it('hides Billing details from agents (no wallet.read)', async () => {
+    signInAs('agent');
+    renderWithProviders({ route: '/settings/profile' });
+    const tabs = within(await screen.findByRole('tablist', { name: 'Settings sections' }))
+      .getAllByRole('tab')
+      .map((t) => t.textContent);
     expect(tabs).toEqual(['Profile', 'Security', 'Account']);
   });
 

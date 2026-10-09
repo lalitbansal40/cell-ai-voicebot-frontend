@@ -8,6 +8,7 @@ import { useCan } from '@/features/auth/hooks';
 import { AccountTab } from '@/features/settings/AccountTab';
 import { ApiKeysTab } from '@/features/settings/ApiKeysTab';
 import { AuditTab } from '@/features/settings/AuditTab';
+import { BillingTab } from '@/features/settings/BillingTab';
 import { ProfileTab } from '@/features/settings/ProfileTab';
 import { SecurityTab } from '@/features/settings/SecurityTab';
 
@@ -15,6 +16,7 @@ const TABS = [
   { key: 'profile', label: 'Profile', Component: ProfileTab },
   { key: 'security', label: 'Security', Component: SecurityTab },
   { key: 'account', label: 'Account', Component: AccountTab, permission: 'account.read' },
+  { key: 'billing', label: 'Billing details', Component: BillingTab, permission: 'wallet.read' },
   { key: 'api-keys', label: 'API keys', Component: ApiKeysTab, permission: 'apikeys.read' },
   { key: 'audit', label: 'Audit log', Component: AuditTab, permission: 'audit.read' },
 ];
