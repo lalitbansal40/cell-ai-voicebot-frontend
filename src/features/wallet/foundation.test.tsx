@@ -20,7 +20,7 @@ vi.mock('@/services/api/notifications', () => ({
   },
 }));
 vi.mock('@/services/api/wallet', () => ({
-  walletApi: { get: vi.fn() },
+  walletApi: { get: vi.fn(), rates: vi.fn(() => new Promise(() => undefined)) },
 }));
 vi.mock('@/services/api/auth', () => ({
   authApi: { refresh: vi.fn(() => Promise.reject(new Error('x'))), me: vi.fn() },
@@ -147,7 +147,8 @@ describe('wallet banner', () => {
     renderWithProviders({ route: '/' });
     expect(await screen.findByText('Low wallet balance: ₹200.00 available.')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Add money' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Wallet' })).toBeInTheDocument();
+    // lands on /wallet?add=1 with the Add money dialog open
+    expect(await screen.findByRole('dialog', { name: 'Add money' })).toBeInTheDocument();
   });
 
   it('says exhausted; no Add money for managers or while impersonating', async () => {
