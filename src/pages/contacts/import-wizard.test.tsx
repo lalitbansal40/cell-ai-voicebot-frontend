@@ -1,3 +1,4 @@
+import { QueryClient } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -477,6 +478,21 @@ describe('mapping → options → check → import', () => {
       '/contacts/dnd',
     );
     expect(screen.getByText('Added')).toBeInTheDocument();
+  });
+
+  it('refreshes fields, lists, contacts and DND once the import runs (also without WS)', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    vi.mocked(contactImportsApi.get).mockResolvedValue(job({ status: 'completed', totals }));
+    signInAs('owner');
+    renderWithProviders({ route: '/contacts/import/j1', queryClient });
+    expect(await screen.findByText('Import finished.')).toBeInTheDocument();
+    const keys = invalidate.mock.calls.map((c) => JSON.stringify(c[0]?.queryKey));
+    for (const key of ['["contacts"]', '["custom-fields"]', '["contact-lists"]', '["dnd"]']) {
+      expect(keys).toContain(key);
+    }
   });
 
   it('needs contacts.import', async () => {

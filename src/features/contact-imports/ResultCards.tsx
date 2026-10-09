@@ -26,7 +26,7 @@ export function ResultCards({ job, done }: { job: ImportJob; done: boolean }) {
     <Grid container spacing={1.5}>
       {cards.map((c) => (
         <Grid key={c.label} size={{ xs: 6, sm: 4, md: 'grow' }}>
-          <Card variant="outlined">
+          <Card variant="outlined" component="section" aria-label={c.label}>
             <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
               <Typography variant="caption" color="text.secondary">
                 {c.label}

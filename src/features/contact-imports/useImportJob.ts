@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
-import { contactKeys, importKeys } from '@/features/contacts/keys';
+import { contactKeys, dndKeys, fieldKeys, importKeys, listKeys } from '@/features/contacts/keys';
 import { contactImportsApi } from '@/services/api/contact-imports';
 import type { ImportJob } from '@/services/api/types';
 import { useWsEvent, useWsStatus } from '@/services/realtime';
@@ -31,8 +32,15 @@ export const useImportJob = (id: string | undefined) => {
       return;
     }
     void queryClient.invalidateQueries({ queryKey: importKeys.detail(id) });
-    if (event.data.status === 'completed')
-      void queryClient.invalidateQueries({ queryKey: contactKeys.all });
   });
+  // Whether the status came over WS or by polling: once the import starts it has
+  // created its new fields and list; when it ends, contacts / DND entries changed.
+  const status = query.data?.status;
+  useEffect(() => {
+    if (status !== 'importing' && status !== 'completed') return;
+    for (const key of [contactKeys.all, fieldKeys.all, listKeys.all, dndKeys.all]) {
+      void queryClient.invalidateQueries({ queryKey: key });
+    }
+  }, [status, queryClient]);
   return query;
 };
