@@ -55,6 +55,14 @@ export interface WsEventMap {
   'account.enabled': Record<string, never>;
   'user.updated': { userId: string };
   'team.changed': Record<string, never>;
+  'kb.source.updated': {
+    kbId: string;
+    sourceId: string;
+    status: 'queued' | 'processing' | 'ready' | 'failed' | 'stale';
+    progress: number;
+    error?: string;
+  };
+  'agent.updated': { agentId: string };
 }
 
 export type WsEventType = keyof WsEventMap;
@@ -82,6 +90,8 @@ export const WS_EVENT_TYPES: readonly WsEventType[] = [
   'account.enabled',
   'user.updated',
   'team.changed',
+  'kb.source.updated',
+  'agent.updated',
 ];
 
 export type WsEvent<K extends WsEventType = WsEventType> = WsEventEnvelope<WsEventMap[K]> & {

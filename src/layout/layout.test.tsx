@@ -48,6 +48,16 @@ describe('nav config', () => {
     expect(visibleNavItems(() => true, false, 99)).toHaveLength(NAV_ITEMS.length - 2);
     // Phase 3 builds did not show the wallet
     expect(visibleNavItems(() => true, false, 3).map((i) => i.key)).not.toContain('wallet');
+    // Phase 4 builds hid AI agents and knowledge
+    const phase4 = visibleNavItems(() => true, false, 4).map((i) => i.key);
+    expect(phase4).not.toContain('agents');
+    expect(phase4).not.toContain('knowledge');
+    expect(visibleNavItems((p) => p === 'agents.read', false).map((i) => i.key)).toEqual([
+      'dashboard',
+      'agents',
+      'knowledge',
+      'settings',
+    ]);
   });
 });
 
@@ -55,7 +65,15 @@ describe('AppLayout', () => {
   it('shows the menu for an owner (no superadmin section)', () => {
     signInAs('owner');
     renderWithProviders({ route: '/' });
-    expect(navLabels()).toEqual(['Dashboard', 'Contacts', 'Wallet', 'Team', 'Settings']);
+    expect(navLabels()).toEqual([
+      'Dashboard',
+      'Contacts',
+      'Wallet',
+      'AI agents',
+      'Knowledge',
+      'Team',
+      'Settings',
+    ]);
     expect(screen.queryByText('Superadmin')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeInTheDocument();
     expect(screen.getByText('Welcome, Asha Verma')).toBeInTheDocument();
@@ -64,13 +82,21 @@ describe('AppLayout', () => {
   it('hides Team for agents and viewers ("roles se menu badle")', () => {
     signInAs('viewer');
     renderWithProviders({ route: '/' });
-    expect(navLabels()).toEqual(['Dashboard', 'Contacts', 'Wallet', 'Settings']);
+    // viewers read AI agents and knowledge (read-only pages)
+    expect(navLabels()).toEqual([
+      'Dashboard',
+      'Contacts',
+      'Wallet',
+      'AI agents',
+      'Knowledge',
+      'Settings',
+    ]);
   });
 
   it('hides the Wallet from agents (no wallet.read)', () => {
     signInAs('agent');
     renderWithProviders({ route: '/' });
-    expect(navLabels()).toEqual(['Dashboard', 'Contacts', 'Settings']);
+    expect(navLabels()).toEqual(['Dashboard', 'Contacts', 'AI agents', 'Knowledge', 'Settings']);
   });
 
   it('shows the superadmin section to platform admins', () => {

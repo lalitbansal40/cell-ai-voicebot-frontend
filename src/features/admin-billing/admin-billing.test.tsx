@@ -64,6 +64,8 @@ const CARD = {
   ttsPer1kCharsMicros: 2_500_000,
   commissionBps: 0,
   billUnansweredAttempts: false,
+  aiTextPer1kTokensMicros: 200_000,
+  embeddingPer1kTokensMicros: 10_000,
 };
 const VERSION = (overrides: Partial<RateCardVersion> = {}): RateCardVersion => ({
   id: 'rc1',
@@ -410,6 +412,7 @@ const SUMMARY: BillingSummary = {
   month: '2026-10',
   from: '2026-09-30T18:30:00.000Z',
   to: '2026-10-31T18:30:00.000Z',
+  ai: { playgroundTurns: 0, kbIngests: 0, inputTokens: 0, outputTokens: 0, embeddingTokens: 0 },
   topups: {
     count: 3,
     baseMicros: 1500 * R,
@@ -551,8 +554,12 @@ describe('/admin/billing', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Save new rates' }));
     await waitFor(() =>
       expect(api.setDefaultRateCard).toHaveBeenCalledWith({
-        ...CARD,
         callPerMinuteMicros: 1_200_000,
+        pulseSeconds: CARD.pulseSeconds,
+        aiPerMinuteMicros: CARD.aiPerMinuteMicros,
+        ttsPer1kCharsMicros: CARD.ttsPer1kCharsMicros,
+        commissionBps: CARD.commissionBps,
+        billUnansweredAttempts: CARD.billUnansweredAttempts,
         note: null,
       }),
     );

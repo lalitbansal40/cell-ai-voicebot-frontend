@@ -8,6 +8,7 @@ import DomainOutlined from '@mui/icons-material/DomainOutlined';
 import ExtensionOutlined from '@mui/icons-material/ExtensionOutlined';
 import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import InsightsOutlined from '@mui/icons-material/InsightsOutlined';
+import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
 import PhoneInTalkOutlined from '@mui/icons-material/PhoneInTalkOutlined';
 import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
@@ -50,6 +51,14 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'AI agents',
     path: '/agents',
     icon: SmartToyOutlined,
+    permission: 'agents.read',
+    phase: 5,
+  },
+  {
+    key: 'knowledge',
+    label: 'Knowledge',
+    path: '/knowledge',
+    icon: MenuBookOutlined,
     permission: 'agents.read',
     phase: 5,
   },
@@ -113,7 +122,7 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 /** The phase currently shipped — items of later phases are hidden. */
-export const LIVE_PHASE = 4;
+export const LIVE_PHASE = 5;
 
 export const visibleNavItems = (
   can: (permission: string) => boolean,

@@ -11,6 +11,11 @@ import { AppLayout } from '@/layout/AppLayout';
 import { AdminAccountDetailPage } from '@/pages/admin/AdminAccountDetailPage';
 import { AdminAccountsPage } from '@/pages/admin/AdminAccountsPage';
 import { AdminBillingPage } from '@/pages/admin/AdminBillingPage';
+import { AgentEditorPage } from '@/pages/agents/AgentEditorPage';
+import { AgentsPage } from '@/pages/agents/AgentsPage';
+import { KnowledgeDetailPage } from '@/pages/agents/KnowledgeDetailPage';
+import { KnowledgePage } from '@/pages/agents/KnowledgePage';
+import { NewAgentPage } from '@/pages/agents/NewAgentPage';
 import { AcceptInvitePage } from '@/pages/auth/AcceptInvitePage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -138,6 +143,32 @@ export const routes: RouteObject[] = [
                 <WalletPage />
               </RequirePermission>
             ),
+          },
+          {
+            path: '/agents',
+            element: (
+              <RequirePermission perm="agents.read">
+                <Outlet />
+              </RequirePermission>
+            ),
+            children: [
+              { index: true, element: <AgentsPage /> },
+              { path: 'new', element: <NewAgentPage /> },
+              { path: ':id', element: <Navigate to="basic" replace /> },
+              { path: ':id/:tab', element: <AgentEditorPage /> },
+            ],
+          },
+          {
+            path: '/knowledge',
+            element: (
+              <RequirePermission perm="agents.read">
+                <Outlet />
+              </RequirePermission>
+            ),
+            children: [
+              { index: true, element: <KnowledgePage /> },
+              { path: ':id', element: <KnowledgeDetailPage /> },
+            ],
           },
           { path: '/settings', element: <Navigate to="/settings/profile" replace /> },
           { path: '/settings/:tab', element: <SettingsPage /> },
