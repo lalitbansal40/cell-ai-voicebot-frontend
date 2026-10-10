@@ -6,6 +6,16 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 5 · AI agents & knowledge (T5.10–T5.15)** — 2026-10-10
+  - API clients for agents, functions, knowledge, playground and admin AI (regenerated types); AI agents and a new Knowledge item in the menu (`LIVE_PHASE = 5`); live `kb.source.updated` / `agent.updated`.
+  - Agents list (search, on / off, duplicate, delete, spend), template picker, editor (Basic, Voice & Language, Limits on one form with changed-field saves, error badges per tab, unsaved-changes guard, reload banner), prompt preview drawer, read-only for readers and impersonators.
+  - Functions editor (parameter builder, URL placeholders, write-only secret headers, JSON body, result path), Test panel, built-in tool settings; agent Knowledge tab; knowledge base pages (uploads with progress and client checks, web pages, live status and failure reasons, re-index, Try a question).
+  - Playground (typed values or a contact + test phone, chat with retry on the same turn id, tool cards, knowledge refs, cost and tokens, outcome, fallback banners, fake-AI badge); ledger drawer shows AI tokens.
+  - Superadmin: AI text / embedding prices in the rate dialogs and history, AI card and AI usage on `/admin/billing`; customers see the AI prices.
+  - E2E: 6 AI tests ("Done when" paid / unpaid → promise, knowledge, function security, billing + empty wallet, roles + price change); all 21 green twice; backend logs free of secrets, messages and phones.
+  - Fixed (backend): empty tool arguments / variables dropped by MongoDB crashed the playground.
+  - Tests: 412 → 478.
+
 - **Phase 4 · Wallet & billing (T4.11–T4.15)** — 2026-10-09
   - API clients for wallet, top-ups, billing profile, invoices, notifications and superadmin billing; `utils/money.ts` (rupee input ⇄ micros with string arithmetic, GST preview, basis points), GSTIN hints; Wallet in the menu (`LIVE_PHASE = 4`), `/admin/billing` for platform admins.
   - Notifications bell in the header (unread badge, latest 20, mark read / all, live count); low / exhausted wallet banner; `wallet.updated` patches the cached wallet without a refetch.

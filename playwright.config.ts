@@ -67,6 +67,12 @@ export default defineConfig({
         PAYMENT_PROVIDER: 'fake',
         BILLING_SIMULATOR_ENABLED: 'true',
         BILLING_SELLER_STATE_CODE: '08',
+        // Phase 5: deterministic fake AI, the dev mock payment API (template functions call it
+        // on this backend), private hosts allowed so localhost:5100 is reachable
+        AI_PROVIDER: 'fake',
+        MOCK_APIS_ENABLED: 'true',
+        AI_FUNCTIONS_ALLOW_PRIVATE_HOSTS: 'true',
+        APP_URL: 'http://localhost:5100',
         E2E_SUPERADMIN_EMAIL: SUPERADMIN.email,
         E2E_SUPERADMIN_PASSWORD: SUPERADMIN.password,
       },

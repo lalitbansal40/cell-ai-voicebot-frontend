@@ -108,41 +108,37 @@ beforeEach(() => {
 afterEach(() => vi.clearAllMocks());
 
 describe('functions tab', () => {
-  it('builds a new function payload (params, placeholder, secret header, body, result path)', async () => {
-    signInAs('owner');
-    agents.createFunction.mockResolvedValue(fakeAgent({ functions: [FN] }));
+  /** Opens Add function with name + description filled (paste is fast under load). */
+  const openNewFunction = async () => {
     renderWithProviders({ route: '/agents/a1/functions' });
     await userEvent.click(await screen.findByRole('button', { name: 'Add function' }));
     const dialog = await screen.findByRole('dialog');
     const field = (name: string) => within(dialog).getByRole('textbox', { name });
-    await userEvent.type(field('Function name'), 'save_payment');
-    await userEvent.type(field('What it does (the AI reads this)'), 'Saves a payment record');
+    const put = async (name: string, value: string) => {
+      fireEvent.change(field(name), { target: { value } });
+      await Promise.resolve();
+    };
+    await put('Function name', 'save_payment');
+    await put('What it does (the AI reads this)', 'Saves a payment record');
+    return { dialog, field, put };
+  };
+
+  it('builds the parameters of a new function (types, enum values, required, order)', async () => {
+    signInAs('owner');
+    agents.createFunction.mockResolvedValue(fakeAgent({ functions: [FN] }));
+    const { dialog, put } = await openNewFunction();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Add parameter' }));
-    await userEvent.type(field('Parameter 1 name'), 'mode');
+    await put('Parameter 1 name', 'mode');
     await userEvent.click(within(dialog).getByRole('combobox', { name: 'Type' }));
     await userEvent.click(screen.getByRole('option', { name: 'enum' }));
-    await userEvent.type(field('Allowed values'), 'upi, cash');
+    await put('Allowed values', 'upi, cash');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Add parameter' }));
-    await userEvent.type(field('Parameter 2 name'), 'amount');
+    await put('Parameter 2 name', 'amount');
     await userEvent.click(
       within(dialog).getAllByRole('checkbox', { name: 'Required' })[1] as HTMLElement,
     );
     await userEvent.click(within(dialog).getByRole('button', { name: 'Move parameter 2 up' }));
-    await userEvent.click(within(dialog).getByRole('combobox', { name: 'Method' }));
-    await userEvent.click(screen.getByRole('option', { name: 'POST' }));
-    const url = field('URL');
-    await userEvent.clear(url);
-    await userEvent.type(url, 'https://api.example.com/pay?phone=');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Insert placeholder' }));
-    expect(screen.getByText('Full phone — server only, not shown to the AI')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('menuitem', { name: /contact\.phone/ }));
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Add header' }));
-    await userEvent.type(field('Header 1 name'), 'Authorization');
-    await userEvent.type(within(dialog).getByLabelText('Header 1 value'), 'Bearer s3cret');
-    fireEvent.change(field('Body template (JSON)'), {
-      target: { value: '{"amount":"{{args.amount}}"}' },
-    });
-    await userEvent.type(field('Result path'), 'data.status');
+    await put('URL', 'https://api.example.com/pay');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Add function' }));
     await waitFor(() =>
       expect(agents.createFunction).toHaveBeenCalledWith('a1', {
@@ -158,6 +154,43 @@ describe('functions tab', () => {
             enumValues: ['upi', 'cash'],
           },
         ],
+        method: 'GET',
+        url: 'https://api.example.com/pay',
+        headers: [],
+        bodyTemplate: null,
+        resultPath: null,
+        responseHint: null,
+        timeoutMs: 6000,
+      }),
+    );
+    expect(await screen.findByText('Function saved')).toBeInTheDocument();
+  });
+
+  it('builds the request of a new function (placeholder, secret header, JSON body, result path)', async () => {
+    signInAs('owner');
+    agents.createFunction.mockResolvedValue(fakeAgent({ functions: [FN] }));
+    const { dialog, field, put } = await openNewFunction();
+    await userEvent.click(within(dialog).getByRole('combobox', { name: 'Method' }));
+    await userEvent.click(screen.getByRole('option', { name: 'POST' }));
+    await put('URL', 'https://api.example.com/pay?phone=');
+    field('URL').focus();
+    (field('URL') as HTMLInputElement).setSelectionRange(34, 34);
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Insert placeholder' }));
+    expect(screen.getByText('Full phone — server only, not shown to the AI')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('menuitem', { name: /contact\.phone/ }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Add header' }));
+    await put('Header 1 name', 'Authorization');
+    fireEvent.change(within(dialog).getByLabelText('Header 1 value'), {
+      target: { value: 'Bearer s3cret' },
+    });
+    await put('Body template (JSON)', '{"amount":"{{args.amount}}"}');
+    await put('Result path', 'data.status');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Add function' }));
+    await waitFor(() =>
+      expect(agents.createFunction).toHaveBeenCalledWith('a1', {
+        name: 'save_payment',
+        description: 'Saves a payment record',
+        parameters: [],
         method: 'POST',
         url: 'https://api.example.com/pay?phone={{contact.phone}}',
         headers: [{ name: 'Authorization', secret: true, value: 'Bearer s3cret' }],
@@ -167,7 +200,6 @@ describe('functions tab', () => {
         timeoutMs: 6000,
       }),
     );
-    expect(await screen.findByText('Function saved')).toBeInTheDocument();
   });
 
   it('checks the form before sending', async () => {
