@@ -27,6 +27,9 @@ export interface RateCardInput {
   ttsPer1kCharsMicros: number;
   commissionBps: number;
   billUnansweredAttempts: boolean;
+  /** Phase 5 — AI text and embedding prices per 1,000 tokens. */
+  aiTextPer1kTokensMicros: number;
+  embeddingPer1kTokensMicros: number;
   note?: string | null;
 }
 

@@ -18,6 +18,7 @@ import { DataTable, type Column } from '@/components/DataTable';
 import { PageHeader } from '@/components/PageHeader';
 import { StatusChip } from '@/components/StatusChip';
 import { RateFacts } from '@/features/admin-billing/AccountRatesTab';
+import { AiConfigCard } from '@/features/admin-billing/AiConfigCard';
 import { RateCardDialog } from '@/features/admin-billing/RateCardDialog';
 import { RateHistoryTable } from '@/features/admin-billing/RateHistoryTable';
 import { adminBillingKeys } from '@/features/wallet/keys';
@@ -26,7 +27,7 @@ import { adminBillingApi, type RateCardInput } from '@/services/api/admin-billin
 import { getErrorMessage } from '@/services/api/errors';
 import type { AdminPayment, BillingSummary, PaymentEvent, TopupOrder } from '@/services/api/types';
 import { formatInAccountTz, todayInTz } from '@/utils/datetime';
-import { formatCurrencyMicros } from '@/utils/format';
+import { formatCurrencyMicros, formatNumber } from '@/utils/format';
 
 const IST = 'Asia/Kolkata';
 const ORDER_STATUSES: TopupOrder['status'][] = [
@@ -114,6 +115,13 @@ function SummaryCards({ s }: { s: BillingSummary }) {
         <Stat
           label="Manual adjustments"
           value={`+${formatCurrencyMicros(s.adjustments.creditMicros)} / −${formatCurrencyMicros(s.adjustments.debitMicros)}`}
+        />
+      </Grid>
+      <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+        <Stat
+          label="AI usage"
+          value={`${formatNumber(s.ai.playgroundTurns)} turns · ${formatNumber(s.ai.kbIngests)} ingests`}
+          note={`${formatNumber(s.ai.inputTokens)} in + ${formatNumber(s.ai.outputTokens)} out tokens · ${formatNumber(s.ai.embeddingTokens)} embedding tokens`}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
@@ -450,6 +458,7 @@ export function AdminBillingPage() {
         </Stack>
         <PaymentsSection />
         <PaymentEventsSection />
+        <AiConfigCard />
         <DefaultRatesSection />
       </Stack>
     </>

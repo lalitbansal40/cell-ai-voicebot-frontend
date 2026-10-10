@@ -171,6 +171,8 @@ describe('admin billing client', () => {
       ttsPer1kCharsMicros: 1,
       commissionBps: 0,
       billUnansweredAttempts: false,
+      aiTextPer1kTokensMicros: 1,
+      embeddingPer1kTokensMicros: 1,
     };
     await adminBillingApi.config();
     await adminBillingApi.defaultRateCard();

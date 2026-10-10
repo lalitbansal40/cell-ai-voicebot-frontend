@@ -51,6 +51,8 @@ export function RateCardDialog({
   const [pulse, setPulse] = useState<RateCardInput['pulseSeconds']>(asPulse(initial.pulseSeconds));
   const [ai, setAi] = useState(formatRupeesInput(initial.aiPerMinuteMicros));
   const [tts, setTts] = useState(formatRupeesInput(initial.ttsPer1kCharsMicros));
+  const [aiText, setAiText] = useState(formatRupeesInput(initial.aiTextPer1kTokensMicros));
+  const [embedding, setEmbedding] = useState(formatRupeesInput(initial.embeddingPer1kTokensMicros));
   const [commission, setCommission] = useState(formatBps(initial.commissionBps).replace('%', ''));
   const [unanswered, setUnanswered] = useState(initial.billUnansweredAttempts);
   const [note, setNote] = useState('');
@@ -62,13 +64,15 @@ export function RateCardDialog({
   const c = money(call);
   const a = money(ai);
   const t = money(tts);
+  const x = money(aiText);
+  const e = money(embedding);
   const bps = parsePercentToBps(commission);
   const noteProblem = note.trim() && note.trim().length < 3 ? 'At least 3 characters' : null;
-  const valid = c.ok && a.ok && t.ok && bps !== null && !noteProblem;
+  const valid = c.ok && a.ok && t.ok && x.ok && e.ok && bps !== null && !noteProblem;
 
   const save = async () => {
     setTouched(true);
-    if (!c.ok || !a.ok || !t.ok || bps === null || noteProblem) return;
+    if (!c.ok || !a.ok || !t.ok || !x.ok || !e.ok || bps === null || noteProblem) return;
     setSaving(true);
     setError(null);
     try {
@@ -78,6 +82,8 @@ export function RateCardDialog({
         aiPerMinuteMicros: a.micros,
         ttsPer1kCharsMicros: t.micros,
         commissionBps: bps,
+        aiTextPer1kTokensMicros: x.micros,
+        embeddingPer1kTokensMicros: e.micros,
         billUnansweredAttempts: unanswered,
         note: note.trim() || null,
       });
@@ -141,6 +147,24 @@ export function RateCardDialog({
               onChange={(e) => setTts(e.target.value)}
               error={touched && !t.ok}
               helperText={help(t, 'Spoken text')}
+            />
+          </Stack>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="AI text (₹ per 1,000 tokens)"
+              value={aiText}
+              onChange={(ev) => setAiText(ev.target.value)}
+              error={touched && !x.ok}
+              helperText={help(x, 'Playground and chat turns, input + output')}
+            />
+            <TextField
+              fullWidth
+              label="Embeddings (₹ per 1,000 tokens)"
+              value={embedding}
+              onChange={(ev) => setEmbedding(ev.target.value)}
+              error={touched && !e.ok}
+              helperText={help(e, 'Knowledge processing and search')}
             />
           </Stack>
           <TextField

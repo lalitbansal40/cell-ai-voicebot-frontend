@@ -46,6 +46,18 @@ export function RateHistoryTable({
       render: (r) => (r.inheritsDefault ? '—' : formatCurrencyMicros(r.ttsPer1kCharsMicros)),
     },
     {
+      key: 'aiText',
+      header: 'AI text / 1k tok',
+      align: 'right',
+      render: (r) => (r.inheritsDefault ? '—' : formatCurrencyMicros(r.aiTextPer1kTokensMicros)),
+    },
+    {
+      key: 'embedding',
+      header: 'Embeddings / 1k tok',
+      align: 'right',
+      render: (r) => (r.inheritsDefault ? '—' : formatCurrencyMicros(r.embeddingPer1kTokensMicros)),
+    },
+    {
       key: 'commission',
       header: 'Commission',
       align: 'right',

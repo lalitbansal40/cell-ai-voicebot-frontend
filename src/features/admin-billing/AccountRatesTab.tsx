@@ -29,6 +29,8 @@ export function RateFacts({ card }: { card: AccountRateCards['effective'] }) {
     ['Pulse', `${card.pulseSeconds} s`],
     ['AI', `${formatCurrencyMicros(card.aiPerMinuteMicros)} / min`],
     ['Voice (TTS)', `${formatCurrencyMicros(card.ttsPer1kCharsMicros)} / 1k chars`],
+    ['AI text', `${formatCurrencyMicros(card.aiTextPer1kTokensMicros)} / 1k tokens`],
+    ['Embeddings', `${formatCurrencyMicros(card.embeddingPer1kTokensMicros)} / 1k tokens`],
     ['Commission', formatBps(card.commissionBps)],
     ['Unanswered', card.billUnansweredAttempts ? 'Billed' : 'Free'],
   ];

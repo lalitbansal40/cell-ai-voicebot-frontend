@@ -163,6 +163,8 @@ describe('wallet overview', () => {
     expect(within(prices).getByText('₹1.00 / minute')).toBeInTheDocument();
     expect(within(prices).getByText('60 seconds')).toBeInTheDocument();
     expect(within(prices).getByText('₹2.50 / 1,000 characters')).toBeInTheDocument();
+    expect(within(prices).getByText('₹0.20 / 1,000 tokens')).toBeInTheDocument();
+    expect(within(prices).getByText('Knowledge processing')).toBeInTheDocument();
     expect(within(prices).getByText('2.5%')).toBeInTheDocument();
     expect(within(prices).getByText('Free')).toBeInTheDocument();
   });

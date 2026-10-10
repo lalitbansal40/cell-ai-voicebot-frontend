@@ -39,6 +39,21 @@ vi.mock('@/services/api/admin-billing', () => ({
     paymentEvents: vi.fn(),
   },
 }));
+vi.mock('@/services/api/admin-ai', () => ({
+  adminAiApi: {
+    config: vi.fn(() =>
+      Promise.resolve({
+        provider: 'fake',
+        textModels: ['gpt-4.1-mini'],
+        defaultTextModel: 'gpt-4.1-mini',
+        embeddingModel: 'text-embedding-3-small',
+        mockApisEnabled: true,
+        allowPrivateHosts: true,
+        openaiKeyConfigured: false,
+      }),
+    ),
+  },
+}));
 vi.mock('@/services/api/auth', () => ({
   authApi: { refresh: vi.fn(() => Promise.reject(new Error('x'))), me: vi.fn() },
 }));
@@ -145,6 +160,9 @@ describe('account rates tab', () => {
     expect(screen.getByText('₹2.00 / min')).toBeInTheDocument();
     const history = screen.getByRole('table', { name: 'Rate history' });
     expect(within(history).getByText('Pilot pricing')).toBeInTheDocument();
+    expect(within(history).getByText('AI text / 1k tok')).toBeInTheDocument();
+    expect(within(history).getAllByText('₹0.20').length).toBeGreaterThan(0);
+    expect(screen.getByText('₹0.01 / 1k tokens')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Edit rates' }));
     const dialog = await screen.findByRole('dialog', { name: 'Prices for Demo Finance' });
@@ -166,6 +184,15 @@ describe('account rates tab', () => {
     await userEvent.click(
       within(dialog).getByRole('switch', { name: 'Bill unanswered call attempts' }),
     );
+    const aiText = within(dialog).getByLabelText('AI text (₹ per 1,000 tokens)');
+    expect(aiText).toHaveValue('0.20');
+    await userEvent.clear(aiText);
+    await userEvent.type(aiText, '1001');
+    expect(within(dialog).getByText('Maximum is ₹1,000')).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Save new rates' })).toBeDisabled();
+    await userEvent.clear(aiText);
+    await userEvent.type(aiText, '0.25');
+    expect(within(dialog).getByLabelText('Embeddings (₹ per 1,000 tokens)')).toHaveValue('0.01');
     await userEvent.type(within(dialog).getByLabelText('Note (optional)'), 'Festive offer');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Save new rates' }));
     expect(await within(dialog).findByText('Too expensive')).toBeInTheDocument();
@@ -178,6 +205,8 @@ describe('account rates tab', () => {
       ttsPer1kCharsMicros: 2_500_000,
       commissionBps: 1000,
       billUnansweredAttempts: true,
+      aiTextPer1kTokensMicros: 250_000,
+      embeddingPer1kTokensMicros: 10_000,
       note: 'Festive offer',
     });
     expect(await screen.findByText('New prices saved for Demo Finance')).toBeInTheDocument();
@@ -412,7 +441,13 @@ const SUMMARY: BillingSummary = {
   month: '2026-10',
   from: '2026-09-30T18:30:00.000Z',
   to: '2026-10-31T18:30:00.000Z',
-  ai: { playgroundTurns: 0, kbIngests: 0, inputTokens: 0, outputTokens: 0, embeddingTokens: 0 },
+  ai: {
+    playgroundTurns: 12,
+    kbIngests: 3,
+    inputTokens: 18_000,
+    outputTokens: 900,
+    embeddingTokens: 4_200,
+  },
   topups: {
     count: 3,
     baseMicros: 1500 * R,
@@ -429,6 +464,68 @@ const SUMMARY: BillingSummary = {
   openReconcileMismatches: 0,
   paymentEventsNeedingAttention: 2,
 };
+
+describe('/admin/billing — AI', () => {
+  beforeEach(() => {
+    api.summary.mockResolvedValue(SUMMARY);
+    api.payments.mockResolvedValue({
+      success: true,
+      data: [],
+      meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
+    });
+    api.paymentEvents.mockResolvedValue({
+      success: true,
+      data: [],
+      meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
+    });
+    api.defaultRateCard.mockResolvedValue(VERSION({ accountId: null }));
+    api.defaultRateCardHistory.mockResolvedValue([]);
+  });
+
+  it('shows the AI usage of the month and the AI configuration', async () => {
+    signInAs('superadmin');
+    renderWithProviders({ route: '/admin/billing' });
+    expect(await screen.findByText('12 turns · 3 ingests')).toBeInTheDocument();
+    expect(
+      screen.getByText('18,000 in + 900 out tokens · 4,200 embedding tokens'),
+    ).toBeInTheDocument();
+    const card = await screen.findByRole('region', { name: 'AI configuration' });
+    expect(within(card).getByText('Provider: fake (test mode)')).toBeInTheDocument();
+    expect(within(card).getByText('No OpenAI key')).toBeInTheDocument();
+    expect(within(card).getByText('Mock APIs on (dev)')).toBeInTheDocument();
+    expect(within(card).getByText('Private hosts allowed (dev)')).toBeInTheDocument();
+    expect(
+      within(card).getByText(/Text models: gpt-4\.1-mini \(default gpt-4\.1-mini\)/),
+    ).toBeInTheDocument();
+  });
+
+  it('shows the production AI setup and load errors', async () => {
+    signInAs('superadmin');
+    const ai = vi.mocked((await import('@/services/api/admin-ai')).adminAiApi);
+    ai.config.mockResolvedValueOnce({
+      provider: 'openai',
+      textModels: ['gpt-4.1-mini', 'gpt-4.1'],
+      defaultTextModel: 'gpt-4.1-mini',
+      embeddingModel: 'text-embedding-3-small',
+      mockApisEnabled: false,
+      allowPrivateHosts: false,
+      openaiKeyConfigured: true,
+    });
+    const { unmount } = renderWithProviders({ route: '/admin/billing' });
+    const card = await screen.findByRole('region', { name: 'AI configuration' });
+    expect(await within(card).findByText('Provider: OpenAI')).toBeInTheDocument();
+    expect(within(card).getByText('OpenAI key set')).toBeInTheDocument();
+    expect(within(card).getByText('Mock APIs off')).toBeInTheDocument();
+    expect(within(card).getByText('Private hosts blocked')).toBeInTheDocument();
+    unmount();
+    ai.config.mockRejectedValueOnce(httpError(500, 'INTERNAL_ERROR', 'Config down'));
+    renderWithProviders({ route: '/admin/billing' });
+    const failed = await screen.findByRole('region', { name: 'AI configuration' });
+    expect(await within(failed).findByText('Config down')).toBeInTheDocument();
+    await userEvent.click(within(failed).getByRole('button', { name: 'Retry' }));
+    expect(await within(failed).findByText('Provider: fake (test mode)')).toBeInTheDocument();
+  });
+});
 
 describe('/admin/billing', () => {
   beforeEach(() => {
@@ -554,12 +651,8 @@ describe('/admin/billing', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Save new rates' }));
     await waitFor(() =>
       expect(api.setDefaultRateCard).toHaveBeenCalledWith({
+        ...CARD,
         callPerMinuteMicros: 1_200_000,
-        pulseSeconds: CARD.pulseSeconds,
-        aiPerMinuteMicros: CARD.aiPerMinuteMicros,
-        ttsPer1kCharsMicros: CARD.ttsPer1kCharsMicros,
-        commissionBps: CARD.commissionBps,
-        billUnansweredAttempts: CARD.billUnansweredAttempts,
         note: null,
       }),
     );

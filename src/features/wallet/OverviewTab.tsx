@@ -86,6 +86,14 @@ function Prices({ rates }: { rates: RateCardView }) {
     ['Billing pulse', `${rates.pulseSeconds} seconds`],
     ['AI conversation', `${formatCurrencyMicros(rates.aiPerMinuteMicros)} / minute`],
     ['AI voice (TTS)', `${formatCurrencyMicros(rates.ttsPer1kCharsMicros)} / 1,000 characters`],
+    [
+      'AI text (playground)',
+      `${formatCurrencyMicros(rates.aiTextPer1kTokensMicros)} / 1,000 tokens`,
+    ],
+    [
+      'Knowledge processing',
+      `${formatCurrencyMicros(rates.embeddingPer1kTokensMicros)} / 1,000 tokens`,
+    ],
     ...(rates.commissionBps
       ? [['Platform commission', formatBps(rates.commissionBps)] as [string, string]]
       : []),
