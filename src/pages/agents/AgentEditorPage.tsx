@@ -33,6 +33,7 @@ import { LimitsTab } from '@/features/agents/editor/LimitsTab';
 import { PromptPreviewDrawer } from '@/features/agents/editor/PromptPreviewDrawer';
 import { VoiceTab } from '@/features/agents/editor/VoiceTab';
 import { useUnsavedChangesGuard } from '@/features/agents/fields/useUnsavedChangesGuard';
+import { FunctionsTab } from '@/features/agents/functions/FunctionsTab';
 import { agentKeys } from '@/features/agents/keys';
 import {
   useAgent,
@@ -40,6 +41,7 @@ import {
   useAgentUsage,
   useCanWriteAgents,
 } from '@/features/agents/queries';
+import { KnowledgeTab } from '@/features/knowledge/KnowledgeTab';
 import { useImpersonating } from '@/features/wallet/queries';
 import { agentsApi } from '@/services/api/agents';
 import { getErrorMessage, toApiError } from '@/services/api/errors';
@@ -59,6 +61,8 @@ const EDITOR_TABS: TabDef[] = [
   { key: 'basic', label: 'Basic', formTab: 'basic', Component: BasicTab },
   { key: 'voice', label: 'Voice & Language', formTab: 'voice', Component: VoiceTab },
   { key: 'limits', label: 'Limits', formTab: 'limits', Component: LimitsTab },
+  { key: 'functions', label: 'Functions', Component: FunctionsTab },
+  { key: 'knowledge', label: 'Knowledge', Component: KnowledgeTab },
 ];
 
 /** `/agents/:id/:tab` — the agent editor. */
@@ -284,7 +288,13 @@ function Editor({ loaded, tab }: { loaded: Agent; tab: TabDef }) {
         }}
         noValidate
       >
-        <tab.Component agent={base} catalog={catalog.data} form={form} readOnly={readOnly} />
+        <tab.Component
+          agent={base}
+          catalog={catalog.data}
+          form={form}
+          readOnly={readOnly}
+          onAgentChange={adopt}
+        />
       </form>
       <PromptPreviewDrawer
         agent={base}

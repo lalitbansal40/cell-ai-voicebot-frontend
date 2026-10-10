@@ -1,5 +1,5 @@
 import type { AgentPatch } from '@/services/api/agents';
-import type { Agent, AgentLanguage, AgentVoice, ToneRule } from '@/services/api/types';
+import type { Agent, AgentLanguage, AgentVoice, Disposition, ToneRule } from '@/services/api/types';
 import { formatRupeesInput, parseRupeesInput } from '@/utils/money';
 
 /** What the editor edits (money as rupee text, everything else like the API). */
@@ -170,4 +170,16 @@ export const TONE_LABELS: Record<ToneRule['when'], string> = {
   in_a_hurry: 'In a hurry',
   abusive: 'Abusive',
   custom: 'Custom…',
+};
+
+export const DISPOSITION_LABELS: Record<Disposition, string> = {
+  paid: 'Paid',
+  promise_to_pay: 'Promise to pay',
+  callback_requested: 'Callback requested',
+  wrong_number: 'Wrong number',
+  refused_to_pay: 'Refused to pay',
+  dispute: 'Dispute',
+  not_interested: 'Not interested',
+  language_barrier: 'Language barrier',
+  other: 'Other',
 };

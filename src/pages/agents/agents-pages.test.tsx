@@ -378,6 +378,81 @@ describe('agent editor', () => {
     expect(screen.queryByText(/This agent was changed elsewhere/)).not.toBeInTheDocument();
   });
 
+  it('edits limits, basic guardrails and allowed variables', async () => {
+    signInAs('owner');
+    api.update.mockResolvedValue(fakeAgent());
+    renderWithProviders({ route: '/agents/a1/limits' });
+    const longest = await screen.findByRole('spinbutton', { name: 'Longest call (seconds)' });
+    await userEvent.clear(longest);
+    await userEvent.type(longest, '600');
+    await userEvent.click(
+      screen.getByRole('switch', { name: 'Let the customer interrupt the agent' }),
+    );
+    await userEvent.click(screen.getByRole('combobox', { name: 'Text model' }));
+    await userEvent.click(screen.getByRole('option', { name: 'gpt-4.1' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Refuse the turn' }));
+    const aiFailed = screen.getByRole('textbox', { name: 'When the AI fails' });
+    await userEvent.clear(aiFailed);
+    await userEvent.type(aiFailed, 'Sorry');
+    await userEvent.click(screen.getByRole('tab', { name: 'Basic' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'General' }));
+    const neverSay = screen.getByRole('combobox', { name: 'Never say' });
+    await userEvent.type(neverSay, 'jail{Enter}');
+    await userEvent.click(screen.getByRole('combobox', { name: 'Allowed variables' }));
+    await userEvent.click(
+      await screen.findByRole('option', { name: 'Loan amount ({{loan_amount}})' }),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(api.update).toHaveBeenCalledWith('a1', {
+        allowedVariables: ['name', 'loan_amount'],
+        guardrails: {
+          neverSay: ['legal notice', 'jail'],
+          disclosureLine: 'Main AI assistant hoon.',
+          complianceMode: 'general',
+        },
+        callBehaviour: {
+          maxCallDurationSec: 600,
+          silenceTimeoutSec: 8,
+          bargeIn: false,
+          endCallAfterSilenceRetries: 2,
+        },
+        model: { textModel: 'gpt-4.1', temperatureTenths: 6, maxOutputTokens: 300 },
+        limits: { dailySpendCapMicros: 0, monthlySpendCapMicros: 0, onCap: 'stop' },
+        fallback: expect.objectContaining({ aiFailed: 'Sorry' }) as unknown,
+      }),
+    );
+  });
+
+  it('previews with a sample contact (masked phone in the picker)', async () => {
+    signInAs('owner');
+    api.compilePreview.mockResolvedValue({
+      instructions: 'Compiled',
+      tools: [],
+      openingLine: '',
+      closingLine: '',
+      variables: { name: 'Asha' },
+      warnings: [],
+    });
+    contacts.list.mockResolvedValue({
+      success: true,
+      data: [{ id: 'c1', name: 'Asha Verma', phoneE164: '+919000000002' }],
+      meta: { page: 1, limit: 10, total: 1, totalPages: 1 },
+    } as never);
+    renderWithProviders({ route: '/agents/a1/basic' });
+    await userEvent.click(await screen.findByRole('button', { name: 'Prompt preview' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Sample contact' }));
+    await userEvent.click(screen.getByRole('combobox', { name: 'Contact' }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Asha Verma · ••••0002' }));
+    await userEvent.click(screen.getByRole('combobox', { name: 'Channel' }));
+    await userEvent.click(screen.getByRole('option', { name: 'Voice (calls)' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Show prompt' }));
+    await waitFor(() =>
+      expect(api.compilePreview).toHaveBeenCalledWith('a1', { channel: 'voice', contactId: 'c1' }),
+    );
+    expect(await screen.findByText('None')).toBeInTheDocument();
+  });
+
   it('handles load errors and unknown tabs', async () => {
     signInAs('owner');
     api.get.mockRejectedValueOnce(

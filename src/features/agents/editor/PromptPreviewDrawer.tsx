@@ -101,9 +101,7 @@ export function PromptPreviewDrawer({
               onInputChange={(_e, v) => setSearch(v)}
               filterOptions={(x) => x}
               loading={contacts.isFetching}
-              getOptionLabel={(c) =>
-                `${c.name ?? 'No name'} · ${c.phoneE164.slice(-4).padStart(c.phoneE164.length, '•')}`
-              }
+              getOptionLabel={(c) => `${c.name ?? 'No name'} · ••••${c.phoneE164.slice(-4)}`}
               isOptionEqualToValue={(a, b) => a.id === b.id}
               renderInput={(params) => (
                 <TextField {...params} label="Contact" placeholder="Search by name or phone" />

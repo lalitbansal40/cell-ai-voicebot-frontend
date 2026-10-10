@@ -10,6 +10,8 @@ export interface EditorTabProps {
   catalog: AgentCatalog | undefined;
   form: UseFormReturn<AgentForm>;
   readOnly: boolean;
+  /** A tab that saved on its own (functions, tools, knowledge) reports the new agent. */
+  onAgentChange: (agent: Agent) => void;
 }
 
 /** Number of error messages inside a react-hook-form error object. */
