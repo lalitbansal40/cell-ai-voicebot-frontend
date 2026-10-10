@@ -35,6 +35,7 @@ import { VoiceTab } from '@/features/agents/editor/VoiceTab';
 import { useUnsavedChangesGuard } from '@/features/agents/fields/useUnsavedChangesGuard';
 import { FunctionsTab } from '@/features/agents/functions/FunctionsTab';
 import { agentKeys } from '@/features/agents/keys';
+import { PlaygroundTab } from '@/features/agents/playground/PlaygroundTab';
 import {
   useAgent,
   useAgentCatalog,
@@ -63,6 +64,7 @@ const EDITOR_TABS: TabDef[] = [
   { key: 'limits', label: 'Limits', formTab: 'limits', Component: LimitsTab },
   { key: 'functions', label: 'Functions', Component: FunctionsTab },
   { key: 'knowledge', label: 'Knowledge', Component: KnowledgeTab },
+  { key: 'playground', label: 'Playground', Component: PlaygroundTab },
 ];
 
 /** `/agents/:id/:tab` — the agent editor. */

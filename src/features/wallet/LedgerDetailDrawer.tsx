@@ -41,6 +41,12 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
+const USAGE_KIND_LABELS: Record<'playground' | 'kb_ingest' | 'call', string> = {
+  playground: 'AI playground turn',
+  kb_ingest: 'Knowledge processing',
+  call: 'Call',
+};
+
 /** One ledger row in full: amounts, call breakdown (billable seconds, pulse, parts), refs. */
 export function LedgerDetailDrawer({
   entry,
@@ -121,6 +127,17 @@ export function LedgerDetailDrawer({
                     label="AI voice (TTS)"
                     value={`${formatCurrencyMicros(b.ttsMicros)}${b.ttsChars ? ` (${formatNumber(b.ttsChars)} characters)` : ''}`}
                   />
+                )}
+                {b.kind && <Row label="Used for" value={USAGE_KIND_LABELS[b.kind]} />}
+                {b.model && <Row label="AI model" value={b.model} />}
+                {(b.inputTokens !== undefined || b.outputTokens !== undefined) && (
+                  <Row
+                    label="Text tokens"
+                    value={`${formatNumber(b.inputTokens ?? 0)} in · ${formatNumber(b.outputTokens ?? 0)} out`}
+                  />
+                )}
+                {b.embeddingTokens !== undefined && (
+                  <Row label="Embedding tokens" value={formatNumber(b.embeddingTokens)} />
                 )}
                 {Boolean(b.commissionMicros) && (
                   <Row
