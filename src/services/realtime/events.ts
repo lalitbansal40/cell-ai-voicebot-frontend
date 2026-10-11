@@ -63,6 +63,8 @@ export interface WsEventMap {
     error?: string;
   };
   'agent.updated': { agentId: string };
+  'flow.updated': { flowId: string; revision: number; by: string | null };
+  'flow.published': { flowId: string; version: number };
 }
 
 export type WsEventType = keyof WsEventMap;
@@ -92,6 +94,8 @@ export const WS_EVENT_TYPES: readonly WsEventType[] = [
   'team.changed',
   'kb.source.updated',
   'agent.updated',
+  'flow.updated',
+  'flow.published',
 ];
 
 export type WsEvent<K extends WsEventType = WsEventType> = WsEventEnvelope<WsEventMap[K]> & {

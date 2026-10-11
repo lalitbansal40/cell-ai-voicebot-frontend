@@ -7,6 +7,11 @@ import { createMemoryRouter, Link, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { ConfirmProvider } from '@/components/ConfirmProvider';
+import { JsonTemplateField } from '@/components/fields/JsonTemplateField';
+import { SecretField } from '@/components/fields/SecretField';
+import { insertAtCaret, jsonTemplateError } from '@/components/fields/text-utils';
+import { useUnsavedChangesGuard } from '@/components/fields/useUnsavedChangesGuard';
+import { VariablePicker } from '@/components/fields/VariablePicker';
 import { useKnowledgeLiveUpdates } from '@/features/knowledge/useKnowledgeLiveUpdates';
 import { adminAiApi } from '@/services/api/admin-ai';
 import { agentsApi } from '@/services/api/agents';
@@ -18,11 +23,6 @@ import { fakeSession, signInAs } from '@/test/auth';
 import { fakeRealtime } from '@/test/realtime';
 import { renderWithProviders } from '@/test/render';
 
-import { JsonTemplateField } from './fields/JsonTemplateField';
-import { SecretField } from './fields/SecretField';
-import { insertAtCaret, jsonTemplateError } from './fields/text-utils';
-import { useUnsavedChangesGuard } from './fields/useUnsavedChangesGuard';
-import { VariablePicker } from './fields/VariablePicker';
 import { knowledgeKeys } from './keys';
 
 interface Seen {

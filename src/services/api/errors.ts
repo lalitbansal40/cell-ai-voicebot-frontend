@@ -22,6 +22,13 @@ export interface ApiErrorDetail {
   message: string;
   /** On `CONFLICT_DUPLICATE`: id of the record that already exists. */
   existingId?: string;
+  /** On `RESOURCE_IN_USE`: id of the item that uses it (e.g. a flow). */
+  id?: string;
+  /** On `FLOW_INVALID`: issue code, severity and the node / edge. */
+  issue?: string;
+  severity?: 'error' | 'warning';
+  nodeId?: string;
+  edgeId?: string;
 }
 
 interface ApiErrorInit {
@@ -64,7 +71,18 @@ const ErrorEnvelopeSchema = z.object({
     code: z.string().min(1),
     message: z.string(),
     details: z
-      .array(z.object({ path: z.string(), message: z.string(), existingId: z.string().optional() }))
+      .array(
+        z.object({
+          path: z.string(),
+          message: z.string(),
+          existingId: z.string().optional(),
+          id: z.string().optional(),
+          issue: z.string().optional(),
+          severity: z.enum(['error', 'warning']).optional(),
+          nodeId: z.string().optional(),
+          edgeId: z.string().optional(),
+        }),
+      )
       .optional(),
     requestId: z.string().optional(),
   }),

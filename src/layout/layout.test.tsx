@@ -52,6 +52,13 @@ describe('nav config', () => {
     const phase4 = visibleNavItems(() => true, false, 4).map((i) => i.key);
     expect(phase4).not.toContain('agents');
     expect(phase4).not.toContain('knowledge');
+    // Phase 5 builds hid call flows
+    expect(visibleNavItems(() => true, false, 5).map((i) => i.key)).not.toContain('flows');
+    expect(visibleNavItems((p) => p === 'flows.read', false).map((i) => i.key)).toEqual([
+      'dashboard',
+      'flows',
+      'settings',
+    ]);
     expect(visibleNavItems((p) => p === 'agents.read', false).map((i) => i.key)).toEqual([
       'dashboard',
       'agents',
@@ -71,6 +78,7 @@ describe('AppLayout', () => {
       'Wallet',
       'AI agents',
       'Knowledge',
+      'Call flows',
       'Team',
       'Settings',
     ]);
@@ -89,6 +97,7 @@ describe('AppLayout', () => {
       'Wallet',
       'AI agents',
       'Knowledge',
+      'Call flows',
       'Settings',
     ]);
   });
@@ -96,7 +105,14 @@ describe('AppLayout', () => {
   it('hides the Wallet from agents (no wallet.read)', () => {
     signInAs('agent');
     renderWithProviders({ route: '/' });
-    expect(navLabels()).toEqual(['Dashboard', 'Contacts', 'AI agents', 'Knowledge', 'Settings']);
+    expect(navLabels()).toEqual([
+      'Dashboard',
+      'Contacts',
+      'AI agents',
+      'Knowledge',
+      'Call flows',
+      'Settings',
+    ]);
   });
 
   it('shows the superadmin section to platform admins', () => {

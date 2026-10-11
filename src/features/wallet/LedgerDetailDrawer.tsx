@@ -41,9 +41,14 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
-const USAGE_KIND_LABELS: Record<'playground' | 'kb_ingest' | 'call', string> = {
+const USAGE_KIND_LABELS: Record<
+  'playground' | 'kb_ingest' | 'call' | 'flow_simulator' | 'flow_intent',
+  string
+> = {
   playground: 'AI playground turn',
   kb_ingest: 'Knowledge processing',
+  flow_simulator: 'Flow simulator',
+  flow_intent: 'Flow intent check',
   call: 'Call',
 };
 

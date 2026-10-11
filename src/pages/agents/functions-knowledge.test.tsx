@@ -48,6 +48,7 @@ vi.mock('@/services/api/auth', () => ({
 const agents = vi.mocked(agentsApi);
 const kbApi = vi.mocked(knowledgeApi);
 const USAGE = {
+  flows: [],
   today: { day: '2026-10-09', spentMicros: 0, turns: 0 },
   month: { month: '2026-10', spentMicros: 0, turns: 0, inputTokens: 0, outputTokens: 0 },
 };

@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 import { useRef } from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 
-import { VariablePicker, type PickerVariable } from '../fields/VariablePicker';
+import { VariablePicker, type PickerVariable } from '@/components/fields/VariablePicker';
 
 import type { EditorTabProps } from './editor-context';
 

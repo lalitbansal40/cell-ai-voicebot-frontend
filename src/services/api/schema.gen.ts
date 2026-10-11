@@ -1830,7 +1830,7 @@ export interface paths {
     };
     put?: never;
     post?: never;
-    /** Delete an agent (kept 30 days, then purged) */
+    /** Delete an agent (kept 30 days, then purged) — 409 RESOURCE_IN_USE while a call flow uses it (details list the flows) */
     delete: {
       parameters: {
         query?: never;
@@ -1869,6 +1869,15 @@ export interface paths {
         };
         /** @description Not found in this account (RESOURCE_NOT_FOUND) */
         404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
           headers: {
             [name: string]: unknown;
           };
@@ -6170,6 +6179,2307 @@ export interface paths {
     };
     trace?: never;
   };
+  '/api/v1/flow-audio': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Audio files of the account for play_audio nodes and audio prompts (flows.read) */
+    get: {
+      parameters: {
+        query?: {
+          q?: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowAudio'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    /** Upload one WAV / MP3 (≤ 5 MB, ≤ 120 s, ≤ 200 per account, 20 uploads / h / account; flows.write) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'multipart/form-data': {
+            /** Format: binary */
+            file: string;
+            name?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowAudio'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Larger than 5 MB (PAYLOAD_TOO_LARGE) */
+        413: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Not a real WAV / MP3 file (UNSUPPORTED_MEDIA_TYPE) */
+        415: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flow-audio/{id}/url': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Short-lived signed URL (10 min) to play the file */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowAudioUrl'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flow-audio/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Delete an audio file — 409 RESOURCE_IN_USE while a flow draft or published version uses it */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description No content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /** Rename an audio file */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            name: string;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowAudio'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/api/v1/flows': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Call flows of the account (flows.read) — search by name, filter by status */
+    get: {
+      parameters: {
+        query?: {
+          page?: number;
+          limit?: number;
+          q?: string;
+          status?: 'draft' | 'published' | 'archived';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowListItem'][];
+              meta: components['schemas']['OffsetPageMeta'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    /** Create a flow — blank (Start → Hang up) or from a template (≤ 100 per account; flows.write) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            name: string;
+            description?: string | null;
+            /** @enum {string} */
+            templateKey?:
+              'loan_recovery' | 'payment_reminder' | 'feedback_survey' | 'inbound_support';
+            /** @description Template ai_agent node id → agent id */
+            agentIds?: {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Flow'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/templates': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Flow templates (Loan recovery, Payment reminder, Feedback survey, Inbound support) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowTemplate'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/catalog': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Node types with exits, defaults and limits; operators, dispositions, voices, system variables */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowCatalog'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/import': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Import an exported flow JSON (≤ 512 KB) as a NEW flow — agents / audio mapped by id or name, secrets removed (flows.write) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /** @description The exported JSON (`format: cell-ai-flow`) */
+            file?: unknown;
+            name?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowImportResult'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description File too large (PAYLOAD_TOO_LARGE) */
+        413: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** One flow with its draft graph and current validation issues */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Flow'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    /** Delete a flow (kept 30 days, then purged) — 409 RESOURCE_IN_USE while a campaign / number uses it */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description No content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /** Rename / describe a flow (no revision needed) */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            name?: string;
+            description?: string | null;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Flow'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/draft': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Save the draft graph — 409 FLOW_REVISION_CONFLICT when someone saved since `revision` (details: current revision, updatedBy, updatedAt). Incomplete nodes are saved and reported as issues; structural errors are 422 at `graph.<path>`. */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /** @description The revision the client loaded */
+            revision: number;
+            graph: components['schemas']['FlowGraph'];
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowDraftSaved'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Graph larger than 512 KB */
+        413: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/validate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Validation issues of the draft (or of a posted graph) — no changes (flows.read) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            graph?: components['schemas']['FlowGraph'];
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowIssue'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/publish': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Publish the draft as a new immutable version (flows.publish) — 422 FLOW_INVALID with `details` = issues when it has errors; 409 when nothing changed since the last version */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /** @description The revision the client loaded */
+            revision: number;
+            notes?: string | null;
+          };
+        };
+      };
+      responses: {
+        /** @description Published */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowVersionSummary'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/versions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Published versions, newest first */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowVersionSummary'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/versions/{version}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** One published version with its graph */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+          version: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowVersion'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/versions/{version}/restore': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Copy a version into the draft (flows.publish) — publish again to roll back */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+          version: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /** @description The revision the client loaded */
+            revision: number;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Flow'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/duplicate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Copy the draft into a new flow ("… (copy)") (flows.write) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Flow'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/archive': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Hide a flow from campaign pickers (pinned campaigns keep working) (flows.write) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Flow'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/unarchive': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Bring an archived flow back (flows.write) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Flow'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/export': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Download the draft or a version as JSON (`format: cell-ai-flow`) — secret header values are never exported (flows.write) */
+    get: {
+      parameters: {
+        query?: {
+          /** @description `draft` (default) or a version number */
+          version?: 'draft' | number;
+        };
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description The flow JSON file (attachment, no envelope) */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/variables': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Variables the flow can use: contact fields, flow variables and system variables */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowVariableInfo'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/simulations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Latest 20 simulations of the flow (everyone's; mine=true → own only) */
+    get: {
+      parameters: {
+        query?: {
+          mine?: 'true' | 'false';
+        };
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowRunSummary'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    /** Start a text simulation of the draft / published / a version (flows.write; 60 / min / user; a draft with errors → 422 FLOW_INVALID; AI turns are billed) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description `draft` (default), `published` or a version number
+             * @default draft
+             */
+            version?: 'draft' | 'published' | number;
+            contactId?: string;
+            /** @description Manual values: contact fields and flow variables (not with contactId) */
+            variables?: {
+              [key: string]: string;
+            };
+            /** @description Only `{{contact.phone}}` in API requests sees it — never returned */
+            testPhone?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Started */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowSimulationStep'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/simulations/{runId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** One simulation with its transcript and trace */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+          runId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowRun'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/simulations/{runId}/inputs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Send what the customer does (keys, words, silence, transfer result, hang up) — idempotent by clientInputId; 422 when the run waits for something else; 409 when it ended */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+          runId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            clientInputId: string;
+            /** @enum {string} */
+            kind: 'dtmf' | 'speech' | 'no_input' | 'transfer_result' | 'hangup';
+            value?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowSimulationStep'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/flows/{id}/stats': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Per-node counters for a version and date range (account timezone; default last 7 days, simulator runs) */
+    get: {
+      parameters: {
+        query?: {
+          version?: 'draft' | number;
+          mode?: 'simulator' | 'call';
+          from?: string;
+          to?: string;
+        };
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['FlowNodeStat'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/health': {
     parameters: {
       query?: never;
@@ -7267,6 +9577,102 @@ export interface paths {
           };
           content: {
             'application/json': components['schemas']['MockPaymentStatus'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/mock/loan-balance': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** DEV ONLY — mock loan balance (odd last digit → ₹2,500 outstanding, even → 0; due in 5 days IST) for the Inbound support flow template. Not mounted in production. */
+    get: {
+      parameters: {
+        query: {
+          phone: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Loan balance */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['MockLoanBalance'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/mock/http-status/{code}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** DEV ONLY — answers with the given status (200–599) and `{ code }`; used to test failure edges of API request nodes. Not mounted in production. */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          code: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description The requested status (any 2xx–5xx) */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              code: number;
+            };
           };
         };
         /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
@@ -10701,6 +13107,19 @@ export interface components {
       message: string;
       /** @description On CONFLICT_DUPLICATE: id of the record that already exists */
       existingId?: string;
+      /** @description On RESOURCE_IN_USE: id of the item that uses it (e.g. a flow) */
+      id?: string;
+      /** @description On FLOW_INVALID: validation issue code (e.g. exit_required) */
+      issue?: string;
+      /**
+       * @description On FLOW_INVALID: errors block publishing, warnings do not
+       * @enum {string}
+       */
+      severity?: 'error' | 'warning';
+      /** @description On FLOW_INVALID: the node */
+      nodeId?: string;
+      /** @description On FLOW_INVALID: the edge */
+      edgeId?: string;
     };
     ErrorEnvelope: {
       /** @enum {boolean} */
@@ -10887,7 +13306,18 @@ export interface components {
         | 'kb.created'
         | 'kb.updated'
         | 'kb.deleted'
-        | 'kb.source_changed';
+        | 'kb.source_changed'
+        | 'flow.created'
+        | 'flow.updated'
+        | 'flow.published'
+        | 'flow.restored'
+        | 'flow.duplicated'
+        | 'flow.imported'
+        | 'flow.exported'
+        | 'flow.archived'
+        | 'flow.unarchived'
+        | 'flow.deleted'
+        | 'flow_audio.changed';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
@@ -11102,6 +13532,7 @@ export interface components {
       languageMode: 'auto' | 'fixed';
       /** @enum {string} */
       language: 'hi' | 'en' | 'hinglish';
+      templateKey: string | null;
       knowledgeBases: number;
       functions: number;
       monthSpendMicros: number;
@@ -11178,6 +13609,13 @@ export interface components {
       warnings: string[];
     };
     AgentUsage: {
+      /** @description Call flows whose draft or published version uses this agent */
+      flows: {
+        id: string;
+        name: string;
+        /** @enum {string} */
+        status: 'draft' | 'published' | 'archived';
+      }[];
       today: {
         day: string;
         spentMicros: number;
@@ -11586,6 +14024,871 @@ export interface components {
       count: number;
       sample: components['schemas']['Contact'][];
     };
+    FlowAudio: {
+      id: string;
+      name: string;
+      /** @enum {string} */
+      format: 'wav' | 'mp3';
+      bytes: number;
+      durationMs: number;
+      sampleRate: number;
+      channels: number;
+      uploadedBy: {
+        id: string;
+        name: string;
+      } | null;
+      createdAt: string;
+    };
+    FlowAudioUrl: {
+      url: string;
+      expiresAt: string;
+    };
+    FlowStartConfig: {
+      /**
+       * @default [
+       *       "campaign",
+       *       "inbound",
+       *       "api",
+       *       "test"
+       *     ]
+       */
+      triggers: ('campaign' | 'inbound' | 'api' | 'test')[];
+    };
+    FlowStartNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'start';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowStartConfig'];
+    };
+    FlowSpeakConfig: {
+      text: string;
+      /**
+       * @default flow
+       * @enum {string}
+       */
+      language: 'flow' | 'hi' | 'en' | 'hinglish';
+      /** @default true */
+      interruptible: boolean;
+    };
+    FlowSpeakNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'speak';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowSpeakConfig'];
+    };
+    FlowPlayAudioConfig: {
+      audioId: string;
+      /** @default null */
+      fallbackText: string | null;
+    };
+    FlowPlayAudioNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'play_audio';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowPlayAudioConfig'];
+    };
+    FlowGatherDtmfConfig: {
+      prompt:
+        | {
+            /** @enum {string} */
+            kind: 'speak';
+            text: string;
+          }
+        | {
+            /** @enum {string} */
+            kind: 'audio';
+            audioId: string;
+            /** @default null */
+            fallbackText: string | null;
+          };
+      /** @default 2 */
+      maxRetries: number;
+      /** @default Maaf kijiye, yeh option sahi nahi hai. */
+      invalidText: string;
+      /** @default Maaf kijiye, mujhe aapka jawab nahi mila. */
+      noInputText: string;
+      /**
+       * @default menu
+       * @enum {string}
+       */
+      mode: 'menu' | 'digits';
+      /** @default [] */
+      keys: {
+        id: string;
+        key: string;
+        /** @default  */
+        label: string;
+      }[];
+      /** @default null */
+      repeatKey: string | null;
+      /** @default 1 */
+      minDigits: number;
+      /** @default 4 */
+      maxDigits: number;
+      /**
+       * @default #
+       * @enum {string}
+       */
+      finishKey: '#' | 'none';
+      /** @default null */
+      saveAs: string | null;
+      /** @default 7 */
+      timeoutSec: number;
+    };
+    FlowGatherDtmfNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'gather_dtmf';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowGatherDtmfConfig'];
+    };
+    FlowGatherSpeechConfig: {
+      prompt:
+        | {
+            /** @enum {string} */
+            kind: 'speak';
+            text: string;
+          }
+        | {
+            /** @enum {string} */
+            kind: 'audio';
+            audioId: string;
+            /** @default null */
+            fallbackText: string | null;
+          };
+      /** @default 2 */
+      maxRetries: number;
+      /** @default Maaf kijiye, yeh option sahi nahi hai. */
+      invalidText: string;
+      /** @default Maaf kijiye, mujhe aapka jawab nahi mila. */
+      noInputText: string;
+      /** @default null */
+      saveAs: string | null;
+      /**
+       * @default flow
+       * @enum {string}
+       */
+      language: 'flow' | 'hi' | 'en' | 'hinglish' | 'auto';
+      /** @default 8 */
+      timeoutSec: number;
+      /** @default [] */
+      intents: {
+        id: string;
+        label: string;
+        keywords: string[];
+      }[];
+      /**
+       * @default keywords
+       * @enum {string}
+       */
+      matchMode: 'keywords' | 'ai';
+    };
+    FlowGatherSpeechNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'gather_speech';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowGatherSpeechConfig'];
+    };
+    FlowAiAgentConfig: {
+      agentId: string;
+      /** @default null */
+      goal: string | null;
+      /** @default [] */
+      passVariables: string[];
+      /** @default 20 */
+      maxTurns: number;
+      /** @default true */
+      speakOpeningLine: boolean;
+    };
+    FlowAiAgentNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'ai_agent';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowAiAgentConfig'];
+    };
+    FlowApiRequestConfig: {
+      /**
+       * @default GET
+       * @enum {string}
+       */
+      method: 'GET' | 'POST' | 'PUT' | 'PATCH';
+      url: string;
+      /** @default [] */
+      headers: {
+        name: string;
+        /** @default false */
+        secret: boolean;
+        /** @default null */
+        value: string | null;
+        sealed?: string;
+        valueHint?: string;
+      }[];
+      /** @default null */
+      bodyTemplate: string | null;
+      /** @default 6000 */
+      timeoutMs: number;
+      /** @default [] */
+      saveResponse: {
+        path: string;
+        variable: string;
+      }[];
+    };
+    FlowApiRequestNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'api_request';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowApiRequestConfig'];
+    };
+    FlowConditionRouterConfig: {
+      rules: {
+        id: string;
+        /** @default  */
+        label: string;
+        /**
+         * @default all
+         * @enum {string}
+         */
+        match: 'all' | 'any';
+        conditions: {
+          variable: string;
+          /** @enum {string} */
+          operator:
+            | 'equals'
+            | 'not_equals'
+            | 'contains'
+            | 'not_contains'
+            | 'starts_with'
+            | 'gt'
+            | 'gte'
+            | 'lt'
+            | 'lte'
+            | 'is_empty'
+            | 'is_not_empty'
+            | 'in_list'
+            | 'date_before'
+            | 'date_after';
+          /** @default null */
+          value: string | null;
+        }[];
+      }[];
+    };
+    FlowConditionRouterNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'condition_router';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowConditionRouterConfig'];
+    };
+    FlowSetVariableConfig: {
+      assignments: {
+        variable: string;
+        /**
+         * @default set
+         * @enum {string}
+         */
+        op: 'set' | 'increment' | 'clear';
+        /** @default null */
+        value: string | null;
+      }[];
+    };
+    FlowSetVariableNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'set_variable';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowSetVariableConfig'];
+    };
+    FlowSetDispositionConfig: {
+      /** @enum {string} */
+      disposition:
+        | 'paid'
+        | 'promise_to_pay'
+        | 'callback_requested'
+        | 'wrong_number'
+        | 'refused_to_pay'
+        | 'dispute'
+        | 'not_interested'
+        | 'language_barrier'
+        | 'other';
+      /** @default null */
+      note: string | null;
+    };
+    FlowSetDispositionNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'set_disposition';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowSetDispositionConfig'];
+    };
+    FlowTransferToAgentConfig: {
+      phone: string;
+      /** @default null */
+      announcement: string | null;
+      /** @default 30 */
+      timeoutSec: number;
+    };
+    FlowTransferToAgentNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'transfer_to_agent';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowTransferToAgentConfig'];
+    };
+    FlowSendSmsConfig: {
+      text: string;
+      /** @default null */
+      dltTemplateId: string | null;
+    };
+    FlowSendSmsNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'send_sms';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowSendSmsConfig'];
+    };
+    FlowSendWhatsappConfig: {
+      templateName: string;
+      /**
+       * @default hi
+       * @enum {string}
+       */
+      language: 'hi' | 'en';
+      /** @default [] */
+      params: string[];
+    };
+    FlowSendWhatsappNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'send_whatsapp';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowSendWhatsappConfig'];
+    };
+    FlowWaitConfig: {
+      /** @default 5 */
+      seconds: number;
+    };
+    FlowWaitNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'wait';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowWaitConfig'];
+    };
+    FlowHangupConfig: {
+      /** @default null */
+      text: string | null;
+      /**
+       * @default null
+       * @enum {string|null}
+       */
+      disposition:
+        | 'paid'
+        | 'promise_to_pay'
+        | 'callback_requested'
+        | 'wrong_number'
+        | 'refused_to_pay'
+        | 'dispute'
+        | 'not_interested'
+        | 'language_barrier'
+        | 'other'
+        | null;
+    };
+    FlowHangupNode: {
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'hangup';
+      label?: string;
+      position: {
+        x: number;
+        y: number;
+      };
+      config: components['schemas']['FlowHangupConfig'];
+    };
+    FlowNode:
+      | components['schemas']['FlowStartNode']
+      | components['schemas']['FlowSpeakNode']
+      | components['schemas']['FlowPlayAudioNode']
+      | components['schemas']['FlowGatherDtmfNode']
+      | components['schemas']['FlowGatherSpeechNode']
+      | components['schemas']['FlowAiAgentNode']
+      | components['schemas']['FlowApiRequestNode']
+      | components['schemas']['FlowConditionRouterNode']
+      | components['schemas']['FlowSetVariableNode']
+      | components['schemas']['FlowSetDispositionNode']
+      | components['schemas']['FlowTransferToAgentNode']
+      | components['schemas']['FlowSendSmsNode']
+      | components['schemas']['FlowSendWhatsappNode']
+      | components['schemas']['FlowWaitNode']
+      | components['schemas']['FlowHangupNode'];
+    FlowEdge: {
+      id: string;
+      source: string;
+      sourceHandle: string;
+      target: string;
+    };
+    FlowVariable: {
+      name: string;
+      /** @enum {string} */
+      type: 'text' | 'number' | 'boolean' | 'date';
+      label?: string;
+      default?: string | number | boolean | null;
+    };
+    FlowSettings: {
+      /**
+       * @default hinglish
+       * @enum {string}
+       */
+      language: 'hi' | 'en' | 'hinglish';
+      /**
+       * @default coral
+       * @enum {string}
+       */
+      voice:
+        | 'alloy'
+        | 'ash'
+        | 'ballad'
+        | 'coral'
+        | 'echo'
+        | 'sage'
+        | 'shimmer'
+        | 'verse'
+        | 'marin'
+        | 'cedar';
+      /** @default Maaf kijiye, abhi kuch takneeki samasya hai. Hum aapko baad mein call karenge. */
+      errorMessage: string;
+      /**
+       * @default hangup
+       * @enum {string}
+       */
+      onError: 'hangup' | 'transfer';
+      /** @default null */
+      errorTransferPhone: string | null;
+      /** @default 900 */
+      maxDurationSec: number;
+    };
+    FlowGraph: {
+      /** @enum {number} */
+      schemaVersion: 1;
+      nodes: components['schemas']['FlowNode'][];
+      edges: components['schemas']['FlowEdge'][];
+      variables: components['schemas']['FlowVariable'][];
+      settings: components['schemas']['FlowSettings'];
+      viewport?: {
+        x: number;
+        y: number;
+        zoom: number;
+      };
+    };
+    FlowIssue: {
+      /** @enum {string} */
+      severity: 'error' | 'warning';
+      /** @enum {string} */
+      code:
+        | 'start_missing'
+        | 'start_multiple'
+        | 'start_has_input'
+        | 'node_unreachable'
+        | 'exit_required'
+        | 'no_ending'
+        | 'node_unconfigured'
+        | 'edge_invalid'
+        | 'variable_unknown'
+        | 'variable_name_taken'
+        | 'contact_token_not_allowed'
+        | 'agent_missing'
+        | 'agent_inactive'
+        | 'audio_missing'
+        | 'dtmf_duplicate_key'
+        | 'dtmf_repeat_conflict'
+        | 'silent_loop'
+        | 'url_blocked'
+        | 'transfer_phone_invalid'
+        | 'error_exit_unconnected'
+        | 'sms_long'
+        | 'speak_long'
+        | 'limits_exceeded';
+      message: string;
+      nodeId?: string;
+      edgeId?: string;
+      field?: string;
+    };
+    FlowListItem: {
+      id: string;
+      name: string;
+      description: string | null;
+      /** @enum {string} */
+      status: 'draft' | 'published' | 'archived';
+      revision: number;
+      publishedVersion: number | null;
+      hasUnpublishedChanges: boolean;
+      nodesCount: number;
+      triggers: ('campaign' | 'inbound' | 'api' | 'test')[];
+      agents: {
+        id: string;
+        name: string;
+      }[];
+      templateKey: string | null;
+      updatedBy: {
+        id: string;
+        name: string;
+      } | null;
+      createdAt: string;
+      updatedAt: string;
+    };
+    Flow: components['schemas']['FlowListItem'] & {
+      draft: components['schemas']['FlowGraph'] & unknown;
+      issues: components['schemas']['FlowIssue'][];
+      /** @description Create from template: contact fields that became flow variables */
+      addedVariables?: string[];
+    };
+    FlowDraftSaved: {
+      revision: number;
+      issues: components['schemas']['FlowIssue'][];
+      hasUnpublishedChanges: boolean;
+      savedAt: string;
+    };
+    FlowVersionSummary: {
+      id: string;
+      version: number;
+      notes: string | null;
+      checksum: string;
+      nodesCount: number;
+      /** @description The latest published version */
+      current: boolean;
+      publishedBy: {
+        id: string;
+        name: string;
+      } | null;
+      publishedAt: string;
+    };
+    FlowVersion: components['schemas']['FlowVersionSummary'] & {
+      graph: components['schemas']['FlowGraph'];
+    };
+    FlowTemplate: {
+      key: string;
+      title: string;
+      description: string;
+      /** @enum {string} */
+      language: 'hi' | 'en' | 'hinglish';
+      aiNodes: {
+        nodeId: string;
+        label: string;
+        suggestedAgentTemplate: string | null;
+      }[];
+      optionalFields: string[];
+    };
+    FlowVariableInfo: {
+      name: string;
+      label: string;
+      /** @enum {string} */
+      type: 'text' | 'number' | 'boolean' | 'date' | 'currency' | 'phone' | 'built_in';
+      /** @enum {string} */
+      source: 'contact' | 'flow' | 'system';
+      readOnly: boolean;
+    };
+    FlowCatalog: {
+      nodes: {
+        /** @enum {string} */
+        type:
+          | 'start'
+          | 'speak'
+          | 'play_audio'
+          | 'gather_dtmf'
+          | 'gather_speech'
+          | 'ai_agent'
+          | 'api_request'
+          | 'condition_router'
+          | 'set_variable'
+          | 'set_disposition'
+          | 'transfer_to_agent'
+          | 'send_sms'
+          | 'send_whatsapp'
+          | 'wait'
+          | 'hangup';
+        label: string;
+        /** @enum {string} */
+        group: 'start' | 'say_listen' | 'ai' | 'logic' | 'actions' | 'end';
+        description: string;
+        waits: boolean;
+        staticExits: {
+          handle: string;
+          label: string;
+          required: boolean;
+          /** @enum {string} */
+          kind: 'normal' | 'error';
+        }[];
+        /** @enum {string|null} */
+        dynamicExits: 'keys' | 'intents' | 'rules' | null;
+        defaults: {
+          [key: string]: unknown;
+        };
+      }[];
+      groups: ('start' | 'say_listen' | 'ai' | 'logic' | 'actions' | 'end')[];
+      operators: {
+        operator: string;
+        needsValue: boolean;
+      }[];
+      dispositions: string[];
+      languages: string[];
+      speechLanguages: string[];
+      voices: string[];
+      triggers: string[];
+      variableTypes: string[];
+      httpMethods: string[];
+      systemVariables: {
+        name: string;
+        label: string;
+        type: string;
+      }[];
+      limits: {
+        [key: string]: number;
+      };
+    };
+    FlowImportResult: {
+      flow: components['schemas']['Flow'];
+      /** @description `agent_unmapped:<nodeId>`, `audio_unmapped:<nodeId>`, `secret_removed:<nodeId>.<header>` */
+      warnings: string[];
+    };
+    FlowTranscriptEntry: {
+      seq: number;
+      /** @enum {string} */
+      role: 'bot' | 'customer' | 'system';
+      /** @enum {string} */
+      kind: 'say' | 'play' | 'dtmf' | 'speech' | 'ai' | 'message' | 'transfer' | 'note';
+      text: string;
+      nodeId: string | null;
+      at: string;
+      meta?: {
+        [key: string]: unknown;
+      };
+    };
+    FlowRun: {
+      id: string;
+      flowId: string;
+      versionRef: 'draft' | number;
+      /** @enum {string} */
+      status: 'running' | 'waiting' | 'ended';
+      waiting: {
+        /** @enum {string} */
+        kind: 'dtmf' | 'speech' | 'ai' | 'transfer' | 'timer';
+        nodeId: string;
+        timeoutSec?: number;
+        keys?: {
+          key: string;
+          label: string;
+        }[];
+        /** @enum {string} */
+        mode?: 'menu' | 'digits';
+        maxDigits?: number;
+        /** @enum {string} */
+        finishKey?: '#' | 'none';
+        seconds?: number;
+        transferPhoneLast4?: string;
+      } | null;
+      currentNodeId: string | null;
+      variables: {
+        [key: string]: string;
+      };
+      outcome: {
+        disposition: string | null;
+        dispositionNote: string | null;
+        promiseToPay: {
+          date: string;
+          amountMicros: number | null;
+        } | null;
+        callback: {
+          date: string;
+          time: string | null;
+        } | null;
+        transfer: {
+          result: string;
+        } | null;
+        messages: {
+          /** @enum {string} */
+          channel: 'sms' | 'whatsapp';
+          nodeId: string;
+          text: string | null;
+          templateName: string | null;
+          params: string[];
+        }[];
+      };
+      costMicros: number;
+      /** @enum {string|null} */
+      endReason:
+        | 'hangup_node'
+        | 'transferred'
+        | 'customer_hangup'
+        | 'max_duration'
+        | 'loop_guard'
+        | 'error_handler'
+        | 'engine_error'
+        | 'inputs_exhausted'
+        | null;
+      contactName: string | null;
+      createdBy: {
+        id: string;
+        name: string;
+      } | null;
+      createdAt: string;
+      endedAt: string | null;
+      transcript?: components['schemas']['FlowTranscriptEntry'][];
+      trace?: {
+        seq: number;
+        at: string;
+        nodeId: string | null;
+        type: string | null;
+        event: string;
+        handle?: string;
+        durationMs?: number;
+        detail?: string;
+      }[];
+    };
+    FlowSimulationStep: {
+      run: components['schemas']['FlowRun'];
+      added: components['schemas']['FlowTranscriptEntry'][];
+      replay: boolean;
+    };
+    FlowRunSummary: {
+      id: string;
+      versionRef: 'draft' | number;
+      /** @enum {string} */
+      status: 'running' | 'waiting' | 'ended';
+      /** @enum {string|null} */
+      endReason:
+        | 'hangup_node'
+        | 'transferred'
+        | 'customer_hangup'
+        | 'max_duration'
+        | 'loop_guard'
+        | 'error_handler'
+        | 'engine_error'
+        | 'inputs_exhausted'
+        | null;
+      disposition: string | null;
+      costMicros: number;
+      contactName: string | null;
+      createdBy: {
+        id: string;
+        name: string;
+      } | null;
+      createdAt: string;
+    };
+    FlowNodeStat: {
+      nodeId: string;
+      entered: number;
+      exits: {
+        [key: string]: number;
+      };
+      errors: number;
+      avgMs: number;
+    };
     Health: {
       /** @enum {string} */
       status: 'ok';
@@ -11662,6 +14965,13 @@ export interface components {
       /** @description YYYY-MM-DD */
       paidOn: string | null;
       loanId: string | null;
+    };
+    MockLoanBalance: {
+      /** @enum {boolean} */
+      found: true;
+      outstandingRupees: number;
+      /** @description YYYY-MM-DD */
+      dueDate: string;
     };
     RbacCatalog: {
       permissions: {
@@ -11798,7 +15108,7 @@ export interface components {
         embeddingTokens?: number;
         model?: string;
         /** @enum {string} */
-        kind?: 'playground' | 'kb_ingest' | 'call';
+        kind?: 'playground' | 'kb_ingest' | 'call' | 'flow_simulator' | 'flow_intent';
       } | null;
       ref: {
         /** @enum {string} */

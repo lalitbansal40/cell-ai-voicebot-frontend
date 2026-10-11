@@ -111,3 +111,51 @@ export type PlaygroundToolCall = PlaygroundTurn['toolCalls'][number];
 export type PlaygroundOutcome = PlaygroundSession['outcome'];
 export type PlaygroundReply = Schemas['PlaygroundReply'];
 export type AdminAiConfig = Schemas['AdminAiConfig'];
+
+/** Call flows, simulator & flow audio (Phase 6). */
+export type FlowListItem = Schemas['FlowListItem'];
+export type Flow = Schemas['Flow'];
+export type FlowIssue = Schemas['FlowIssue'];
+export type FlowDraftSaved = Schemas['FlowDraftSaved'];
+export type FlowVersionSummary = Schemas['FlowVersionSummary'];
+export type FlowVersion = Schemas['FlowVersion'];
+export type FlowTemplate = Schemas['FlowTemplate'];
+export type FlowVariableInfo = Schemas['FlowVariableInfo'];
+export type FlowCatalog = Schemas['FlowCatalog'];
+export type FlowNodeCatalogEntry = FlowCatalog['nodes'][number];
+export type FlowExitInfo = FlowNodeCatalogEntry['staticExits'][number];
+export type FlowImportResult = Schemas['FlowImportResult'];
+export type FlowEdge = Schemas['FlowEdge'];
+export type FlowVariable = Schemas['FlowVariable'];
+export type FlowSettings = Schemas['FlowSettings'];
+export type FlowNodeType = Schemas['FlowNode']['type'];
+/** Typed node configs (what a complete node looks like). */
+export type FlowNodeConfigs = { [N in Schemas['FlowNode'] as N['type']]: N['config'] };
+/**
+ * A node as drafts hold it — configs may be incomplete while editing (the
+ * server reports them as issues), so the builder works with plain objects.
+ */
+export interface DraftNode {
+  id: string;
+  type: FlowNodeType;
+  label?: string;
+  position: { x: number; y: number };
+  config: Record<string, unknown>;
+}
+export interface DraftGraph {
+  schemaVersion: 1;
+  nodes: DraftNode[];
+  edges: FlowEdge[];
+  variables: FlowVariable[];
+  settings: FlowSettings;
+  viewport?: { x: number; y: number; zoom: number };
+}
+export type FlowRun = Schemas['FlowRun'];
+export type FlowRunSummary = Schemas['FlowRunSummary'];
+export type FlowRunWaiting = NonNullable<FlowRun['waiting']>;
+export type FlowSimulationStep = Schemas['FlowSimulationStep'];
+export type FlowTranscriptEntry = Schemas['FlowTranscriptEntry'];
+export type FlowTraceRow = NonNullable<FlowRun['trace']>[number];
+export type FlowNodeStat = Schemas['FlowNodeStat'];
+export type FlowAudio = Schemas['FlowAudio'];
+export type FlowAudioUrl = Schemas['FlowAudioUrl'];

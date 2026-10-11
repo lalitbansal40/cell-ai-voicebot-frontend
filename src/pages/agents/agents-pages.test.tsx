@@ -38,6 +38,7 @@ const page = (rows = [fakeAgentRow()]) => ({
   meta: { page: 1, limit: 20, total: rows.length, totalPages: 1 },
 });
 const USAGE = {
+  flows: [],
   today: { day: '2026-10-09', spentMicros: 250_000, turns: 2 },
   month: { month: '2026-10', spentMicros: 1_250_000, turns: 9, inputTokens: 900, outputTokens: 80 },
 };

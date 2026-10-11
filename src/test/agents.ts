@@ -59,6 +59,7 @@ export const fakeAgentRow = (overrides: Partial<AgentRow> = {}): AgentRow => ({
   voice: 'coral',
   languageMode: 'auto',
   language: 'hinglish',
+  templateKey: 'loan_recovery_hinglish',
   knowledgeBases: 1,
   functions: 1,
   monthSpendMicros: 1_250_000,

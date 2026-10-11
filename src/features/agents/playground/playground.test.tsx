@@ -81,6 +81,7 @@ beforeEach(() => {
   agents.get.mockResolvedValue(fakeAgent());
   agents.catalog.mockResolvedValue(FAKE_CATALOG);
   agents.usage.mockResolvedValue({
+    flows: [],
     today: { day: '2026-10-09', spentMicros: 0, turns: 0 },
     month: { month: '2026-10', spentMicros: 0, turns: 0, inputTokens: 0, outputTokens: 0 },
   });

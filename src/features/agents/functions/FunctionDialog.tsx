@@ -21,14 +21,13 @@ import Typography from '@mui/material/Typography';
 import { useMutation } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 
+import { JsonTemplateField } from '@/components/fields/JsonTemplateField';
+import { SecretField } from '@/components/fields/SecretField';
+import { jsonTemplateError } from '@/components/fields/text-utils';
+import { VariablePicker, type PickerVariable } from '@/components/fields/VariablePicker';
 import { agentsApi } from '@/services/api/agents';
 import { getErrorMessage, toApiError } from '@/services/api/errors';
 import type { Agent, AgentFunction, AgentFunctionParam, AgentVariable } from '@/services/api/types';
-
-import { JsonTemplateField } from '../fields/JsonTemplateField';
-import { SecretField } from '../fields/SecretField';
-import { jsonTemplateError } from '../fields/text-utils';
-import { VariablePicker, type PickerVariable } from '../fields/VariablePicker';
 
 import {
   emptyDraft,

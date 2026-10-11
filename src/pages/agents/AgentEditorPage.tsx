@@ -17,6 +17,7 @@ import { useMemo, useState, type ComponentType } from 'react';
 import { useForm, type Path } from 'react-hook-form';
 import { Navigate, Link as RouterLink, useNavigate, useParams } from 'react-router';
 
+import { useUnsavedChangesGuard } from '@/components/fields/useUnsavedChangesGuard';
 import { PageHeader } from '@/components/PageHeader';
 import {
   formFieldOf,
@@ -32,7 +33,6 @@ import { countErrors, type EditorTabProps } from '@/features/agents/editor/edito
 import { LimitsTab } from '@/features/agents/editor/LimitsTab';
 import { PromptPreviewDrawer } from '@/features/agents/editor/PromptPreviewDrawer';
 import { VoiceTab } from '@/features/agents/editor/VoiceTab';
-import { useUnsavedChangesGuard } from '@/features/agents/fields/useUnsavedChangesGuard';
 import { FunctionsTab } from '@/features/agents/functions/FunctionsTab';
 import { agentKeys } from '@/features/agents/keys';
 import { PlaygroundTab } from '@/features/agents/playground/PlaygroundTab';
