@@ -88,6 +88,37 @@ describe('/agents list', () => {
     await waitFor(() => expect(api.remove).toHaveBeenCalledWith('a1'));
   });
 
+  it('an agent used by call flows is not deleted — the flows are named', async () => {
+    signInAs('manager');
+    api.remove.mockRejectedValueOnce(
+      new ApiError({
+        status: 409,
+        code: 'RESOURCE_IN_USE',
+        message: 'This agent is used by 1 call flow. Remove it from them first.',
+        kind: 'http',
+        details: [{ path: 'flows', message: 'Loan recovery', id: 'f1' }],
+      }),
+    );
+    api.remove.mockRejectedValueOnce(
+      new ApiError({ status: 500, code: 'INTERNAL_ERROR', message: 'Oops', kind: 'http' }),
+    );
+    renderWithProviders({ route: '/agents' });
+    const row = (await screen.findByRole('link', { name: 'Recovery Bot' })).closest(
+      'tr',
+    ) as HTMLElement;
+    await userEvent.click(within(row).getByRole('button', { name: 'Delete Recovery Bot' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+    expect(
+      await screen.findByText(
+        'This agent is used by 1 call flow. Remove it from them first. Flows: Loan recovery',
+      ),
+    ).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await userEvent.click(within(row).getByRole('button', { name: 'Delete Recovery Bot' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+    expect(await screen.findByText('Oops')).toBeInTheDocument();
+  });
+
   it('searches by name through the URL (debounced)', async () => {
     signInAs('viewer');
     renderWithProviders({ route: '/agents' });
@@ -347,6 +378,16 @@ describe('agent editor', () => {
         'You are viewing as this account — agents cannot be changed while impersonating.',
       ),
     ).toBeInTheDocument();
+  });
+
+  it('shows the flows that use the agent', async () => {
+    signInAs('owner');
+    api.usage.mockResolvedValue({
+      ...USAGE,
+      flows: [{ id: 'f1', name: 'Loan recovery', status: 'published' }],
+    });
+    renderWithProviders({ route: '/agents/a1/basic' });
+    expect(await screen.findByText('Used in 1 flow')).toBeInTheDocument();
   });
 
   it('turns the agent on / off from the header', async () => {

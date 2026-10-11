@@ -11,6 +11,7 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import Tooltip from '@mui/material/Tooltip';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
 import { useMemo, useState, type ComponentType } from 'react';
@@ -235,6 +236,16 @@ function Editor({ loaded, tab }: { loaded: Agent; tab: TabDef }) {
             variant="outlined"
             label={`This month ${formatCurrencyMicros(usage.data.month.spentMicros)} · today ${formatCurrencyMicros(usage.data.today.spentMicros)}`}
           />
+        )}
+        {usage.data && usage.data.flows.length > 0 && (
+          <Tooltip title={usage.data.flows.map((f) => f.name).join(', ')}>
+            <Chip
+              size="small"
+              color="info"
+              variant="outlined"
+              label={`Used in ${String(usage.data.flows.length)} flow${usage.data.flows.length === 1 ? '' : 's'}`}
+            />
+          </Tooltip>
         )}
       </Stack>
       {readOnly && (

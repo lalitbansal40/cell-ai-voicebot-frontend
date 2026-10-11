@@ -28,6 +28,9 @@ import { ContactsPage } from '@/pages/contacts/ContactsPage';
 import { ImportWizardPage } from '@/pages/contacts/ImportWizardPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ErrorPage } from '@/pages/ErrorPage';
+import { FlowsPage } from '@/pages/flows/FlowsPage';
+import { FlowVersionsPage } from '@/pages/flows/FlowVersionsPage';
+import { NewFlowPage } from '@/pages/flows/NewFlowPage';
 import { ForbiddenPage } from '@/pages/ForbiddenPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { SettingsPage } from '@/pages/SettingsPage';
@@ -168,6 +171,19 @@ export const routes: RouteObject[] = [
             children: [
               { index: true, element: <KnowledgePage /> },
               { path: ':id', element: <KnowledgeDetailPage /> },
+            ],
+          },
+          {
+            path: '/flows',
+            element: (
+              <RequirePermission perm="flows.read">
+                <Outlet />
+              </RequirePermission>
+            ),
+            children: [
+              { index: true, element: <FlowsPage /> },
+              { path: 'new', element: <NewFlowPage /> },
+              { path: ':id/versions', element: <FlowVersionsPage /> },
             ],
           },
           { path: '/settings', element: <Navigate to="/settings/profile" replace /> },

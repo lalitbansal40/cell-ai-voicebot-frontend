@@ -27,7 +27,7 @@ import { agentKeys } from '@/features/agents/keys';
 import { useAgents, useCanWriteAgents } from '@/features/agents/queries';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { agentsApi } from '@/services/api/agents';
-import { getErrorMessage } from '@/services/api/errors';
+import { getErrorMessage, isApiError } from '@/services/api/errors';
 import type { AgentRow } from '@/services/api/types';
 import { formatCurrencyMicros } from '@/utils/format';
 
@@ -81,7 +81,16 @@ export function AgentsPage() {
       enqueueSnackbar('Agent deleted', { variant: 'success' });
       void refresh();
     },
-    onError,
+    onError: (err) => {
+      // an agent used by call flows can't be deleted — name them
+      if (isApiError(err) && err.code === 'RESOURCE_IN_USE' && err.details.length) {
+        enqueueSnackbar(`${err.message} Flows: ${err.details.map((d) => d.message).join(', ')}`, {
+          variant: 'error',
+        });
+        return;
+      }
+      onError(err);
+    },
   });
 
   const askDelete = async (r: AgentRow) => {
