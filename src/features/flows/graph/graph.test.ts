@@ -59,7 +59,7 @@ describe('graphReducer', () => {
     g = graphReducer(g, { type: 'move_nodes', moves: [{ id: 'x', position: { x: 5, y: 6 } }] });
     expect(g.nodes.find((n) => n.id === 'x')?.position).toEqual({ x: 5, y: 6 });
     g = graphReducer(g, { type: 'update_label', id: 'x', label: '  Hello  ' });
-    expect(g.nodes.find((n) => n.id === 'x')?.label).toBe('Hello');
+    expect(g.nodes.find((n) => n.id === 'x')?.label).toBe('  Hello  ');
     g = graphReducer(g, { type: 'update_label', id: 'x', label: ' ' });
     expect(g.nodes.find((n) => n.id === 'x')).not.toHaveProperty('label');
     const connected = graphReducer(g, {

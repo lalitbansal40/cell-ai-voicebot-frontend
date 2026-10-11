@@ -184,6 +184,13 @@ export const routes: RouteObject[] = [
               { index: true, element: <FlowsPage /> },
               { path: 'new', element: <NewFlowPage /> },
               { path: ':id/versions', element: <FlowVersionsPage /> },
+              {
+                // the builder (React Flow) is its own chunk
+                path: ':id',
+                lazy: async () => ({
+                  Component: (await import('@/pages/flows/FlowBuilderPage')).FlowBuilderPage,
+                }),
+              },
             ],
           },
           { path: '/settings', element: <Navigate to="/settings/profile" replace /> },

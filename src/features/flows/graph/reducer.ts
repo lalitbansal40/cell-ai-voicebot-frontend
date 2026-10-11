@@ -81,8 +81,8 @@ export const graphReducer = (graph: DraftGraph, action: GraphAction): DraftGraph
         ...graph,
         nodes: graph.nodes.map((n) => {
           if (n.id !== action.id) return n;
-          const label = action.label.trim();
-          if (label) return { ...n, label };
+          // kept as typed (spaces while typing); the server trims on save
+          if (action.label.trim()) return { ...n, label: action.label };
           const { label: _drop, ...rest } = n;
           return rest;
         }),
