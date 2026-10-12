@@ -7,6 +7,7 @@ import type {
   FlowNodeCatalogEntry,
   FlowRun,
   FlowSettings,
+  FlowVariableInfo,
 } from '@/services/api/types';
 
 const exit = (handle: string, label: string, required = false) => ({
@@ -261,3 +262,11 @@ export const fakeRun = (overrides: Partial<FlowRun> = {}): FlowRun => ({
   endedAt: null,
   ...overrides,
 });
+
+/** Contact + system variables like `GET /flows/:id/variables`. */
+export const KNOWN_VARIABLES: FlowVariableInfo[] = [
+  { name: 'name', label: 'Name', type: 'built_in', source: 'contact', readOnly: true },
+  { name: 'amount', label: 'Amount', type: 'currency', source: 'contact', readOnly: true },
+  { name: 'promise_date', label: 'Promise date', type: 'date', source: 'system', readOnly: true },
+  { name: 'status', label: 'status', type: 'text', source: 'flow', readOnly: false },
+];

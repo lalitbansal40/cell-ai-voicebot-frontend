@@ -8,7 +8,7 @@ import { flowAudioApi } from '@/services/api/flow-audio';
 import { flowsApi } from '@/services/api/flows';
 import { fakeAgentRow } from '@/test/agents';
 import { signInAs } from '@/test/auth';
-import { FAKE_FLOW_CATALOG, fakeFlow, sampleGraph } from '@/test/flows';
+import { FAKE_FLOW_CATALOG, KNOWN_VARIABLES, fakeFlow, sampleGraph } from '@/test/flows';
 import { fakeRealtime } from '@/test/realtime';
 import { renderWithProviders } from '@/test/render';
 import { installXyflowMocks } from '@/test/xyflow';
@@ -26,6 +26,7 @@ vi.mock('@/services/api/flows', () => ({
     version: vi.fn(),
     list: vi.fn(),
     versions: vi.fn(),
+    variables: vi.fn(),
   },
 }));
 vi.mock('@/services/api/agents', () => ({ agentsApi: { list: vi.fn() } }));
@@ -52,6 +53,7 @@ beforeEach(() => {
     }),
   );
   api.catalog.mockResolvedValue(FAKE_FLOW_CATALOG);
+  api.variables.mockResolvedValue(KNOWN_VARIABLES);
   api.list.mockResolvedValue({
     success: true,
     data: [],
@@ -164,6 +166,28 @@ describe('flow builder', () => {
     ).toBeInTheDocument();
     await userEvent.click(within(panel).getByRole('button', { name: 'Delete' }));
     expect(screen.queryByTestId('flow-node-greet')).not.toBeInTheDocument();
+  });
+
+  it('the step form edits the config; flow variables can be renamed', async () => {
+    signInAs('owner');
+    await open();
+    await userEvent.click(screen.getByText('"Greeting": errors go to the flow error message.'));
+    const panel = await screen.findByRole('complementary', { name: 'Step settings' });
+    fireEvent.change(within(panel).getByLabelText('Text to say'), {
+      target: { value: 'Namaste {{name}}, kaise hain?' },
+    });
+    expect(
+      within(screen.getByTestId('flow-node-greet')).getByText(/kaise hain/),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Variables (1)' }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByLabelText('Name'), { target: { value: 'loan_status' } });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Apply' }));
+    expect(await screen.findByRole('button', { name: 'Variables (1)' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Flow settings' }));
+    expect(await screen.findByRole('dialog')).toHaveTextContent('Flow settings');
   });
 
   it('a stale save opens the conflict dialog: reload or save as a copy', async () => {

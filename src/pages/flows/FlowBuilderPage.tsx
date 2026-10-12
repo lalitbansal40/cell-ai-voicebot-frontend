@@ -5,11 +5,14 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useParams, useSearchParams } from 'react-router';
 
 import { FlowBuilder } from '@/features/flows/builder/FlowBuilder';
+import { FlowDialogs } from '@/features/flows/inspector/FlowDialogs';
+import { StepForm } from '@/features/flows/inspector/StepForm';
 import {
   useCanPublishFlows,
   useCanWriteFlows,
   useFlow,
   useFlowCatalog,
+  useFlowVariables,
   useFlowVersion,
 } from '@/features/flows/queries';
 import { useImpersonating } from '@/features/wallet/queries';
@@ -25,6 +28,7 @@ export function FlowBuilderPage() {
   const flow = useFlow(id);
   const catalog = useFlowCatalog();
   const version = useFlowVersion(id, versionNumber);
+  const known = useFlowVariables(id);
   const canWrite = useCanWriteFlows();
   const canPublish = useCanPublishFlows();
   const impersonating = useImpersonating();
@@ -65,6 +69,26 @@ export function FlowBuilderPage() {
           ? { number: versionNumber, graph: version.data.graph as unknown as DraftGraph }
           : undefined
       }
+      renderForm={(node, apply, readOnly, { graph, fieldErrors }) => (
+        <StepForm
+          node={node}
+          apply={apply}
+          readOnly={readOnly}
+          graph={graph}
+          fieldErrors={fieldErrors}
+          catalog={catalog.data}
+          known={known.data}
+        />
+      )}
+      renderDialogs={(graph, apply, readOnly) => (
+        <FlowDialogs
+          graph={graph}
+          apply={apply}
+          readOnly={readOnly}
+          catalog={catalog.data}
+          known={known.data}
+        />
+      )}
     />
   );
 }

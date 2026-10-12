@@ -129,6 +129,7 @@ export interface FlowBuilderProps extends BuilderExtras {
     node: DraftNode,
     apply: (config: Record<string, unknown>) => void,
     readOnly: boolean,
+    context: { graph: DraftGraph; fieldErrors: Record<string, string> },
   ) => ReactNode;
   /** Builder-level dialogs (flow settings / variables) — receive the graph and an apply function. */
   renderDialogs?: (
@@ -755,6 +756,14 @@ function Builder({
                   { coalesce: `config:${selectedNode.id}` },
                 ),
               readOnly,
+              {
+                graph,
+                fieldErrors: Object.fromEntries(
+                  issues
+                    .filter((i) => i.nodeId === selectedNode.id && i.field?.startsWith('config'))
+                    .map((i) => [(i.field ?? '').replace(/^config\.?/, ''), i.message]),
+                ),
+              },
             )}
           </Inspector>
         )}
