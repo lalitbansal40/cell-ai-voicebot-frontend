@@ -474,3 +474,21 @@ describe('flow builder', () => {
     });
   });
 });
+
+describe('canvas selection', () => {
+  it('clicking a step on the canvas opens its settings (controlled nodes apply "select")', async () => {
+    signInAs('owner');
+    await open();
+    expect(screen.queryByRole('complementary', { name: 'Step settings' })).not.toBeInTheDocument();
+    // click only — d3-drag's mousedown needs a real window (Playwright covers dragging)
+    fireEvent.click(within(screen.getByTestId('flow-node-greet')).getByText('Greeting'));
+    const panel = await screen.findByRole('complementary', { name: 'Step settings' });
+    expect(within(panel).getByRole('textbox', { name: 'Step name' })).toHaveValue('Greeting');
+    fireEvent.click(within(screen.getByTestId('flow-node-menu')).getByText('Main menu'));
+    expect(
+      await within(screen.getByRole('complementary', { name: 'Step settings' })).findByDisplayValue(
+        'Main menu',
+      ),
+    ).toBeInTheDocument();
+  });
+});

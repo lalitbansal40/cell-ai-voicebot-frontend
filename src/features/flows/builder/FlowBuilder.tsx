@@ -142,6 +142,16 @@ export interface FlowBuilderProps extends BuilderExtras {
   onState?: (state: { graph: DraftGraph; dirty: boolean; revision: number }) => void;
 }
 
+/** Applies React Flow "select" changes to a list of selected ids. */
+const applyPicks = (ids: string[], picks: { id: string; selected: boolean }[]): string[] => {
+  const next = new Set(ids);
+  for (const p of picks) {
+    if (p.selected) next.add(p.id);
+    else next.delete(p.id);
+  }
+  return next.size === ids.length && ids.every((id) => next.has(id)) ? ids : [...next];
+};
+
 function Builder({
   flow,
   catalog,
@@ -310,6 +320,9 @@ function Builder({
         apply({ type: 'move_nodes', moves }, { coalesce: `drag:${String(dragSession.current)}` });
       const removed = changes.flatMap((c) => (c.type === 'remove' ? [c.id] : []));
       if (removed.length) removeSelection(removed, []);
+      // nodes are controlled: a click only selects once we apply its "select" change
+      const picks = changes.flatMap((c) => (c.type === 'select' ? [c] : []));
+      if (picks.length) setSelected((prev) => ({ ...prev, nodes: applyPicks(prev.nodes, picks) }));
     },
     [apply, removeSelection],
   );
@@ -317,6 +330,8 @@ function Builder({
     (changes: EdgeChange[]) => {
       const removed = changes.flatMap((c) => (c.type === 'remove' ? [c.id] : []));
       if (removed.length) removeSelection([], removed);
+      const picks = changes.flatMap((c) => (c.type === 'select' ? [c] : []));
+      if (picks.length) setSelected((prev) => ({ ...prev, edges: applyPicks(prev.edges, picks) }));
     },
     [removeSelection],
   );
