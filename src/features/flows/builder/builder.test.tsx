@@ -492,3 +492,26 @@ describe('canvas selection', () => {
     ).toBeInTheDocument();
   });
 });
+
+describe('validate with unsaved changes', () => {
+  it('shows the server problems of the checked graph until it changes again', async () => {
+    signInAs('owner');
+    api.validate.mockResolvedValue([
+      { severity: 'error', code: 'url_blocked', message: '"Check": This address is not allowed.' },
+    ]);
+    await open();
+    await userEvent.click(screen.getByRole('button', { name: 'Add Wait' }));
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Validate' }));
+    await waitFor(() =>
+      expect(api.validate).toHaveBeenCalledWith(
+        'f1',
+        expect.objectContaining({ schemaVersion: 1 }),
+      ),
+    );
+    expect(await screen.findByText('"Check": This address is not allowed.')).toBeInTheDocument();
+    // a further edit makes the server answer stale → local checks again
+    await userEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    expect(screen.queryByText('"Check": This address is not allowed.')).not.toBeInTheDocument();
+  });
+});

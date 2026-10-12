@@ -173,6 +173,10 @@ function Builder({
   const [revision, setRevision] = useState(flow.revision);
   const [savedContent, setSavedContent] = useState(() => contentOf(initial));
   const [serverIssues, setServerIssues] = useState<FlowIssue[]>(version ? [] : flow.issues);
+  /** What "Validate" found for a graph — shown while that exact graph is on screen. */
+  const [validated, setValidated] = useState<{ graph: DraftGraph; issues: FlowIssue[] } | null>(
+    null,
+  );
   const [selected, setSelected] = useState<{ nodes: string[]; edges: string[] }>({
     nodes: [],
     edges: [],
@@ -213,13 +217,15 @@ function Builder({
 
   const issues = useMemo(
     () =>
-      dirty
-        ? [
-            ...localIssues(graph, catalogMap),
-            ...serverIssues.filter((i) => i.severity === 'warning'),
-          ]
-        : serverIssues,
-    [dirty, graph, catalogMap, serverIssues],
+      validated?.graph === graph
+        ? validated.issues
+        : !dirty
+          ? serverIssues
+          : [
+              ...localIssues(graph, catalogMap),
+              ...serverIssues.filter((i) => i.severity === 'warning'),
+            ],
+    [dirty, graph, catalogMap, serverIssues, validated],
   );
   const issuesByNode = useMemo(() => {
     const map = new Map<string, { errors: number; warnings: number }>();
@@ -407,6 +413,7 @@ function Builder({
       setRevision(fresh.revision);
       setSavedContent(contentOf(g));
       setServerIssues(fresh.issues);
+      setValidated(null);
       setChangedElsewhere(false);
       setConflict(null);
     },
@@ -423,6 +430,7 @@ function Builder({
       setRevision(result.revision);
       setSavedContent(contentOf(graph));
       setServerIssues(result.issues);
+      setValidated(null);
       void queryClient.invalidateQueries({ queryKey: flowKeys.lists });
       enqueueSnackbar('Saved', { variant: 'success' });
     },
@@ -471,15 +479,18 @@ function Builder({
     },
     onError: (err) => {
       const fromServer = issuesFromError(err);
-      if (fromServer) setServerIssues(fromServer);
-      else if (isApiError(err) && err.code === 'FLOW_REVISION_CONFLICT') setConflict({ by: null });
+      if (fromServer) {
+        setServerIssues(fromServer);
+        setValidated(null);
+      } else if (isApiError(err) && err.code === 'FLOW_REVISION_CONFLICT')
+        setConflict({ by: null });
       enqueueSnackbar(getErrorMessage(err), { variant: 'error' });
     },
   });
   const validate = useMutation({
-    mutationFn: () => flowsApi.validate(flow.id, graph),
-    onSuccess: (found) => {
-      setServerIssues(found);
+    mutationFn: (checked: DraftGraph) => flowsApi.validate(flow.id, checked),
+    onSuccess: (found, checked) => {
+      setValidated({ graph: checked, issues: found });
       enqueueSnackbar(
         found.some((i) => i.severity === 'error') ? 'Problems found' : 'No problems found',
         {
@@ -603,7 +614,7 @@ function Builder({
                 </IconButton>
               </span>
             </Tooltip>
-            <Button onClick={() => validate.mutate()} disabled={validate.isPending}>
+            <Button onClick={() => validate.mutate(graph)} disabled={validate.isPending}>
               Validate
             </Button>
             <Button
