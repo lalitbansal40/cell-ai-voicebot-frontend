@@ -21,6 +21,12 @@ export const STATUS_LABELS: Record<FlowRun['status'], string> = {
 export const versionLabel = (ref: FlowRun['versionRef']): string =>
   ref === 'draft' ? 'Draft' : `v${String(ref)}`;
 
+/** `promise_to_pay` → "Promise to pay". */
+export const dispositionLabel = (d: string): string => {
+  const t = d.replace(/_/g, ' ');
+  return t.charAt(0).toUpperCase() + t.slice(1);
+};
+
 /** Wallet / spend-cap problems seen in AI replies of a run. */
 export const aiFallbacks = (entries: FlowTranscriptEntry[]) => {
   const seen = new Set(
@@ -36,7 +42,7 @@ export const aiFallbacks = (entries: FlowTranscriptEntry[]) => {
 export const outcomeLines = (o: FlowRun['outcome']): string[] => [
   ...(o.disposition
     ? [
-        `Disposition: ${o.disposition.replace(/_/g, ' ')}${o.dispositionNote ? ` — ${o.dispositionNote}` : ''}`,
+        `Disposition: ${dispositionLabel(o.disposition)}${o.dispositionNote ? ` — ${o.dispositionNote}` : ''}`,
       ]
     : []),
   ...(o.promiseToPay

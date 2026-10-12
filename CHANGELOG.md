@@ -6,6 +6,16 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 6 · Call flows (T6.10–T6.15)** — 2026-10-12
+  - `@xyflow/react` 12.12.0 + `@dagrejs/dagre` 3.1.1; API clients for flows, flow audio and the simulator; Call flows in the menu (`LIVE_PHASE = 6`); live `flow.updated` / `flow.published`; shared field components (`VariablePicker`, `SecretField`, `JsonTemplateField`) moved to `src/components/fields`.
+  - Flows list (status, search, duplicate, export, archive, delete guard), template picker with agent pick / create, JSON import, versions page (view, export, restore); agents show "Used in N flows" and name the flows when delete is refused.
+  - Builder (lazy chunk): palette, steps with named exits, connect / delete, problems list with badges, save with revision + conflict dialog, live "updated elsewhere" banner, publish dialog, read-only modes, undo / redo (50), copy / paste, auto-layout, keyboard shortcuts.
+  - Settings forms for all 15 step types (keys / intents / rules with stable ids, audio upload + play, AI agent pick, API request with secret headers and JSON body, router conditions, assignments), flow settings and variables (rename across steps).
+  - Simulator panel (draft / published, typed values or a contact, keypad / speech / silence / transfer / hang up, highlight, values, outcome, trace, cost, wallet / cap banners, retry with the same input id), test call history, run detail page, stats overlay.
+  - E2E: 11 flow tests in 5 specs (Loan recovery "Done when" + every branch, builder by hand, versions + files + audio, logic + API security, roles & money); all 32 green twice; backend logs free of secrets, customer texts and phones.
+  - Fixed: clicking a step on the canvas never selected it; new steps stacked on top of each other and under the settings panel; restoring a version opened the old cached draft; Validate results were hidden while there were unsaved changes.
+  - Tests: 478 → 614.
+
 - **Phase 5 · AI agents & knowledge (T5.10–T5.15)** — 2026-10-10
   - API clients for agents, functions, knowledge, playground and admin AI (regenerated types); AI agents and a new Knowledge item in the menu (`LIVE_PHASE = 5`); live `kb.source.updated` / `agent.updated`.
   - Agents list (search, on / off, duplicate, delete, spend), template picker, editor (Basic, Voice & Language, Limits on one form with changed-field saves, error badges per tab, unsaved-changes guard, reload banner), prompt preview drawer, read-only for readers and impersonators.

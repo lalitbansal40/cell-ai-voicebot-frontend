@@ -512,7 +512,17 @@ export function SimulatorPanel({
               </Link>
             </Alert>
           )}
-          <Transcript entries={entries} onNode={(id) => onNode(id)} />
+          <Transcript
+            entries={entries}
+            onNode={(id) => onNode(id)}
+            footer={
+              send.isPending ? (
+                <Typography role="status" variant="caption" color="text.secondary">
+                  Waiting for the flow…
+                </Typography>
+              ) : undefined
+            }
+          />
           <Box sx={{ px: 1.5, py: 1, borderTop: 1, borderColor: 'divider' }}>
             {send.isError && pending ? (
               <Alert

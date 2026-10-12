@@ -70,7 +70,7 @@ describe('FlowSimulationPage', () => {
     expect(screen.getByText('Transferred')).toBeInTheDocument();
     expect(screen.getByText(/wallet was empty/)).toBeInTheDocument();
     expect(screen.getByText(/spending limit during this call/)).toBeInTheDocument();
-    expect(screen.getByText('Disposition: promise to pay — kal')).toBeInTheDocument();
+    expect(screen.getByText('Disposition: Promise to pay — kal')).toBeInTheDocument();
     expect(screen.getByText(/Promise to pay: 2026-10-13 ·/)).toBeInTheDocument();
     expect(screen.getByText('Callback: 2026-10-14 10:00')).toBeInTheDocument();
     expect(screen.getByText('Transfer: no answer')).toBeInTheDocument();

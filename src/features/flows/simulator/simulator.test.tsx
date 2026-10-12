@@ -124,7 +124,7 @@ describe('simulator panel', () => {
     );
     expect(await screen.findByText('Hung up by the flow')).toBeInTheDocument();
     expect(onNode).toHaveBeenLastCalledWith(null);
-    expect(screen.getByText('Disposition: paid')).toBeInTheDocument();
+    expect(screen.getByText('Disposition: Paid')).toBeInTheDocument();
     // clicking a bot line highlights its step
     await userEvent.click(screen.getByText('Dhanyavaad'));
     expect(onNode).toHaveBeenLastCalledWith('greet');
