@@ -16,7 +16,7 @@ import { signUpOwner } from './helpers';
 test.use({ viewport: { width: 1600, height: 1000 } });
 
 const MOCK = 'http://localhost:5100/api/v1/mock';
-const SECRET = 'Bearer sk-e2e-header-secret-4821';
+const SECRET = 'Bearer e2e-header-secret-4821';
 
 const n = (id: string, type: string, label: string, x: number, y: number, config = {}) => ({
   id,
@@ -147,7 +147,7 @@ test('logic: speech intents, API + condition on the response, 500 failure edge, 
   const exported = await readFile(await (await downloading).path(), 'utf8');
   expect(exported).toContain('Authorization');
   expect(exported).not.toContain(SECRET);
-  expect(exported).not.toContain('sk-e2e');
+  expect(exported).not.toContain('e2e-header-secret');
 
   // a cloud-metadata address is refused before anything runs
   await inspector(page).getByLabel('URL').fill('http://169.254.169.254/latest/meta-data');
