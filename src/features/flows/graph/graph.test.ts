@@ -8,6 +8,7 @@ import { HISTORY_LIMIT, useGraphHistory } from './history';
 import { newId } from './ids';
 import { layoutGraph, NODE_HEIGHT } from './layout';
 import { localIssues } from './local-issues';
+import { freeSpot, PLACE_STEP_X } from './place';
 import { graphReducer } from './reducer';
 
 const catalog = catalogMap();
@@ -238,5 +239,15 @@ describe('helpers', () => {
         edges: [{ id: 'x', source: 'a', sourceHandle: 'next', target: 'b' }],
       }),
     ).toHaveProperty('start');
+  });
+});
+
+describe('freeSpot', () => {
+  it('keeps a free spot and steps right past occupied ones', () => {
+    expect(freeSpot([], { x: 10.4, y: 20.6 })).toEqual({ x: 10, y: 21 });
+    const nodes = [{ position: { x: 0, y: 0 } }, { position: { x: PLACE_STEP_X + 10, y: 15 } }];
+    expect(freeSpot(nodes, { x: 5, y: 5 })).toEqual({ x: 2 * PLACE_STEP_X + 5, y: 5 });
+    // far enough below → free
+    expect(freeSpot(nodes, { x: 0, y: 100 })).toEqual({ x: 0, y: 100 });
   });
 });

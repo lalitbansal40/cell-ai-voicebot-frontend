@@ -66,6 +66,7 @@ import { useGraphHistory } from '../graph/history';
 import { newId } from '../graph/ids';
 import { layoutGraph } from '../graph/layout';
 import { localIssues } from '../graph/local-issues';
+import { freeSpot } from '../graph/place';
 import { flowKeys } from '../keys';
 import { statusColor, statusLabel } from '../labels';
 import { useFlowAudio, useFlowLiveUpdates } from '../queries';
@@ -277,13 +278,13 @@ function Builder({
       const node: DraftNode = {
         id: newId('n'),
         type,
-        position: { x: Math.round(at.x), y: Math.round(at.y) },
+        position: freeSpot(graph.nodes, at),
         config: structuredClone(entry?.defaults ?? {}),
       };
       apply({ type: 'add_node', node });
       setSelected({ nodes: [node.id], edges: [] });
     },
-    [apply, catalogMap, rf],
+    [apply, catalogMap, rf, graph.nodes],
   );
 
   const removeSelection = useCallback(
