@@ -15,3 +15,11 @@ export const freeSpot = (
   while (taken(spot.x)) spot.x += PLACE_STEP_X;
   return spot;
 };
+
+/** Centre of the visible canvas on screen (the window's centre may sit under a side panel). */
+export const visibleCentre = (el: HTMLElement | null): { x: number; y: number } => {
+  const r = el?.getBoundingClientRect();
+  return r && r.width > 0
+    ? { x: r.left + r.width / 2, y: r.top + r.height / 2 }
+    : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+};

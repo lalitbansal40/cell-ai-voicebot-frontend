@@ -66,7 +66,7 @@ import { useGraphHistory } from '../graph/history';
 import { newId } from '../graph/ids';
 import { layoutGraph } from '../graph/layout';
 import { localIssues } from '../graph/local-issues';
-import { freeSpot } from '../graph/place';
+import { freeSpot, visibleCentre } from '../graph/place';
 import { flowKeys } from '../keys';
 import { statusColor, statusLabel } from '../labels';
 import { useFlowAudio, useFlowLiveUpdates } from '../queries';
@@ -184,6 +184,7 @@ function Builder({
   const clipboard = useRef<{ nodes: DraftNode[]; edges: FlowEdge[] } | null>(null);
   const dragSession = useRef(0);
   const viewport = useRef(graph.viewport);
+  const canvasBox = useRef<HTMLDivElement>(null);
   const rf = useReactFlow();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -282,9 +283,7 @@ function Builder({
   const addNode = useCallback(
     (type: FlowNodeType, position?: { x: number; y: number }) => {
       const entry = catalogMap.get(type);
-      const at =
-        position ??
-        rf.screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+      const at = position ?? rf.screenToFlowPosition(visibleCentre(canvasBox.current));
       const node: DraftNode = {
         id: newId('n'),
         type,
@@ -708,6 +707,7 @@ function Builder({
             onDragOver={(e) => e.preventDefault()}
             onDrop={onDrop}
             data-testid="flow-canvas"
+            ref={canvasBox}
           >
             <ReactFlow<FlowCanvasNode>
               nodes={nodes}

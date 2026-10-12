@@ -8,7 +8,7 @@ import { HISTORY_LIMIT, useGraphHistory } from './history';
 import { newId } from './ids';
 import { layoutGraph, NODE_HEIGHT } from './layout';
 import { localIssues } from './local-issues';
-import { freeSpot, PLACE_STEP_X } from './place';
+import { freeSpot, PLACE_STEP_X, visibleCentre } from './place';
 import { graphReducer } from './reducer';
 
 const catalog = catalogMap();
@@ -249,5 +249,19 @@ describe('freeSpot', () => {
     expect(freeSpot(nodes, { x: 5, y: 5 })).toEqual({ x: 2 * PLACE_STEP_X + 5, y: 5 });
     // far enough below → free
     expect(freeSpot(nodes, { x: 0, y: 100 })).toEqual({ x: 0, y: 100 });
+  });
+});
+
+describe('visibleCentre', () => {
+  it('uses the canvas box, falling back to the window', () => {
+    const el = document.createElement('div');
+    el.getBoundingClientRect = () => ({ left: 100, top: 50, width: 400, height: 200 }) as DOMRect;
+    expect(visibleCentre(el)).toEqual({ x: 300, y: 150 });
+    expect(visibleCentre(null)).toEqual({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    // not laid out yet (width 0) → window centre
+    expect(visibleCentre(document.createElement('div'))).toEqual({
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+    });
   });
 });
