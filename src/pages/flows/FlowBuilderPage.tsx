@@ -1,7 +1,9 @@
+import ScienceOutlined from '@mui/icons-material/ScienceOutlined';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import { useCallback, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 
 import { FlowBuilder } from '@/features/flows/builder/FlowBuilder';
@@ -15,9 +17,12 @@ import {
   useFlowVariables,
   useFlowVersion,
 } from '@/features/flows/queries';
+import { SimulatorPanel } from '@/features/flows/simulator/SimulatorPanel';
+import { useStatsOverlay, type StatsSelection } from '@/features/flows/simulator/stats';
+import { StatsControl } from '@/features/flows/simulator/StatsControl';
 import { useImpersonating } from '@/features/wallet/queries';
 import { getErrorMessage } from '@/services/api/errors';
-import type { DraftGraph } from '@/services/api/types';
+import type { DraftGraph, FlowVariable } from '@/services/api/types';
 
 /** `/flows/:id` (builder) and `/flows/:id?v=3` (a published version, read-only). Lazy-loaded. */
 export function FlowBuilderPage() {
@@ -33,6 +38,23 @@ export function FlowBuilderPage() {
   const canPublish = useCanPublishFlows();
   const impersonating = useImpersonating();
   const small = useMediaQuery('(max-width:899.95px)');
+  const [simOpen, setSimOpen] = useState(false);
+  const [highlight, setHighlight] = useState<string | null>(null);
+  const [state, setState] = useState<{ dirty: boolean; variables: FlowVariable[] }>({
+    dirty: false,
+    variables: [],
+  });
+  const onState = useCallback(
+    ({ graph, dirty }: { graph: DraftGraph; dirty: boolean }) =>
+      setState({ dirty, variables: graph.variables }),
+    [],
+  );
+  const [statsSel, setStatsSel] = useState<StatsSelection>({
+    on: false,
+    version: versionNumber ?? 'draft',
+    days: 7,
+  });
+  const stats = useStatsOverlay(id, statsSel);
 
   const error = flow.error ?? catalog.error ?? version.error;
   if (error) {
@@ -68,6 +90,43 @@ export function FlowBuilderPage() {
         versionNumber && version.data
           ? { number: versionNumber, graph: version.data.graph as unknown as DraftGraph }
           : undefined
+      }
+      onState={onState}
+      highlightId={highlight}
+      stats={stats.map}
+      toolbar={
+        <>
+          <StatsControl
+            value={statsSel}
+            onChange={setStatsSel}
+            publishedVersion={flow.data.publishedVersion}
+          />
+          {!versionNumber && (
+            <Button
+              startIcon={<ScienceOutlined />}
+              variant={simOpen ? 'contained' : 'text'}
+              onClick={() => setSimOpen((o) => !o)}
+            >
+              Simulator
+            </Button>
+          )}
+        </>
+      }
+      side={
+        simOpen && !versionNumber ? (
+          <SimulatorPanel
+            flow={flow.data}
+            dirty={state.dirty}
+            canRun={canWrite && !impersonating}
+            known={known.data}
+            flowVariables={state.variables}
+            onNode={setHighlight}
+            onClose={() => {
+              setSimOpen(false);
+              setHighlight(null);
+            }}
+          />
+        ) : undefined
       }
       renderForm={(node, apply, readOnly, { graph, fieldErrors }) => (
         <StepForm

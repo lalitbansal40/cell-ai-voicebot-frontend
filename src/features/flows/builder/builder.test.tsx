@@ -5,12 +5,14 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { agentsApi } from '@/services/api/agents';
 import { ApiError } from '@/services/api/errors';
 import { flowAudioApi } from '@/services/api/flow-audio';
+import { flowSimulatorApi } from '@/services/api/flow-simulator';
 import { flowsApi } from '@/services/api/flows';
 import { fakeAgentRow } from '@/test/agents';
 import { signInAs } from '@/test/auth';
-import { FAKE_FLOW_CATALOG, KNOWN_VARIABLES, fakeFlow, sampleGraph } from '@/test/flows';
+import { FAKE_FLOW_CATALOG, KNOWN_VARIABLES, fakeFlow, fakeRun, sampleGraph } from '@/test/flows';
 import { fakeRealtime } from '@/test/realtime';
 import { renderWithProviders } from '@/test/render';
+import { line, step } from '@/test/simulator';
 import { installXyflowMocks } from '@/test/xyflow';
 
 vi.mock('@/services/api/flows', () => ({
@@ -27,9 +29,13 @@ vi.mock('@/services/api/flows', () => ({
     list: vi.fn(),
     versions: vi.fn(),
     variables: vi.fn(),
+    stats: vi.fn(),
   },
 }));
-vi.mock('@/services/api/agents', () => ({ agentsApi: { list: vi.fn() } }));
+vi.mock('@/services/api/flow-simulator', () => ({
+  flowSimulatorApi: { start: vi.fn(), send: vi.fn(), list: vi.fn(), get: vi.fn() },
+}));
+vi.mock('@/services/api/agents', () => ({ agentsApi: { list: vi.fn(), catalog: vi.fn() } }));
 vi.mock('@/services/api/flow-audio', () => ({ flowAudioApi: { list: vi.fn() } }));
 vi.mock('@/services/api/auth', () => ({
   authApi: { refresh: vi.fn(() => Promise.reject(new Error('x'))), me: vi.fn() },
@@ -188,6 +194,47 @@ describe('flow builder', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Undo' }));
     await userEvent.click(screen.getByRole('button', { name: 'Flow settings' }));
     expect(await screen.findByRole('dialog')).toHaveTextContent('Flow settings');
+  });
+
+  it('stats overlay by version and range; the simulator highlights the current step', async () => {
+    signInAs('owner');
+    api.stats.mockResolvedValue([
+      { nodeId: 'greet', entered: 4, exits: { next: 4 }, errors: 0, avgMs: 2 },
+    ]);
+    vi.mocked(agentsApi.catalog).mockRejectedValue(new Error('offline'));
+    vi.mocked(flowSimulatorApi.list).mockResolvedValue([]);
+    vi.mocked(flowSimulatorApi.get).mockResolvedValue(fakeRun({ currentNodeId: 'menu' }));
+    vi.mocked(flowSimulatorApi.start).mockResolvedValue(
+      step({ currentNodeId: 'menu' }, [line('bot', 'say', 'Namaste Asha')]),
+    );
+    await open();
+    await userEvent.click(screen.getByRole('button', { name: 'Stats' }));
+    expect(await screen.findByTestId('flow-stat-greet')).toHaveTextContent('4 in');
+    expect(api.stats).toHaveBeenLastCalledWith(
+      'f1',
+      expect.objectContaining({ version: 'draft', mode: 'simulator' }),
+    );
+    await userEvent.click(screen.getByRole('combobox', { name: 'Stats of' }));
+    await userEvent.click(screen.getByRole('option', { name: 'v2' }));
+    await userEvent.click(screen.getByRole('combobox', { name: 'Range' }));
+    await userEvent.click(screen.getByRole('option', { name: '30 days' }));
+    await waitFor(() =>
+      expect(api.stats).toHaveBeenLastCalledWith('f1', expect.objectContaining({ version: 2 })),
+    );
+    const q = api.stats.mock.lastCall?.[1];
+    expect(q?.from && q.to ? (Date.parse(q.to) - Date.parse(q.from)) / 86_400_000 : 0).toBe(29);
+    await userEvent.click(screen.getByRole('button', { name: 'Stats' }));
+    expect(screen.queryByTestId('flow-stat-greet')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Simulator' }));
+    const panel = await screen.findByRole('complementary', { name: 'Simulator' });
+    await userEvent.click(within(panel).getByRole('button', { name: 'Start test call' }));
+    expect(await within(panel).findByText('Namaste Asha')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByTestId('flow-node-menu')).toHaveAttribute('data-highlighted', 'true'),
+    );
+    await userEvent.click(within(panel).getByRole('button', { name: 'Close simulator' }));
+    expect(screen.queryByRole('complementary', { name: 'Simulator' })).not.toBeInTheDocument();
   });
 
   it('a stale save opens the conflict dialog: reload or save as a copy', async () => {

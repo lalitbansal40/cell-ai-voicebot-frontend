@@ -72,10 +72,11 @@ export const useFlowAudio = () =>
 export const useSimulations = (flowId: string) =>
   useQuery({ queryKey: simulationKeys.list(flowId), queryFn: () => flowSimulatorApi.list(flowId) });
 
-export const useSimulation = (flowId: string, runId: string) =>
+export const useSimulation = (flowId: string, runId: string, enabled = true) =>
   useQuery({
     queryKey: simulationKeys.run(flowId, runId),
     queryFn: () => flowSimulatorApi.get(flowId, runId),
+    enabled: enabled && Boolean(runId),
   });
 
 /** Lists refresh when any flow changes; `onFlow` hears changes of one flow. */

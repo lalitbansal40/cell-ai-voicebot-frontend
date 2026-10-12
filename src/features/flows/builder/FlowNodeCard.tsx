@@ -39,6 +39,7 @@ function FlowNodeCardBase({ data, selected }: NodeProps<FlowCanvasNode>) {
     <Paper
       variant="outlined"
       data-testid={`flow-node-${node.id}`}
+      data-highlighted={highlighted ? 'true' : undefined}
       aria-label={`${title} (${entry?.label ?? node.type})`}
       sx={{
         width: 240,

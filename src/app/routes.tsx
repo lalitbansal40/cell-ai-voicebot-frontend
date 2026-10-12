@@ -28,6 +28,7 @@ import { ContactsPage } from '@/pages/contacts/ContactsPage';
 import { ImportWizardPage } from '@/pages/contacts/ImportWizardPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ErrorPage } from '@/pages/ErrorPage';
+import { FlowSimulationPage } from '@/pages/flows/FlowSimulationPage';
 import { FlowsPage } from '@/pages/flows/FlowsPage';
 import { FlowVersionsPage } from '@/pages/flows/FlowVersionsPage';
 import { NewFlowPage } from '@/pages/flows/NewFlowPage';
@@ -184,6 +185,7 @@ export const routes: RouteObject[] = [
               { index: true, element: <FlowsPage /> },
               { path: 'new', element: <NewFlowPage /> },
               { path: ':id/versions', element: <FlowVersionsPage /> },
+              { path: ':id/simulations/:runId', element: <FlowSimulationPage /> },
               {
                 // the builder (React Flow) is its own chunk
                 path: ':id',
