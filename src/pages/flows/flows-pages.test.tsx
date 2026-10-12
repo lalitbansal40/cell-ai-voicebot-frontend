@@ -1,3 +1,4 @@
+import { QueryClient } from '@tanstack/react-query';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -333,9 +334,11 @@ describe('new flow', () => {
 describe('versions', () => {
   it('lists versions, exports one and restores into the draft', async () => {
     signInAs('manager');
-    api.restore.mockResolvedValue(fakeFlow());
+    const restored = fakeFlow({ revision: 9 });
+    api.restore.mockResolvedValue(restored);
     api.exportFile.mockResolvedValue({ fileName: 'flow-v1.json', data: {} });
-    renderWithProviders({ route: '/flows/f1/versions' });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    renderWithProviders({ route: '/flows/f1/versions', queryClient });
     expect(await screen.findByText('v2')).toBeInTheDocument();
     expect(screen.getByText('Live')).toBeInTheDocument();
     expect(screen.getByText('abcdef12')).toBeInTheDocument();
@@ -344,8 +347,14 @@ describe('versions', () => {
     await waitFor(() => expect(api.exportFile).toHaveBeenCalledWith('f1', 1));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Restore v1' })).toBeEnabled());
     await userEvent.click(screen.getByRole('button', { name: 'Restore v1' }));
+    // refetches hang, so only what restore put in the cache counts
+    api.get.mockReturnValue(new Promise(() => undefined));
     await userEvent.click(await screen.findByRole('button', { name: 'Restore' }));
     await waitFor(() => expect(api.restore).toHaveBeenCalledWith('f1', 1, 3));
+    // the builder opens with the restored draft, not the cached old one
+    await waitFor(() =>
+      expect(queryClient.getQueryData(['flows', 'detail', 'f1'])).toMatchObject({ revision: 9 }),
+    );
   });
 
   it('viewers only view; empty state before the first publish', async () => {

@@ -42,7 +42,9 @@ export function FlowVersionsPage() {
   const restore = useMutation({
     mutationFn: (v: FlowVersionSummary) =>
       flowsApi.restore(id, v.version, flow.data?.revision ?? 0),
-    onSuccess: (_flow, v) => {
+    onSuccess: (restored, v) => {
+      // the builder reads this on mount — never let it open the old draft
+      queryClient.setQueryData(flowKeys.detail(id), restored);
       void queryClient.invalidateQueries({ queryKey: flowKeys.all });
       enqueueSnackbar(`v${String(v.version)} copied into the draft — publish it to go live`, {
         variant: 'success',
