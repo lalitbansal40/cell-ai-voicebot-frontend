@@ -13,6 +13,10 @@ import {
 
 const backendDir = fileURLToPath(new URL('../cell-ai-voicebot-backend', import.meta.url));
 const prepareScript = fileURLToPath(new URL('./e2e/prepare-backend.mjs', import.meta.url));
+/** Chromium's fake microphone plays this file (30 s of near silence, backend `npm run fixtures:audio`). */
+const fakeMic = fileURLToPath(
+  new URL('../cell-ai-voicebot-backend/docs/samples/audio/customer-silence.wav', import.meta.url),
+);
 /** `E2E_BACKEND_LOGS=1` prints backend logs (info) — used by the secret-in-logs check. */
 const backendLogs = Boolean(process.env.E2E_BACKEND_LOGS);
 
@@ -38,7 +42,23 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        // web test calls: a fake mic (file) and no permission prompt
+        permissions: ['microphone'],
+        launchOptions: {
+          args: [
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+            `--use-file-for-fake-audio-capture=${fakeMic}`,
+          ],
+        },
+      },
+    },
+  ],
   webServer: [
     {
       name: 'backend',
