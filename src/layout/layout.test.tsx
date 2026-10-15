@@ -79,6 +79,7 @@ describe('AppLayout', () => {
       'AI agents',
       'Knowledge',
       'Call flows',
+      'Calls',
       'Team',
       'Settings',
     ]);
@@ -98,6 +99,7 @@ describe('AppLayout', () => {
       'AI agents',
       'Knowledge',
       'Call flows',
+      'Calls',
       'Settings',
     ]);
   });
@@ -111,6 +113,7 @@ describe('AppLayout', () => {
       'AI agents',
       'Knowledge',
       'Call flows',
+      'Calls',
       'Settings',
     ]);
   });

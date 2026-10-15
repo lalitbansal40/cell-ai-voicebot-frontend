@@ -50,6 +50,14 @@ vi.mock('@/services/api/admin-ai', () => ({
         mockApisEnabled: true,
         allowPrivateHosts: true,
         openaiKeyConfigured: false,
+        voice: {
+          provider: 'fake',
+          pipeline: 'chat',
+          realtimeModel: 'gpt-realtime-2.1-mini',
+          ttsModel: 'gpt-4o-mini-tts',
+          transcribeModel: 'gpt-4o-mini-transcribe',
+          textInputEnabled: true,
+        },
       }),
     ),
   },
@@ -510,6 +518,14 @@ describe('/admin/billing — AI', () => {
       mockApisEnabled: false,
       allowPrivateHosts: false,
       openaiKeyConfigured: true,
+      voice: {
+        provider: 'openai',
+        pipeline: 'realtime',
+        realtimeModel: 'gpt-realtime-2.1-mini',
+        ttsModel: 'gpt-4o-mini-tts',
+        transcribeModel: 'gpt-4o-mini-transcribe',
+        textInputEnabled: false,
+      },
     });
     const { unmount } = renderWithProviders({ route: '/admin/billing' });
     const card = await screen.findByRole('region', { name: 'AI configuration' });
@@ -517,6 +533,9 @@ describe('/admin/billing — AI', () => {
     expect(within(card).getByText('OpenAI key set')).toBeInTheDocument();
     expect(within(card).getByText('Mock APIs off')).toBeInTheDocument();
     expect(within(card).getByText('Private hosts blocked')).toBeInTheDocument();
+    expect(within(card).getByText('Voice: OpenAI Realtime')).toBeInTheDocument();
+    expect(within(card).getByText('Typed call input off')).toBeInTheDocument();
+    expect(within(card).getByText(/Voice models: gpt-realtime-2.1-mini/)).toBeInTheDocument();
     unmount();
     ai.config.mockRejectedValueOnce(httpError(500, 'INTERNAL_ERROR', 'Config down'));
     renderWithProviders({ route: '/admin/billing' });
@@ -524,6 +543,7 @@ describe('/admin/billing — AI', () => {
     expect(await within(failed).findByText('Config down')).toBeInTheDocument();
     await userEvent.click(within(failed).getByRole('button', { name: 'Retry' }));
     expect(await within(failed).findByText('Provider: fake (test mode)')).toBeInTheDocument();
+    expect(within(failed).getByText('Voice: fake (test mode)')).toBeInTheDocument();
   });
 });
 

@@ -22,6 +22,7 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
 import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
+import { CallsPage } from '@/pages/calls/CallsPage';
 import { ActivityPage } from '@/pages/contacts/ActivityPage';
 import { ContactDetailPage } from '@/pages/contacts/ContactDetailPage';
 import { ContactsPage } from '@/pages/contacts/ContactsPage';
@@ -191,6 +192,40 @@ export const routes: RouteObject[] = [
                 path: ':id',
                 lazy: async () => ({
                   Component: (await import('@/pages/flows/FlowBuilderPage')).FlowBuilderPage,
+                }),
+              },
+            ],
+          },
+          {
+            path: '/calls',
+            element: (
+              <RequirePermission perm="calls.read">
+                <Outlet />
+              </RequirePermission>
+            ),
+            children: [
+              { index: true, element: <CallsPage /> },
+              {
+                path: 'test',
+                element: (
+                  <RequirePermission perm="calls.trigger">
+                    <Outlet />
+                  </RequirePermission>
+                ),
+                children: [
+                  {
+                    // the tester (audio worklets) is its own chunk
+                    index: true,
+                    lazy: async () => ({
+                      Component: (await import('@/pages/calls/CallTesterPage')).CallTesterPage,
+                    }),
+                  },
+                ],
+              },
+              {
+                path: ':id',
+                lazy: async () => ({
+                  Component: (await import('@/pages/calls/CallDetailPage')).CallDetailPage,
                 }),
               },
             ],

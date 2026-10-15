@@ -60,6 +60,29 @@ export function AiConfigCard() {
             Text models: {c.textModels.join(', ')} (default {c.defaultTextModel}) · Embeddings:{' '}
             {c.embeddingModel}
           </Typography>
+          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+            <Chip
+              size="small"
+              color={c.voice.provider === 'openai' ? 'success' : 'warning'}
+              label={
+                c.voice.provider === 'openai'
+                  ? `Voice: OpenAI ${c.voice.pipeline === 'realtime' ? 'Realtime' : 'chat pipeline'}`
+                  : 'Voice: fake (test mode)'
+              }
+            />
+            <Chip
+              size="small"
+              variant="outlined"
+              color={c.voice.textInputEnabled ? 'warning' : 'default'}
+              label={
+                c.voice.textInputEnabled ? 'Typed call input on (dev)' : 'Typed call input off'
+              }
+            />
+          </Stack>
+          <Typography variant="body2" color="text.secondary">
+            Voice models: {c.voice.realtimeModel} · TTS {c.voice.ttsModel} · Transcription{' '}
+            {c.voice.transcribeModel}
+          </Typography>
         </Stack>
       )}
     </Paper>

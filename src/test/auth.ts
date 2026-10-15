@@ -123,6 +123,7 @@ export const fakeSession = (
     settings: {
       callingWindow: { start: '09:00', end: '19:00', days: [1, 2, 3, 4, 5, 6] },
       recordingEnabled: true,
+      recordingNotice: 'Yeh call quality ke liye record ki ja rahi hai.',
       aiDisclosureEnabled: true,
     },
     createdAt: '2026-10-08T00:00:00.000Z',

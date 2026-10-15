@@ -3,9 +3,11 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
+import { Link as RouterLink } from 'react-router';
 
 import type { LedgerEntry } from '@/services/api/types';
 import { formatInAccountTz } from '@/utils/datetime';
@@ -119,7 +121,14 @@ export function LedgerDetailDrawer({
                   />
                 )}
                 {b.telephonyMicros !== undefined && (
-                  <Row label="Telephony" value={formatCurrencyMicros(b.telephonyMicros)} />
+                  <Row
+                    label="Telephony"
+                    value={
+                      entry.ref.type === 'call' && b.telephonyMicros === 0
+                        ? `${formatCurrencyMicros(0)} (web test call — no phone line)`
+                        : formatCurrencyMicros(b.telephonyMicros)
+                    }
+                  />
                 )}
                 {b.aiMicros !== undefined && (
                   <Row
@@ -155,7 +164,18 @@ export function LedgerDetailDrawer({
           )}
           <Divider sx={{ my: 2 }} />
           <Stack spacing={1}>
-            <Row label="Source" value={`${REF_LABELS[entry.ref.type]} · ${entry.ref.id}`} />
+            <Row
+              label="Source"
+              value={
+                entry.ref.type === 'call' ? (
+                  <Link component={RouterLink} to={`/calls/${entry.ref.id}`}>
+                    Call · {entry.ref.id}
+                  </Link>
+                ) : (
+                  `${REF_LABELS[entry.ref.type]} · ${entry.ref.id}`
+                )
+              }
+            />
             {entry.holdId && <Row label="Hold" value={entry.holdId} />}
             <Row label="Entry id" value={entry.id} />
           </Stack>

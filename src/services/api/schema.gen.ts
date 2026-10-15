@@ -937,6 +937,7 @@ export interface paths {
                 days: number[];
               };
               recordingEnabled?: boolean;
+              recordingNotice?: string;
               aiDisclosureEnabled?: boolean;
             };
           };
@@ -13096,6 +13097,607 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/calls/web': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Start a browser test call of a flow or an agent (calls.trigger + flows.read / agents.read; 10 / min / user; wallet hold taken here; 429 CALL_LIMIT_REACHED, 503 CALL_CAPACITY, 422 FLOW_INVALID / WALLET_INSUFFICIENT_BALANCE) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            flowId?: string;
+            /** @description Flows: `published` (default), `draft` or a version number */
+            version?: 'draft' | 'published' | number;
+            agentId?: string;
+            contactId?: string;
+            /** @description Typed values: contact fields (+ flow variables) — not with contactId */
+            variables?: {
+              [key: string]: string;
+            };
+            /** @description Only API steps / functions see it — never returned */
+            testPhone?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Call created — connect to /ws/media with the ticket */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['StartedWebCall'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description This server is at its call capacity (CALL_CAPACITY) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/calls': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Calls of the account, newest first (calls.read, cursor pagination) */
+    get: {
+      parameters: {
+        query?: {
+          cursor?: string;
+          limit?: number;
+          /** @description Comma-separated statuses */
+          status?: string;
+          flowId?: string;
+          agentId?: string;
+          contactId?: string;
+          isTest?: 'true' | 'false';
+          from?: string;
+          to?: string;
+          /** @description Contact name */
+          q?: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Calls */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Call'][];
+              meta: components['schemas']['CursorPageMeta'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/calls/active': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Live calls of the account (calls.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Call'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/calls/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** One call: outcome, metrics, cost (calls.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Call'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/calls/{id}/transcript': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Final transcript turns (calls.read; up to 2000) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['CallTranscriptTurn'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/calls/{id}/events': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Timeline events (calls.read; up to 2000; never texts, digits or phones) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['CallEvent'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/calls/{id}/recording': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Signed recording link, 5 min (calls.listen; audited; 404 when the call has none) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['CallRecordingLink'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/calls/{id}/hangup': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Hang up a live call from another tab (calls.trigger; 409 CALL_NOT_ACTIVE) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Call'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -13202,6 +13804,7 @@ export interface components {
           days: number[];
         };
         recordingEnabled: boolean;
+        recordingNotice: string;
         aiDisclosureEnabled: boolean;
       };
       createdAt: string;
@@ -13245,6 +13848,17 @@ export interface components {
       allowPrivateHosts: boolean;
       /** @description Whether a key is set — never the key */
       openaiKeyConfigured: boolean;
+      voice: {
+        /** @enum {string} */
+        provider: 'openai' | 'fake';
+        /** @enum {string} */
+        pipeline: 'realtime' | 'chat';
+        realtimeModel: string;
+        ttsModel: string;
+        transcribeModel: string;
+        /** @description Typed customer text on web calls (dev / tests only) */
+        textInputEnabled: boolean;
+      };
     };
     AuditEntry: {
       id: string;
@@ -13317,7 +13931,10 @@ export interface components {
         | 'flow.archived'
         | 'flow.unarchived'
         | 'flow.deleted'
-        | 'flow_audio.changed';
+        | 'flow_audio.changed'
+        | 'call.test_started'
+        | 'call.recording_accessed'
+        | 'call.hung_up_remotely';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
@@ -15415,6 +16032,155 @@ export interface components {
       link: string | null;
       readAt: string | null;
       createdAt: string;
+    };
+    Call: {
+      id: string;
+      /** @enum {string} */
+      direction: 'outbound' | 'inbound';
+      /** @enum {string} */
+      provider: 'webcall' | 'sip' | 'notifynow';
+      isTest: boolean;
+      /** @enum {string} */
+      status:
+        | 'queued'
+        | 'ringing'
+        | 'in_progress'
+        | 'completed'
+        | 'failed'
+        | 'busy'
+        | 'no_answer'
+        | 'canceled';
+      /** @enum {string|null} */
+      endReason:
+        | 'hangup_node'
+        | 'agent_end_call'
+        | 'customer_hangup'
+        | 'transferred'
+        | 'max_duration'
+        | 'wallet_empty'
+        | 'ai_failed'
+        | 'engine_error'
+        | 'media_timeout'
+        | 'media_error'
+        | 'server_shutdown'
+        | 'canceled'
+        | 'limit'
+        | null;
+      source: {
+        /** @enum {string} */
+        kind: 'flow' | 'agent';
+        flowId: string | null;
+        flowVersionRef: 'draft' | number | null;
+        agentId: string | null;
+        /** @description Flow / agent name (null when deleted) */
+        name: string | null;
+      };
+      contact: {
+        id: string;
+        name: string;
+      } | null;
+      startedBy: {
+        id: string;
+        name: string;
+      } | null;
+      timestamps: {
+        queuedAt: string;
+        ringingAt: string | null;
+        answeredAt: string | null;
+        endedAt: string | null;
+      };
+      durationSec: number;
+      variables: {
+        [key: string]: string;
+      };
+      outcome: {
+        [key: string]: unknown;
+      };
+      disposition: string | null;
+      languageDetected: string | null;
+      metrics: {
+        latency: {
+          p50Ms: number | null;
+          p95Ms: number | null;
+          maxMs: number | null;
+          samples: number;
+        };
+        bargeIns: number;
+        silencePrompts: number;
+        aiSeconds: number;
+        ttsChars: number;
+        ttsCachedChars: number;
+      };
+      cost: {
+        telephonyMicros: number;
+        aiMicros: number;
+        ttsMicros: number;
+        commissionMicros: number;
+        totalMicros: number;
+      };
+      recording: {
+        durationSec: number;
+        sizeBytes: number;
+      } | null;
+      flowRunId: string | null;
+      error: {
+        code: string;
+      } | null;
+      createdAt: string;
+    };
+    StartedWebCall: {
+      call: components['schemas']['Call'];
+      /** @description One-time ticket for /ws/media (60 s) */
+      mediaTicket: string;
+      expiresAt: string;
+      wsPath: string;
+      /** @description call.say_text allowed (dev / tests) */
+      textInput: boolean;
+    };
+    CallTranscriptTurn: {
+      seq: number;
+      /** @enum {string} */
+      speaker: 'customer' | 'bot' | 'agent';
+      text: string;
+      language: string | null;
+      startMs: number;
+      endMs: number;
+      interrupted: boolean;
+      /** @enum {string} */
+      source: 'tts' | 'ai' | 'stt' | 'dtmf' | 'audio' | 'system';
+    };
+    CallEvent: {
+      seq: number;
+      /** @enum {string} */
+      type:
+        | 'status'
+        | 'node_entered'
+        | 'node_exited'
+        | 'dtmf'
+        | 'speech_started'
+        | 'barge_in'
+        | 'silence_prompt'
+        | 'ai_session_started'
+        | 'ai_session_ended'
+        | 'ai_function_call'
+        | 'ai_function_result'
+        | 'ai_outcome'
+        | 'tts'
+        | 'latency'
+        | 'wallet_extend'
+        | 'transfer'
+        | 'recording_saved'
+        | 'recording_failed'
+        | 'error';
+      data: {
+        [key: string]: unknown;
+      };
+      at: string;
+    };
+    CallRecordingLink: {
+      url: string;
+      expiresAt: string;
+      durationSec: number;
     };
   };
   responses: never;
