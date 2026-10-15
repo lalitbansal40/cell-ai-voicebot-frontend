@@ -159,7 +159,10 @@ describe('Web call tester', () => {
     // transcript: partial → final, interrupted mark, latency chip, timeline
     server({ type: 'call.transcript', seq: 1, speaker: 'bot', text: 'Namaste Asha', final: false });
     const transcript = screen.getByRole('list', { name: 'Live transcript' });
-    expect(within(transcript).getByText('Namaste Asha')).toBeInTheDocument();
+    expect(within(transcript).getByText('Namaste Asha').closest('li')).toHaveAttribute(
+      'data-final',
+      'false',
+    );
     server({
       type: 'call.transcript',
       seq: 1,
@@ -168,7 +171,21 @@ describe('Web call tester', () => {
       final: true,
     });
     expect(within(transcript).queryByText('Namaste Asha')).not.toBeInTheDocument();
+    expect(within(transcript).getByText('Namaste Asha ji').closest('li')).toHaveAttribute(
+      'data-final',
+      'true',
+    );
+    // regression: the barge-in event comes before the cut line — the flag on the line decides
     server({ type: 'call.event', event: { type: 'barge_in', data: { playedMs: 900 }, seq: 3 } });
+    expect(within(transcript).queryByText('interrupted')).not.toBeInTheDocument();
+    server({
+      type: 'call.transcript',
+      seq: 2,
+      speaker: 'bot',
+      text: 'Aapki EMI due hai',
+      final: true,
+      interrupted: true,
+    });
     expect(within(transcript).getByText('interrupted')).toBeInTheDocument();
     server({ type: 'call.event', event: { type: 'latency', data: { ms: 640 }, seq: 4 } });
     expect(screen.getByText('640 ms')).toBeInTheDocument();

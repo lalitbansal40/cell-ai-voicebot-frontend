@@ -11,6 +11,8 @@ export type MediaServerMessage =
       speaker: 'customer' | 'bot' | 'agent';
       text: string;
       final: boolean;
+      /** Finals: a barge-in cut this line. */
+      interrupted?: boolean;
     }
   | { type: 'call.event'; event: { type: string; data: Record<string, unknown>; seq: number } }
   | { type: 'call.transfer'; phoneLast4: string }

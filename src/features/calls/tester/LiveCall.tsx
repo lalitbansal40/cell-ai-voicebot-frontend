@@ -68,7 +68,12 @@ export function LiveTranscript({ lines }: { lines: LiveLine[] }) {
           </Typography>
         )}
         {lines.map((line) => (
-          <ListItem key={line.key} disableGutters sx={{ opacity: line.final ? 1 : 0.55 }}>
+          <ListItem
+            key={line.key}
+            disableGutters
+            data-final={line.final ? 'true' : 'false'}
+            sx={{ opacity: line.final ? 1 : 0.55 }}
+          >
             <ListItemText
               primary={
                 <>

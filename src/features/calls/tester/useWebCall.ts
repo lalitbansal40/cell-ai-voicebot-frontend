@@ -107,7 +107,7 @@ const onMessage = (s: WebCallState, m: MediaServerMessage, now: number): WebCall
         speaker: m.speaker,
         text: m.text,
         final: m.final,
-        interrupted: false,
+        interrupted: m.final && m.interrupted === true,
       });
       return { ...s, lines };
     }
@@ -123,13 +123,6 @@ const onMessage = (s: WebCallState, m: MediaServerMessage, now: number): WebCall
       }
       if (event.type === 'latency' && typeof event.data.ms === 'number') {
         next.latencies = [...s.latencies, event.data.ms];
-      }
-      if (event.type === 'barge_in') {
-        // the bot line being played was cut: mark the last bot line
-        const at = s.lines.findLastIndex((l) => l.speaker === 'bot');
-        if (at >= 0) {
-          next.lines = s.lines.map((l, i) => (i === at ? { ...l, interrupted: true } : l));
-        }
       }
       return next;
     }
