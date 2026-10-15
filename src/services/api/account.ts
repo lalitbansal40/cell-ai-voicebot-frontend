@@ -9,6 +9,7 @@ export interface AccountUpdate {
   settings?: {
     callingWindow?: { start: string; end: string; days: number[] };
     recordingEnabled?: boolean;
+    recordingNotice?: string;
     aiDisclosureEnabled?: boolean;
   };
 }

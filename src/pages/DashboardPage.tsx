@@ -4,19 +4,18 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 
 import { PageHeader } from '@/components/PageHeader';
-import { useSession } from '@/features/auth/hooks';
+import { usePermission, useSession } from '@/features/auth/hooks';
+import { RecentCallsCard } from '@/features/calls/RecentCallsCard';
 import { SystemInfoCard } from '@/features/system/SystemInfoCard';
 import { useHasWallet } from '@/features/wallet/queries';
 import { WalletCard } from '@/features/wallet/WalletCard';
 
-const UPCOMING = [
-  { title: 'Calls', text: 'Live call status and results — Phase 7.' },
-  { title: 'Campaigns', text: 'Running campaigns and progress — Phase 8.' },
-];
+const UPCOMING = [{ title: 'Campaigns', text: 'Running campaigns and progress — Phase 8.' }];
 
 export function DashboardPage() {
   const session = useSession();
   const canSeeWallet = useHasWallet();
+  const canSeeCalls = usePermission('calls.read');
   return (
     <>
       <PageHeader title="Dashboard" subtitle={`Welcome, ${session?.user.name ?? ''}`} />
@@ -40,6 +39,11 @@ export function DashboardPage() {
         {canSeeWallet && (
           <Grid size={{ xs: 12, md: 4 }}>
             <WalletCard />
+          </Grid>
+        )}
+        {canSeeCalls && (
+          <Grid size={{ xs: 12, md: 8 }}>
+            <RecentCallsCard />
           </Grid>
         )}
         {UPCOMING.map((card) => (

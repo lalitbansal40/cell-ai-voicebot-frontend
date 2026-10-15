@@ -6,6 +6,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useCallback, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 
+import { TestCallButton } from '@/features/calls/TestCallButton';
 import { FlowBuilder } from '@/features/flows/builder/FlowBuilder';
 import { FlowDialogs } from '@/features/flows/inspector/FlowDialogs';
 import { StepForm } from '@/features/flows/inspector/StepForm';
@@ -101,6 +102,14 @@ export function FlowBuilderPage() {
             onChange={setStatsSel}
             publishedVersion={flow.data.publishedVersion}
           />
+          {!versionNumber && (
+            <TestCallButton
+              kind="flow"
+              flowId={flow.data.id}
+              publishedVersion={flow.data.publishedVersion}
+              dirty={state.dirty}
+            />
+          )}
           {!versionNumber && (
             <Button
               startIcon={<ScienceOutlined />}

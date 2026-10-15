@@ -130,7 +130,6 @@ describe('Account tab', () => {
     await userEvent.clear(country);
     await userEvent.type(country, 'ae');
     expect(country).toHaveValue('AE');
-    await userEvent.click(screen.getByLabelText('Record calls'));
     await userEvent.click(
       screen.getByLabelText('Tell callers they are speaking with an AI assistant'),
     );
@@ -148,6 +147,63 @@ describe('Account tab', () => {
     signInAs('owner', { account: { ...base.account, status: 'suspended' } });
     renderWithProviders({ route: '/settings/account' });
     expect(await screen.findByLabelText('Business name')).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Save changes' })).not.toBeInTheDocument();
+  });
+});
+
+describe('Calls tab', () => {
+  it('owners switch recording and edit the notice; empty notices are refused; errors show', async () => {
+    signInAs('owner');
+    vi.mocked(accountApi.update)
+      .mockRejectedValueOnce(
+        new ApiError({
+          status: 500,
+          code: 'INTERNAL_ERROR',
+          kind: 'http',
+          message: 'Server broke',
+        }),
+      )
+      .mockResolvedValueOnce({} as never);
+    renderWithProviders({ route: '/settings/calls' });
+    const notice = await screen.findByLabelText('Recording notice');
+    expect(notice).toHaveValue('Yeh call quality ke liye record ki ja rahi hai.');
+    await userEvent.clear(notice);
+    expect(screen.getByText('Required, at most 200 characters')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+    await userEvent.type(notice, '  Yeh call record ho rahi hai.  ');
+    await userEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(await screen.findByText('Server broke')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(await screen.findByText('Call settings saved')).toBeInTheDocument();
+    expect(accountApi.update).toHaveBeenLastCalledWith({
+      settings: { recordingEnabled: true, recordingNotice: 'Yeh call record ho rahi hai.' },
+    });
+    await userEvent.click(screen.getByLabelText('Record calls'));
+    expect(notice).toBeDisabled();
+    await userEvent.click(screen.getByRole('button', { name: 'Discard' }));
+    expect(screen.getByLabelText('Record calls')).toBeChecked();
+  });
+
+  it('read-only for agents, impersonators and suspended accounts', async () => {
+    signInAs('agent');
+    const first = renderWithProviders({ route: '/settings/calls' });
+    expect(
+      await screen.findByText('Only the owner and admins can change call settings.'),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Record calls')).toBeDisabled();
+    first.unmount();
+    signInAs('owner', {
+      impersonation: { impersonatorId: 'sa', expiresAt: '2026-10-08T01:00:00Z' },
+    });
+    const second = renderWithProviders({ route: '/settings/calls' });
+    expect(
+      await screen.findByText('Only the owner and admins can change call settings.'),
+    ).toBeInTheDocument();
+    second.unmount();
+    const base = fakeSession('owner');
+    signInAs('owner', { account: { ...base.account, status: 'suspended' } });
+    renderWithProviders({ route: '/settings/calls' });
+    expect(await screen.findByLabelText('Recording notice')).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Save changes' })).not.toBeInTheDocument();
   });
 });

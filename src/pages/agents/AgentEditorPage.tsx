@@ -43,6 +43,7 @@ import {
   useAgentUsage,
   useCanWriteAgents,
 } from '@/features/agents/queries';
+import { TestCallButton } from '@/features/calls/TestCallButton';
 import { KnowledgeTab } from '@/features/knowledge/KnowledgeTab';
 import { useImpersonating } from '@/features/wallet/queries';
 import { agentsApi } from '@/services/api/agents';
@@ -207,6 +208,7 @@ function Editor({ loaded, tab }: { loaded: Agent; tab: TabDef }) {
             <Button startIcon={<VisibilityOutlined />} onClick={() => setPreviewOpen(true)}>
               Prompt preview
             </Button>
+            <TestCallButton kind="agent" agentId={base.id} active={base.isActive} dirty={dirty} />
             {!readOnly && tab.formTab && (
               <Button
                 variant="contained"

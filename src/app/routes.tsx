@@ -22,7 +22,6 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
 import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
-import { CallsPage } from '@/pages/calls/CallsPage';
 import { ActivityPage } from '@/pages/contacts/ActivityPage';
 import { ContactDetailPage } from '@/pages/contacts/ContactDetailPage';
 import { ContactsPage } from '@/pages/contacts/ContactsPage';
@@ -204,7 +203,12 @@ export const routes: RouteObject[] = [
               </RequirePermission>
             ),
             children: [
-              { index: true, element: <CallsPage /> },
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/calls/CallsPage')).CallsPage,
+                }),
+              },
               {
                 path: 'test',
                 element: (

@@ -118,7 +118,7 @@ describe('Web call tester', () => {
       expect(screen.getByRole('combobox', { name: 'Flow' })).toHaveValue('Loan recovery'),
     );
     await user.type(await screen.findByRole('textbox', { name: '{{name}}' }), 'Asha');
-    await user.type(screen.getByRole('textbox', { name: '{{amount}}' }), '2500');
+    await user.type(await screen.findByRole('textbox', { name: '{{amount}}' }), '2500');
     await user.type(
       screen.getByRole('textbox', { name: 'Test phone (optional)' }),
       '+91 90004-00012',

@@ -168,16 +168,6 @@ function AccountForm({ account, canEdit }: { account: PublicAccount; canEdit: bo
           <FormControlLabel
             control={
               <Switch
-                checked={draft.settings.recordingEnabled}
-                disabled={!canEdit}
-                onChange={(e) => setSettings({ recordingEnabled: e.target.checked })}
-              />
-            }
-            label="Record calls"
-          />
-          <FormControlLabel
-            control={
-              <Switch
                 checked={draft.settings.aiDisclosureEnabled}
                 disabled={!canEdit}
                 onChange={(e) => setSettings({ aiDisclosureEnabled: e.target.checked })}
