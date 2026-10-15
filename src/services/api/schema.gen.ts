@@ -16136,6 +16136,11 @@ export interface components {
       wsPath: string;
       /** @description call.say_text allowed (dev / tests) */
       textInput: boolean;
+      /**
+       * @description `fake`: deterministic test voice (tone TTS, typed words)
+       * @enum {string}
+       */
+      voice: 'openai' | 'fake';
     };
     CallTranscriptTurn: {
       seq: number;

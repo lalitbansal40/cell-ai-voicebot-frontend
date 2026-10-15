@@ -87,3 +87,83 @@ export const fakeEvents = (): CallEvent[] => [
   },
   { seq: 3, type: 'latency', data: { ms: 820 }, at: '2026-10-15T10:00:10.000Z' },
 ];
+
+/** In-memory `/ws/media` socket: tests play the server side. */
+export class FakeMediaWs {
+  static instances: FakeMediaWs[] = [];
+  binaryType = 'blob';
+  readyState = 0;
+  sent: (string | ArrayBuffer)[] = [];
+  closedWith: number | undefined;
+  onopen: ((event: Event) => void) | null = null;
+  onmessage: ((event: MessageEvent) => void) | null = null;
+  onclose: ((event: CloseEvent) => void) | null = null;
+  onerror: ((event: Event) => void) | null = null;
+  readonly url: string;
+  constructor(url: string) {
+    this.url = url;
+    FakeMediaWs.instances.push(this);
+  }
+  static last(): FakeMediaWs {
+    const ws = FakeMediaWs.instances.at(-1);
+    if (!ws) throw new Error('no media socket');
+    return ws;
+  }
+  send(data: string | ArrayBuffer) {
+    this.sent.push(data);
+  }
+  close(code?: number) {
+    this.closedWith = code;
+    this.readyState = 3;
+  }
+  serverOpen() {
+    this.readyState = 1;
+    this.onopen?.(new Event('open'));
+  }
+  serverSend(data: unknown) {
+    this.onmessage?.(
+      new MessageEvent('message', {
+        data: data instanceof ArrayBuffer || typeof data === 'string' ? data : JSON.stringify(data),
+      }),
+    );
+  }
+  serverClose(code: number) {
+    this.readyState = 3;
+    this.onclose?.(new CloseEvent('close', { code }));
+  }
+  controls(): Record<string, unknown>[] {
+    return this.sent
+      .filter((d): d is string => typeof d === 'string')
+      .map((d) => JSON.parse(d) as Record<string, unknown>);
+  }
+}
+
+/** Audio engine double: records playback, lets tests push mic frames / levels. */
+export const fakeAudioEngine = () => {
+  const frameFns: ((f: ArrayBuffer) => void)[] = [];
+  const levelFns: ((l: number) => void)[] = [];
+  const played: ArrayBuffer[] = [];
+  const calls = { clear: 0, muted: [] as boolean[], closed: 0 };
+  const engine = {
+    sampleRate: 24_000,
+    underruns: 0,
+    onFrame: (fn: (f: ArrayBuffer) => void) => frameFns.push(fn),
+    onLevel: (fn: (l: number) => void) => levelFns.push(fn),
+    play: (pcm: ArrayBuffer) => played.push(pcm),
+    clear: () => {
+      calls.clear += 1;
+    },
+    setMuted: (m: boolean) => calls.muted.push(m),
+    close: () => {
+      calls.closed += 1;
+      return Promise.resolve();
+    },
+  };
+  return {
+    engine,
+    played,
+    calls,
+    micFrame: (f = new ArrayBuffer(960)) => frameFns.forEach((fn) => fn(f)),
+    micLevel: (l: number) => levelFns.forEach((fn) => fn(l)),
+  };
+};
