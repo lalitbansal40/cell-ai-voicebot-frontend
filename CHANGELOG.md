@@ -14,8 +14,8 @@ All notable changes to this project are documented here. Format: [Keep a Changel
   - "Test call" in the flow builder and the agent editor, Settings → Calls (recording on / off + notice text; the switch moved from the Account tab), ledger call breakdown, Recent calls on the dashboard.
   - Bundle: main 439.0 → 445.9 KB gzip (+6.9 KB); tester 8.0 KB, detail 3.0 KB, list 2.5 KB, worklets 0.9 + 0.8 KB.
   - E2E: Chromium fake mic; 12 call tests in 2 specs (Loan recovery "Done when" by keypad with transcript, cost, playable recording and ledger charge; Hinglish promise for tomorrow; English agent reply; barge-in; wrong keys → callback; AI silence; empty wallet; 4th live call refused; viewer / agent-role / impersonator); all 44 green twice; backend logs free of secrets, customer words, bot texts, names and phones.
-  - Fixed: the tester marked the wrong transcript line as interrupted (backend fixes from the same runs: signed recordings blocked cross-origin and not seekable, the socket left open after a hang up, words lost during the AI opening line).
-  - Tests: 614 → 665.
+  - Fixed: the tester marked the wrong transcript line as interrupted; the tester result could stay on a skeleton when it read the call before the backend saved it (now listens to `call.ended` and polls while the call is live; found by the fresh-clone E2E run) (backend fixes from the same runs: signed recordings blocked cross-origin and not seekable, the socket left open after a hang up, words lost during the AI opening line).
+  - Tests: 614 → 666.
 
 - **Phase 6 · Call flows (T6.10–T6.15)** — 2026-10-12
   - `@xyflow/react` 12.12.0 + `@dagrejs/dagre` 3.1.1; API clients for flows, flow audio and the simulator; Call flows in the menu (`LIVE_PHASE = 6`); live `flow.updated` / `flow.published`; shared field components (`VariablePicker`, `SecretField`, `JsonTemplateField`) moved to `src/components/fields`.
