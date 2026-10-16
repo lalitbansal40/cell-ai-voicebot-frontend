@@ -14,6 +14,7 @@ import { fakeAgent, fakeAgentRow } from '@/test/agents';
 import { signInAs } from '@/test/auth';
 import { fakeAudioEngine, fakeCall, FakeMediaWs } from '@/test/calls';
 import { fakeFlowRow, KNOWN_VARIABLES } from '@/test/flows';
+import { fakeRealtime } from '@/test/realtime';
 import { renderWithProviders } from '@/test/render';
 
 import { MicError } from '../audio/engine';
@@ -52,9 +53,14 @@ const make = (overrides: Partial<WebCallDeps> = {}) => {
   return { deps, audio, stop };
 };
 
-const page = (deps: WebCallDeps, route = '/calls/test?flowId=f1&version=draft') =>
+const page = (
+  deps: WebCallDeps,
+  route = '/calls/test?flowId=f1&version=draft',
+  realtime?: ReturnType<typeof fakeRealtime>['client'],
+) =>
   renderWithProviders({
     route,
+    ...(realtime ? { realtime } : {}),
     routes: [
       {
         path: '/calls/test',
@@ -248,6 +254,51 @@ describe('Web call tester', () => {
     act(() => ws.serverClose(1000));
     await user.click(await screen.findByRole('button', { name: 'New call' }));
     expect(screen.getByRole('button', { name: 'Start call' })).toBeInTheDocument();
+  });
+
+  it('the result waits for the saved call: the call.ended event refreshes it, else it polls', async () => {
+    // the socket says "ended" before the backend saved the call: the first read is still live
+    const endCall = async () => {
+      const user = userEvent.setup();
+      await user.click(await screen.findByRole('button', { name: 'Start call' }));
+      await waitFor(() => expect(FakeMediaWs.instances).toHaveLength(1));
+      const ws = FakeMediaWs.last();
+      await act(async () => {
+        ws.serverOpen();
+        await Promise.resolve();
+      });
+      status('in_progress', 1);
+      server({ type: 'call.ended', reason: 'hangup_node', durationSec: 26, costMicros: 895_000 });
+      act(() => ws.serverClose(1000));
+      const result = await screen.findByRole('region', { name: 'Call result' });
+      await waitFor(() => expect(callsApi.get).toHaveBeenCalledTimes(1));
+      expect(within(result).queryByRole('link', { name: /Open call details/ })).toBeNull();
+      return result;
+    };
+    const live = fakeCall({ status: 'in_progress', endReason: null });
+
+    // 1. live updates: call.ended on /ws/events refetches the call
+    vi.mocked(callsApi.get).mockResolvedValueOnce(live).mockResolvedValue(fakeCall());
+    const rt = fakeRealtime();
+    const first = make();
+    const one = page(first.deps, undefined, rt.client);
+    const result = await endCall();
+    rt.emit('call.ended', { callId: 'c1', status: 'completed' });
+    expect(await within(result).findByRole('link', { name: /Open call details/ })).toBeVisible();
+    one.unmount();
+
+    // 2. no live updates: polls while the saved call is still live
+    vi.mocked(callsApi.get).mockReset();
+    vi.mocked(callsApi.get).mockResolvedValueOnce(live).mockResolvedValue(fakeCall());
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    FakeMediaWs.instances = [];
+    const second = make();
+    page(second.deps);
+    const again = await endCall();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_500);
+    });
+    expect(await within(again).findByRole('link', { name: /Open call details/ })).toBeVisible();
   });
 
   it('a dropped socket fails the call with the reason; leaving during a call asks first', async () => {

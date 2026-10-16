@@ -10,15 +10,17 @@ import { Link as RouterLink } from 'react-router';
 import { formatCurrencyMicros } from '@/utils/format';
 
 import { dispositionLabel, END_REASON_LABELS } from '../labels';
-import { useCall } from '../queries';
+import { LIVE_STATUSES, useCall, useCallLiveUpdates } from '../queries';
 
 import type { WebCallState } from './useWebCall';
 
 /** After the call: why it ended, the outcome and what it cost (from the saved call). */
 export function CallSummary({ state, onNew }: { state: WebCallState; onNew: () => void }) {
-  const call = useCall(state.callId ?? '');
+  // the media socket says "ended" before the call is saved: call.ended (or polling) refreshes it
+  useCallLiveUpdates();
+  const call = useCall(state.callId ?? '', { untilSettled: true });
   const c = call.data;
-  const settled = c && !['queued', 'ringing', 'in_progress'].includes(c.status);
+  const settled = c && !LIVE_STATUSES.includes(c.status);
   return (
     <Paper variant="outlined" sx={{ p: 2 }} component="section" aria-label="Call result">
       <Stack spacing={1}>

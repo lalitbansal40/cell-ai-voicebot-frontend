@@ -39,11 +39,22 @@ export const useCalls = (query: Omit<ListCallsQuery, 'cursor'>) =>
 export const useActiveCalls = (enabled = true) =>
   useQuery({ queryKey: callKeys.active, queryFn: callsApi.active, enabled });
 
-export const useCall = (id: string) =>
+/** Polling interval while a call that should be over is still saved as live. */
+export const CALL_SETTLE_POLL_MS = 2_000;
+
+/**
+ * One call. `untilSettled`: refetch while the saved call is still live (the
+ * tester hears "ended" on its media socket before the backend saved the call).
+ */
+export const useCall = (id: string, { untilSettled = false }: { untilSettled?: boolean } = {}) =>
   useQuery({
     queryKey: callKeys.detail(id),
     queryFn: () => callsApi.get(id),
     enabled: Boolean(id),
+    refetchInterval: (query) =>
+      untilSettled && query.state.data && LIVE_STATUSES.includes(query.state.data.status)
+        ? CALL_SETTLE_POLL_MS
+        : false,
   });
 
 export const useCallTranscript = (id: string) =>
