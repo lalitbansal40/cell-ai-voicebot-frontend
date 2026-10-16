@@ -6,6 +6,17 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 7 · Calls (T7.10–T7.15)** — 2026-10-16
+  - API clients and query hooks for every `/calls` route (regenerated types), `call.*` WS events, Calls in the menu (`LIVE_PHASE = 7`), routes `/calls`, `/calls/test`, `/calls/:id` (tester, detail and list as lazy chunks).
+  - Browser audio: `dsp.ts` (downmix, streaming resampler, PCM16, 960-byte framer, ring buffer, level) shared by the capture and playback worklets, `engine.ts` (mic, worklets, speaker, underruns), `media-socket.ts` (`/ws/media` protocol, close codes → messages).
+  - Web call tester: flow (published / saved draft) or agent alone, contact or typed values + test phone, mic check with a level meter, connecting / ringing / in call, timer, mute, hang up, keypad, transfer prompt, "Type instead of speaking" (test mode), live transcript (playing / heard / interrupted), latency chips, timeline, fake-voice badge, result and cost, errors (mic, wallet, limits, socket), leave-page guard.
+  - Calls list (filters in the URL, cursor "Load more", live updates) and call detail (summary with links, outcome, cost split, quality, timeline, transcript that seeks the recording, recording loaded on demand and refreshed when expired, hang up for live calls; no player for viewers and impersonators).
+  - "Test call" in the flow builder and the agent editor, Settings → Calls (recording on / off + notice text; the switch moved from the Account tab), ledger call breakdown, Recent calls on the dashboard.
+  - Bundle: main 439.0 → 445.9 KB gzip (+6.9 KB); tester 8.0 KB, detail 3.0 KB, list 2.5 KB, worklets 0.9 + 0.8 KB.
+  - E2E: Chromium fake mic; 12 call tests in 2 specs (Loan recovery "Done when" by keypad with transcript, cost, playable recording and ledger charge; Hinglish promise for tomorrow; English agent reply; barge-in; wrong keys → callback; AI silence; empty wallet; 4th live call refused; viewer / agent-role / impersonator); all 44 green twice; backend logs free of secrets, customer words, bot texts, names and phones.
+  - Fixed: the tester marked the wrong transcript line as interrupted (backend fixes from the same runs: signed recordings blocked cross-origin and not seekable, the socket left open after a hang up, words lost during the AI opening line).
+  - Tests: 614 → 665.
+
 - **Phase 6 · Call flows (T6.10–T6.15)** — 2026-10-12
   - `@xyflow/react` 12.12.0 + `@dagrejs/dagre` 3.1.1; API clients for flows, flow audio and the simulator; Call flows in the menu (`LIVE_PHASE = 6`); live `flow.updated` / `flow.published`; shared field components (`VariablePicker`, `SecretField`, `JsonTemplateField`) moved to `src/components/fields`.
   - Flows list (status, search, duplicate, export, archive, delete guard), template picker with agent pick / create, JSON import, versions page (view, export, restore); agents show "Used in N flows" and name the flows when delete is refused.
