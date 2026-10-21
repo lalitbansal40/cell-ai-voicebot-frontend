@@ -56,7 +56,7 @@ export function ResultsTab({ campaignId }: { campaignId: string }) {
       header: 'Contact',
       render: (r) => (
         <Stack>
-          <Link component={RouterLink} to={`/contacts/${r.contact.id}`}>
+          <Link component={RouterLink} to={`/contacts/c/${r.contact.id}`}>
             {r.contact.name ?? 'No name'}
           </Link>
           <span>••••{r.phoneLast4}</span>

@@ -124,6 +124,10 @@ describe('/campaigns/:id', () => {
     expect(within(table).getByText('2026-10-22 17:00')).toBeInTheDocument();
     expect(within(table).getByText('2026-10-25 · ₹500.00')).toBeInTheDocument();
     expect(within(table).getByRole('link', { name: 'Call' })).toHaveAttribute('href', '/calls/c1');
+    expect(within(table).getByRole('link', { name: 'Asha Verma' })).toHaveAttribute(
+      'href',
+      '/contacts/c/k1',
+    );
     // viewers: no controls, no export
     expect(screen.queryByRole('button', { name: 'Pause' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Export' })).not.toBeInTheDocument();
