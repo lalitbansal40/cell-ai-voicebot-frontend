@@ -40,16 +40,18 @@ function Section({
 }: {
   title: string;
   step: StepIndex;
-  onEdit: (step: StepIndex) => void;
+  onEdit: ((step: StepIndex) => void) | undefined;
   children: ReactNode;
 }) {
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="subtitle2">{title}</Typography>
-        <Button size="small" onClick={() => onEdit(step)} aria-label={`Edit ${title}`}>
-          Edit
-        </Button>
+        {onEdit && (
+          <Button size="small" onClick={() => onEdit(step)} aria-label={`Edit ${title}`}>
+            Edit
+          </Button>
+        )}
       </Stack>
       <Box sx={{ typography: 'body2', color: 'text.secondary' }}>{children}</Box>
     </Paper>
@@ -58,8 +60,10 @@ function Section({
 
 export interface ReviewStepProps {
   draft: WizardDraft;
-  onEdit: (step: StepIndex) => void;
-  estimate: {
+  /** Absent: a read-only summary (campaign detail → Settings). */
+  onEdit?: (step: StepIndex) => void;
+  /** Absent: no estimate panel. */
+  estimate?: {
     data?: (CampaignEstimate & { walletAvailableMicros?: number }) | undefined;
     isPending: boolean;
     error: unknown;
@@ -72,7 +76,7 @@ export function ReviewStep({ draft, onEdit, estimate }: ReviewStepProps) {
   const lists = useListOptions();
   const segments = useSegments();
   const flow = flows.data?.data.find((f) => f.id === draft.flowId);
-  const e = estimate.data;
+  const e = estimate?.data;
   const wallet = e?.walletAvailableMicros;
   const short = e !== undefined && wallet !== undefined && e.maxMicros > wallet;
   const mode = scheduleMode(draft.schedule);
@@ -147,46 +151,49 @@ export function ReviewStep({ draft, onEdit, estimate }: ReviewStepProps) {
         )}
       </Section>
 
-      <Paper variant="outlined" sx={{ p: 2 }} aria-label="Estimate">
-        <Typography variant="subtitle2" gutterBottom>
-          {draft.mode === 'dry_run' ? 'What it would cost' : 'Estimated cost'}
-        </Typography>
-        {estimate.isPending && <CircularProgress size={20} />}
-        {Boolean(estimate.error) && (
-          <Alert severity="error">{getErrorMessage(estimate.error)}</Alert>
-        )}
-        {e && (
-          <Stack spacing={1}>
-            <Typography variant="h6">
-              {formatCurrencyMicros(e.minMicros)} – {formatCurrencyMicros(e.maxMicros)}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {e.contacts} contacts × about {e.assumptions.expectedAttempts} attempts, about{' '}
-              {e.assumptions.avgDurationSec} s per answered call,{' '}
-              {formatCurrencyMicros(e.perCallMicros)} per call.
-            </Typography>
-            {wallet !== undefined && (
-              <Typography variant="body2">
-                Wallet available: {formatCurrencyMicros(wallet)}
+      {estimate && (
+        <Paper variant="outlined" sx={{ p: 2 }} aria-label="Estimate">
+          <Typography variant="subtitle2" gutterBottom>
+            {draft.mode === 'dry_run' ? 'What it would cost' : 'Estimated cost'}
+          </Typography>
+          {estimate.isPending && <CircularProgress size={20} />}
+          {Boolean(estimate.error) && (
+            <Alert severity="error">{getErrorMessage(estimate.error)}</Alert>
+          )}
+          {e && (
+            <Stack spacing={1}>
+              <Typography variant="h6">
+                {formatCurrencyMicros(e.minMicros)} – {formatCurrencyMicros(e.maxMicros)}
               </Typography>
-            )}
-            {short && (
-              <Alert severity="warning">
-                The estimate is higher than the wallet — the campaign will pause when money runs out
-                {draft.mode === 'dry_run'
-                  ? ' (a dry run pauses the same way, without charging)'
-                  : ''}
-                .
-              </Alert>
-            )}
-            {draft.mode === 'dry_run' && (
-              <Typography variant="caption" color="text.secondary">
-                A dry run is never charged — this is what real calls would cost.
+              <Typography variant="body2" color="text.secondary">
+                {e.contacts} contacts × about {e.assumptions.expectedAttempts} attempts, about{' '}
+                {e.assumptions.avgDurationSec} s per answered call,{' '}
+                {formatCurrencyMicros(e.perCallMicros)} per call.
               </Typography>
-            )}
-          </Stack>
-        )}
-      </Paper>
+              {wallet !== undefined && (
+                <Typography variant="body2">
+                  Wallet available: {formatCurrencyMicros(wallet)}
+                </Typography>
+              )}
+              {short && (
+                <Alert severity="warning">
+                  The estimate is higher than the wallet — the campaign will pause when money runs
+                  out
+                  {draft.mode === 'dry_run'
+                    ? ' (a dry run pauses the same way, without charging)'
+                    : ''}
+                  .
+                </Alert>
+              )}
+              {draft.mode === 'dry_run' && (
+                <Typography variant="caption" color="text.secondary">
+                  A dry run is never charged — this is what real calls would cost.
+                </Typography>
+              )}
+            </Stack>
+          )}
+        </Paper>
+      )}
       <Divider />
       <Alert severity="info">
         Do-not-call numbers and opted-out contacts are always skipped; each contact is called at

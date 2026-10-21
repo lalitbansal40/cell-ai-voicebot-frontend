@@ -210,6 +210,14 @@ export const routes: RouteObject[] = [
                 }),
               },
               {
+                // the dashboard (charts) is its own chunk
+                path: ':id',
+                lazy: async () => ({
+                  Component: (await import('@/pages/campaigns/CampaignDetailPage'))
+                    .CampaignDetailPage,
+                }),
+              },
+              {
                 element: (
                   <RequirePermission perm="campaigns.write">
                     <Outlet />
