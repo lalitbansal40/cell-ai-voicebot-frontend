@@ -1,8 +1,8 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
 
 import { usePermission } from '@/features/auth/hooks';
 import { useImpersonating } from '@/features/wallet/queries';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
   campaignsApi,
   type AudiencePreviewInput,
@@ -81,20 +81,10 @@ export const useCampaignEstimate = (id: string, enabled = true) =>
     enabled: Boolean(id) && enabled,
   });
 
-/** The value after it stopped changing for `ms`. */
-export const useDebounced = <T>(value: T, ms: number): T => {
-  const [current, setCurrent] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setCurrent(value), ms);
-    return () => clearTimeout(timer);
-  }, [value, ms]);
-  return current;
-};
-
 /** Audience counts while the wizard is edited (debounced; `null` = nothing to preview). */
 export const useAudiencePreview = (body: AudiencePreviewInput | null) => {
   const key = JSON.stringify(body);
-  const debounced = useDebounced(key, PREVIEW_DEBOUNCE_MS);
+  const debounced = useDebouncedValue(key, PREVIEW_DEBOUNCE_MS);
   const input = debounced === 'null' ? null : (JSON.parse(debounced) as AudiencePreviewInput);
   return useQuery({
     queryKey: campaignKeys.preview(input),

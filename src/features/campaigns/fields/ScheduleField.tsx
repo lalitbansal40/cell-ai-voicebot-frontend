@@ -21,6 +21,8 @@ export interface ScheduleFieldProps {
   timezone: string;
   disabled?: boolean;
   now?: Date;
+  /** Only the end (a started campaign can still move its end). */
+  endOnly?: boolean;
 }
 
 /** Start now / later (date-time) / recurring (daily or weekly at a time), + an optional end. */
@@ -30,6 +32,7 @@ export function ScheduleField({
   timezone,
   disabled = false,
   now,
+  endOnly = false,
 }: ScheduleFieldProps) {
   const mode = scheduleMode(value);
   const problems = scheduleProblems(value, now);
@@ -48,6 +51,19 @@ export function ScheduleField({
     }
   };
   const recurrence = value.recurrence;
+  const end = (
+    <TextField
+      label={`End (optional, ${timezone})`}
+      type="datetime-local"
+      value={toLocalInput(value.endAt, timezone)}
+      disabled={disabled}
+      onChange={(e) => onChange({ ...value, endAt: fromLocalInput(e.target.value, timezone) })}
+      helperText="Waiting contacts are skipped at the end; live calls finish."
+      slotProps={{ inputLabel: { shrink: true } }}
+      sx={{ maxWidth: 320 }}
+    />
+  );
+  if (endOnly) return end;
   return (
     <Stack spacing={2}>
       <RadioGroup
@@ -149,16 +165,7 @@ export function ScheduleField({
           />
         </Stack>
       )}
-      <TextField
-        label={`End (optional, ${timezone})`}
-        type="datetime-local"
-        value={toLocalInput(value.endAt, timezone)}
-        disabled={disabled}
-        onChange={(e) => onChange({ ...value, endAt: fromLocalInput(e.target.value, timezone) })}
-        helperText="Waiting contacts are skipped at the end; live calls finish."
-        slotProps={{ inputLabel: { shrink: true } }}
-        sx={{ maxWidth: 320 }}
-      />
+      {end}
       {problems.map((p) => (
         <Typography key={p} variant="caption" color="error">
           {p}

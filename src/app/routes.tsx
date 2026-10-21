@@ -196,6 +196,46 @@ export const routes: RouteObject[] = [
             ],
           },
           {
+            path: '/campaigns',
+            element: (
+              <RequirePermission perm="campaigns.read">
+                <Outlet />
+              </RequirePermission>
+            ),
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/campaigns/CampaignsPage')).CampaignsPage,
+                }),
+              },
+              {
+                element: (
+                  <RequirePermission perm="campaigns.write">
+                    <Outlet />
+                  </RequirePermission>
+                ),
+                children: [
+                  {
+                    // the wizard is its own chunk
+                    path: 'new',
+                    lazy: async () => ({
+                      Component: (await import('@/pages/campaigns/CampaignWizardPage'))
+                        .CampaignWizardPage,
+                    }),
+                  },
+                  {
+                    path: ':id/edit',
+                    lazy: async () => ({
+                      Component: (await import('@/pages/campaigns/CampaignWizardPage'))
+                        .CampaignWizardPage,
+                    }),
+                  },
+                ],
+              },
+            ],
+          },
+          {
             path: '/calls',
             element: (
               <RequirePermission perm="calls.read">

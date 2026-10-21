@@ -80,6 +80,7 @@ describe('AppLayout', () => {
       'Knowledge',
       'Call flows',
       'Calls',
+      'Campaigns',
       'Team',
       'Settings',
     ]);
@@ -100,6 +101,7 @@ describe('AppLayout', () => {
       'Knowledge',
       'Call flows',
       'Calls',
+      'Campaigns',
       'Settings',
     ]);
   });
@@ -114,6 +116,7 @@ describe('AppLayout', () => {
       'Knowledge',
       'Call flows',
       'Calls',
+      'Campaigns',
       'Settings',
     ]);
   });

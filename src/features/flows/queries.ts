@@ -50,7 +50,11 @@ export const useFlowVariables = (id: string) =>
   useQuery({ queryKey: flowKeys.variables(id), queryFn: () => flowsApi.variables(id) });
 
 export const useFlowVersions = (id: string) =>
-  useQuery({ queryKey: flowKeys.versions(id), queryFn: () => flowsApi.versions(id) });
+  useQuery({
+    queryKey: flowKeys.versions(id),
+    queryFn: () => flowsApi.versions(id),
+    enabled: Boolean(id),
+  });
 
 export const useFlowVersion = (id: string, version: number | null) =>
   useQuery({
