@@ -78,6 +78,8 @@ const DETAIL: AdminAccountDetail = {
   owner: base.user as AdminAccountDetail['owner'],
   usersCount: 3,
   usersByStatus: { active: 3, invited: 0, disabled: 0 },
+  limits: { maxConcurrentCalls: 10, dialsPerMinute: 60 },
+  activeCampaigns: 0,
   recentAudit: [],
 };
 const CARD = {

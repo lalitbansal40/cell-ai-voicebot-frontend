@@ -60,6 +60,9 @@ const imp = (id: string, extra: Partial<ImportJob>): ImportJob => ({
 });
 const exp = (id: string, extra: Partial<ExportJob>): ExportJob => ({
   id,
+  kind: 'contacts',
+  campaignId: null,
+  format: 'csv',
   scope: 'segment',
   columns: ['name'],
   status: 'ready',

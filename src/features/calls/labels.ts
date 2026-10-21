@@ -36,6 +36,10 @@ export const END_REASON_LABELS: Record<CallEndReason, string> = {
   server_shutdown: 'Server restarted',
   canceled: 'Not connected',
   limit: 'Limit reached',
+  no_answer: 'No answer',
+  busy: 'Busy',
+  invalid_number: 'Invalid number',
+  campaign_canceled: 'Campaign canceled',
 };
 
 /** Disposition key → label (unknown keys shown as they are). */

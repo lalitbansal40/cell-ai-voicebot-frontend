@@ -42,6 +42,8 @@ const detail = (overrides: Partial<AdminAccountDetail['account']> = {}): AdminAc
   owner: base.user as AdminAccountDetail['owner'],
   usersCount: 3,
   usersByStatus: { active: 2, invited: 1, disabled: 0 },
+  limits: { maxConcurrentCalls: 10, dialsPerMinute: 60 },
+  activeCampaigns: 1,
   recentAudit: [
     {
       id: 'e1',

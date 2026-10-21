@@ -30,6 +30,7 @@ const ALL = [
   'campaigns.read',
   'campaigns.write',
   'campaigns.run',
+  'campaigns.export',
   'reports.read',
   'reports.export',
   'integrations.manage',
@@ -60,6 +61,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'campaigns.read',
     'campaigns.write',
     'campaigns.run',
+    'campaigns.export',
     'reports.read',
     'reports.export',
   ],
@@ -122,6 +124,7 @@ export const fakeSession = (
     defaultLanguage: 'hinglish',
     settings: {
       callingWindow: { start: '09:00', end: '19:00', days: [1, 2, 3, 4, 5, 6] },
+      callCaps: { perDay: 3, perWeek: 10, minGapMinutes: 30 },
       recordingEnabled: true,
       recordingNotice: 'Yeh call quality ke liye record ki ja rahi hai.',
       aiDisclosureEnabled: true,

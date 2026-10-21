@@ -870,7 +870,7 @@ export interface paths {
             'application/json': {
               /** @enum {boolean} */
               success: true;
-              data: components['schemas']['PublicAccount'];
+              data: components['schemas']['AccountWithWarning'];
             };
           };
         };
@@ -936,6 +936,19 @@ export interface paths {
                 end: string;
                 days: number[];
               };
+              /**
+               * @description Owner / admin only
+               * @example {
+               *       "perDay": 3,
+               *       "perWeek": 10,
+               *       "minGapMinutes": 30
+               *     }
+               */
+              callCaps?: {
+                perDay: number;
+                perWeek: number;
+                minGapMinutes: number;
+              };
               recordingEnabled?: boolean;
               recordingNotice?: string;
               aiDisclosureEnabled?: boolean;
@@ -953,7 +966,7 @@ export interface paths {
             'application/json': {
               /** @enum {boolean} */
               success: true;
-              data: components['schemas']['PublicAccount'];
+              data: components['schemas']['AccountWithWarning'];
             };
           };
         };
@@ -1487,6 +1500,220 @@ export interface paths {
         };
         /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
         401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/accounts/{id}/limits': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Set the dialing limits of an account (superadmin; audited) */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            maxConcurrentCalls?: number;
+            dialsPerMinute?: number;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['AccountLimits'];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/api/v1/admin/accounts/{id}/campaigns/pause': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Emergency pause of every scheduled / running campaign of an account (superadmin)
+     * @description Paused with reason `admin`: only a superadmin can resume them.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                paused: number;
+              };
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/accounts/{id}/campaigns/{campaignId}/resume': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Resume a campaign paused by the platform team (superadmin) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+          campaignId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                id: string;
+                status: string;
+              };
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -3695,7 +3922,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Export status, with a fresh signed download link when ready */
+    /** Export status, with a fresh signed download link when ready (contact exports: contacts.export; campaign results: campaigns.export) */
     get: {
       parameters: {
         query?: never;
@@ -10992,6 +11219,335 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/wallet/topups': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Recharge history (wallet.read) */
+    get: {
+      parameters: {
+        query?: {
+          page?: number;
+          limit?: number;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['TopupOrder'][];
+              meta: components['schemas']['OffsetPageMeta'];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    /** Start a wallet recharge — creates a payment order (wallet.topup; Idempotency-Key) */
+    post: {
+      parameters: {
+        query?: never;
+        header: {
+          /** @description Required (api.md §10) */
+          'Idempotency-Key': string;
+        };
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Wallet credit (before GST), whole rupees in micros
+             * @example 1000000000
+             */
+            amountMicros: number;
+          };
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['TopupCheckout'];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/wallet/topups/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** One recharge (poll it after checkout) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['TopupOrder'];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/wallet/topups/{id}/verify': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Confirm a checkout payment (signature + payment re-fetched from the gateway) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            providerPaymentId: string;
+            signature: string;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['TopupOrder'];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/wallet/topups/{id}/fake-complete': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Test payments only (PAYMENT_PROVIDER=fake): pay or fail an order */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /** @enum {string} */
+            outcome: 'paid' | 'failed';
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['TopupOrder'];
+            };
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/billing/profile': {
     parameters: {
       query?: never;
@@ -11316,335 +11872,6 @@ export interface paths {
     };
     put?: never;
     post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/wallet/topups': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Recharge history (wallet.read) */
-    get: {
-      parameters: {
-        query?: {
-          page?: number;
-          limit?: number;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {boolean} */
-              success: true;
-              data: components['schemas']['TopupOrder'][];
-              meta: components['schemas']['OffsetPageMeta'];
-            };
-          };
-        };
-        /** @description Missing permission, disabled user, suspended account or impersonation block */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-      };
-    };
-    put?: never;
-    /** Start a wallet recharge — creates a payment order (wallet.topup; Idempotency-Key) */
-    post: {
-      parameters: {
-        query?: never;
-        header: {
-          /** @description Required (api.md §10) */
-          'Idempotency-Key': string;
-        };
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          'application/json': {
-            /**
-             * @description Wallet credit (before GST), whole rupees in micros
-             * @example 1000000000
-             */
-            amountMicros: number;
-          };
-        };
-      };
-      responses: {
-        /** @description Created */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {boolean} */
-              success: true;
-              data: components['schemas']['TopupCheckout'];
-            };
-          };
-        };
-        /** @description Missing permission, disabled user, suspended account or impersonation block */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
-        429: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/wallet/topups/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** One recharge (poll it after checkout) */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {boolean} */
-              success: true;
-              data: components['schemas']['TopupOrder'];
-            };
-          };
-        };
-        /** @description Missing permission, disabled user, suspended account or impersonation block */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/wallet/topups/{id}/verify': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Confirm a checkout payment (signature + payment re-fetched from the gateway) */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          'application/json': {
-            providerPaymentId: string;
-            signature: string;
-          };
-        };
-      };
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {boolean} */
-              success: true;
-              data: components['schemas']['TopupOrder'];
-            };
-          };
-        };
-        /** @description Missing permission, disabled user, suspended account or impersonation block */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/wallet/topups/{id}/fake-complete': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Test payments only (PAYMENT_PROVIDER=fake): pay or fail an order */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          'application/json': {
-            /** @enum {string} */
-            outcome: 'paid' | 'failed';
-          };
-        };
-      };
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {boolean} */
-              success: true;
-              data: components['schemas']['TopupOrder'];
-            };
-          };
-        };
-        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-      };
-    };
     delete?: never;
     options?: never;
     head?: never;
@@ -13223,6 +13450,8 @@ export interface paths {
           flowId?: string;
           agentId?: string;
           contactId?: string;
+          campaignId?: string;
+          provider?: 'webcall' | 'sip' | 'notifynow' | 'dryrun';
           isTest?: 'true' | 'false';
           from?: string;
           to?: string;
@@ -13279,7 +13508,88 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    /** Call one contact now (calls.trigger + flows.read / agents.read, Idempotency-Key, 10 / min / user) — dry-run provider (simulated, never charged) until phone lines exist; the dial guard applies: 422 CALL_OUTSIDE_WINDOW (details[0].message = next window start), 422 CALL_NOT_ALLOWED (DND / opted out / daily or weekly limit / minimum gap) */
+    post: {
+      parameters: {
+        query?: never;
+        header: {
+          'idempotency-key': string;
+        };
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            contactId: string;
+            flowId?: string;
+            /** @description Flows: `published` (default) or a version number */
+            version?: 'published' | number;
+            agentId?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Call started */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Call'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
     delete?: never;
     options?: never;
     head?: never;
@@ -13698,6 +14008,1665 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/campaigns': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Campaigns of the account with stats (campaigns.read, cursor pagination) */
+    get: {
+      parameters: {
+        query?: {
+          cursor?: string;
+          limit?: number;
+          status?:
+            | ('draft' | 'scheduled' | 'running' | 'paused' | 'completed' | 'canceled' | 'failed')
+            | (
+                'draft' | 'scheduled' | 'running' | 'paused' | 'completed' | 'canceled' | 'failed'
+              )[];
+          mode?: 'dry_run' | 'live';
+          flowId?: string;
+          parentId?: string;
+          contactId?: string;
+          q?: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Campaigns */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['CampaignListItem'][];
+              meta: components['schemas']['CursorPageMeta'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    /** Create a draft (campaigns.write; 60 writes / min / user) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            name: string;
+            /**
+             * @default dry_run
+             * @enum {string}
+             */
+            mode?: 'dry_run' | 'live';
+            flowId: string;
+            audience?: {
+              listIds?: string[];
+              segmentId?: string | null;
+              filter?: components['schemas']['ContactFilter'] & (Record<string, never> | null);
+              contactIds?: string[];
+              excludeActiveCampaigns?: boolean;
+              skipIfMissing?: string[];
+            };
+            schedule?: {
+              /** Format: date-time */
+              startAt?: string | null;
+              /** Format: date-time */
+              endAt?: string | null;
+              /** @example Asia/Kolkata */
+              timezone?: string;
+              recurrence?: {
+                /** @enum {string} */
+                freq: 'daily' | 'weekly';
+                /** @default [] */
+                days?: number[];
+                time: string;
+                /**
+                 * Format: date-time
+                 * @default null
+                 */
+                until?: string | null;
+              } | null;
+            };
+            /**
+             * @example {
+             *       "start": "09:00",
+             *       "end": "19:00",
+             *       "days": [
+             *         1,
+             *         2,
+             *         3,
+             *         4,
+             *         5,
+             *         6
+             *       ]
+             *     }
+             */
+            window?: {
+              start: string;
+              end: string;
+              days: number[];
+            };
+            retry?: {
+              maxAttempts?: number;
+              intervalMinutes?: number;
+              retryOn?: ('no_answer' | 'busy' | 'failed' | 'no_outcome')[];
+            };
+            followUps?: {
+              callbacks?: boolean;
+              callbackMaxDays?: number;
+              promiseCheck?: {
+                enabled?: boolean;
+                daysAfter?: number;
+              };
+            };
+            pacing?: {
+              concurrency?: number;
+              dialsPerMinute?: number;
+              /** @enum {string} */
+              priority?: 'high' | 'normal' | 'low';
+            };
+            autoResume?: boolean;
+            dryRun?: {
+              mix?: {
+                answered: number;
+                no_answer: number;
+                busy: number;
+                failed: number;
+                invalid_number: number;
+              };
+              scenarios?: {
+                paid: number;
+                promise: number;
+                refuse: number;
+                callback: number;
+                silence: number;
+                wrong_number: number;
+                hangup_early: number;
+                wrong_keys: number;
+              };
+              speed?: number;
+            } | null;
+            chosenVersion?: number | null;
+            /** @enum {string} */
+            versionPolicy?: 'pinned' | 'latest';
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Campaign'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/campaigns/audience/preview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Audience counts, exclusions, samples (last 4 digits) and missing values (campaigns.read) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            flowId: string;
+            chosenVersion?: number | null;
+            audience: {
+              listIds?: string[];
+              segmentId?: string | null;
+              filter?: components['schemas']['ContactFilter'] & (Record<string, never> | null);
+              contactIds?: string[];
+              excludeActiveCampaigns?: boolean;
+              skipIfMissing?: string[];
+            };
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['AudiencePreview'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/campaigns/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Campaign with stats, estimate and waiting info (campaigns.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Campaign'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    /** Soft delete a draft / finished campaign (campaigns.write) */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description No content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /** Edit (campaigns.write) — per-status rules; a stale revision → 409 CAMPAIGN_REVISION_CONFLICT */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            revision: number;
+            name?: string;
+            /** @enum {string} */
+            mode?: 'dry_run' | 'live';
+            flowId?: string;
+            audience?: {
+              listIds?: string[];
+              segmentId?: string | null;
+              filter?: components['schemas']['ContactFilter'] & (Record<string, never> | null);
+              contactIds?: string[];
+              excludeActiveCampaigns?: boolean;
+              skipIfMissing?: string[];
+            };
+            schedule?: {
+              /** Format: date-time */
+              startAt?: string | null;
+              /** Format: date-time */
+              endAt?: string | null;
+              /** @example Asia/Kolkata */
+              timezone?: string;
+              recurrence?: {
+                /** @enum {string} */
+                freq: 'daily' | 'weekly';
+                /** @default [] */
+                days?: number[];
+                time: string;
+                /**
+                 * Format: date-time
+                 * @default null
+                 */
+                until?: string | null;
+              } | null;
+            };
+            /**
+             * @example {
+             *       "start": "09:00",
+             *       "end": "19:00",
+             *       "days": [
+             *         1,
+             *         2,
+             *         3,
+             *         4,
+             *         5,
+             *         6
+             *       ]
+             *     }
+             */
+            window?: {
+              start: string;
+              end: string;
+              days: number[];
+            };
+            retry?: {
+              maxAttempts?: number;
+              intervalMinutes?: number;
+              retryOn?: ('no_answer' | 'busy' | 'failed' | 'no_outcome')[];
+            };
+            followUps?: {
+              callbacks?: boolean;
+              callbackMaxDays?: number;
+              promiseCheck?: {
+                enabled?: boolean;
+                daysAfter?: number;
+              };
+            };
+            pacing?: {
+              concurrency?: number;
+              dialsPerMinute?: number;
+              /** @enum {string} */
+              priority?: 'high' | 'normal' | 'low';
+            };
+            autoResume?: boolean;
+            dryRun?: {
+              mix?: {
+                answered: number;
+                no_answer: number;
+                busy: number;
+                failed: number;
+                invalid_number: number;
+              };
+              scenarios?: {
+                paid: number;
+                promise: number;
+                refuse: number;
+                callback: number;
+                silence: number;
+                wrong_number: number;
+                hangup_early: number;
+                wrong_keys: number;
+              };
+              speed?: number;
+            } | null;
+            chosenVersion?: number | null;
+            /** @enum {string} */
+            versionPolicy?: 'pinned' | 'latest';
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Campaign'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/api/v1/campaigns/{id}/duplicate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Copy as a new draft (campaigns.write) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Campaign'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/campaigns/{id}/estimate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Cost estimate for the current settings + wallet available (campaigns.read) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['CampaignEstimate'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/campaigns/{id}/start': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Start now or schedule (campaigns.run, Idempotency-Key) — 409 CAMPAIGN_NOT_RUNNABLE, 429 CAMPAIGN_LIMIT_REACHED */
+    post: {
+      parameters: {
+        query?: never;
+        header: {
+          /** @description Required — the same key replays the first answer */
+          'idempotency-key': string;
+        };
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Campaign'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/campaigns/{id}/unschedule': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Scheduled → draft (campaigns.run) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Campaign'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/campaigns/{id}/pause': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Pause (campaigns.run); live calls finish */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Campaign'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/campaigns/{id}/resume': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Resume (campaigns.run) — refused while the pause cause holds */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Campaign'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/campaigns/{id}/cancel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Cancel (campaigns.run); `hangUpLive` ends the live calls too */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /** @default false */
+            hangUpLive?: boolean;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Campaign'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/campaigns/{id}/contacts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Per-contact results (campaigns.read) — phones as the last 4 digits only */
+    get: {
+      parameters: {
+        query?: {
+          cursor?: string;
+          limit?: number;
+          status?:
+            | (
+                | 'pending'
+                | 'queued'
+                | 'calling'
+                | 'retry_wait'
+                | 'callback_wait'
+                | 'completed'
+                | 'failed'
+                | 'skipped'
+                | 'canceled'
+              )
+            | (
+                | 'pending'
+                | 'queued'
+                | 'calling'
+                | 'retry_wait'
+                | 'callback_wait'
+                | 'completed'
+                | 'failed'
+                | 'skipped'
+                | 'canceled'
+              )[];
+          lastResult?: 'answered' | 'no_answer' | 'busy' | 'failed' | 'invalid_number';
+          disposition?:
+            | 'paid'
+            | 'promise_to_pay'
+            | 'callback_requested'
+            | 'wrong_number'
+            | 'refused_to_pay'
+            | 'dispute'
+            | 'not_interested'
+            | 'language_barrier'
+            | 'other';
+          skipReason?:
+            | 'contact_deleted'
+            | 'dnd'
+            | 'opted_out'
+            | 'invalid_phone'
+            | 'duplicate_phone'
+            | 'in_active_campaign'
+            | 'missing_values'
+            | 'cap_reached'
+            | 'campaign_ended';
+          q?: string;
+        };
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Campaign contacts */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['CampaignContactRow'][];
+              meta: components['schemas']['CursorPageMeta'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/campaigns/{id}/runs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Runs of a recurring campaign, newest first (campaigns.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['CampaignListItem'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/campaigns/{id}/export': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Results export (campaigns.export) — CSV / XLSX job; full phones only with contacts.export; download via GET /contact-exports/{id} */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @default csv
+             * @enum {string}
+             */
+            format?: 'csv' | 'xlsx';
+          };
+        };
+      };
+      responses: {
+        /** @description Queued */
+        202: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['ExportJob'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -13803,6 +15772,11 @@ export interface components {
            */
           days: number[];
         };
+        callCaps: {
+          perDay: number;
+          perWeek: number;
+          minGapMinutes: number;
+        };
         recordingEnabled: boolean;
         recordingNotice: string;
         aiDisclosureEnabled: boolean;
@@ -13837,6 +15811,13 @@ export interface components {
         impersonatorId: string;
         expiresAt: string;
       } | null;
+    };
+    AccountWithWarning: components['schemas']['PublicAccount'] & {
+      /**
+       * @description outside_trai: starts before 09:00 or ends after 21:00 (live calls are held to it); outside_rbi_recovery: outside 08:00–19:00 (live recovery calls)
+       * @enum {string|null}
+       */
+      callingWindowWarning: 'outside_trai' | 'outside_rbi_recovery' | null;
     };
     AdminAiConfig: {
       /** @enum {string} */
@@ -13934,7 +15915,19 @@ export interface components {
         | 'flow_audio.changed'
         | 'call.test_started'
         | 'call.recording_accessed'
-        | 'call.hung_up_remotely';
+        | 'call.hung_up_remotely'
+        | 'call.triggered'
+        | 'campaign.created'
+        | 'campaign.updated'
+        | 'campaign.scheduled'
+        | 'campaign.started'
+        | 'campaign.paused'
+        | 'campaign.resumed'
+        | 'campaign.canceled'
+        | 'campaign.deleted'
+        | 'campaign.exported'
+        | 'campaign.admin_paused'
+        | 'account.limits_updated';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
@@ -13952,6 +15945,10 @@ export interface components {
       } | null;
       ip: string | null;
       at: string;
+    };
+    AccountLimits: {
+      maxConcurrentCalls: number;
+      dialsPerMinute: number;
     };
     AdminAccountRow: {
       id: string;
@@ -13972,6 +15969,9 @@ export interface components {
         active: number;
         disabled: number;
       };
+      limits: components['schemas']['AccountLimits'];
+      /** @description Scheduled, running or paused */
+      activeCampaigns: number;
       recentAudit: components['schemas']['AuditEntry'][];
     };
     AgentFunction: {
@@ -14385,7 +16385,10 @@ export interface components {
       key: string;
     };
     ContactFilterCondition: {
-      /** @example days_past_due */
+      /**
+       * @description A custom field key, or `lastDisposition` (eq / neq / exists / not_exists) / `lastCalledAt` (before / after / within_last_days / not_exists = never called)
+       * @example days_past_due
+       */
       key: string;
       /** @enum {string} */
       op:
@@ -14402,9 +16405,10 @@ export interface components {
         | 'after'
         | 'within_next_days'
         | 'overdue_by_days'
+        | 'within_last_days'
         | 'exists'
         | 'not_exists';
-      /** @description Currency in rupees, dates `YYYY-MM-DD`, day counts for within_next_days / overdue_by_days */
+      /** @description Currency in rupees, dates `YYYY-MM-DD`, day counts for within_next_days / overdue_by_days / within_last_days, a disposition for lastDisposition */
       value?: string | number;
       /** @description Upper bound for `between` */
       value2?: string | number;
@@ -14430,8 +16434,16 @@ export interface components {
     };
     ExportJob: {
       id: string;
+      /**
+       * @description campaign_results: needs campaigns.export
+       * @enum {string}
+       */
+      kind: 'contacts' | 'campaign_results';
+      campaignId: string | null;
       /** @enum {string} */
-      scope: 'ids' | 'filter' | 'list' | 'segment';
+      format: 'csv' | 'xlsx';
+      /** @enum {string} */
+      scope: 'ids' | 'filter' | 'list' | 'segment' | 'campaign';
       columns: string[];
       /** @enum {string} */
       status: 'pending' | 'processing' | 'ready' | 'failed' | 'expired';
@@ -14606,6 +16618,7 @@ export interface components {
       };
       lastCalledAt: string | null;
       callCount: number;
+      lastDisposition: string | null;
       createdAt: string;
       updatedAt: string;
       /** @description Detail only */
@@ -15764,6 +17777,45 @@ export interface components {
         totalMicros: number;
       };
     };
+    TopupOrder: {
+      id: string;
+      /** @enum {string} */
+      provider: 'razorpay' | 'fake';
+      providerOrderId: string | null;
+      /** @enum {string} */
+      status: 'creating' | 'created' | 'paid' | 'failed' | 'expired' | 'refunded';
+      baseMicros: number;
+      cgstMicros: number;
+      sgstMicros: number;
+      igstMicros: number;
+      taxMicros: number;
+      totalMicros: number;
+      /** @enum {string} */
+      currency: 'INR';
+      failureReason: string | null;
+      paidAt: string | null;
+      invoiceId: string | null;
+      createdAt: string;
+    };
+    TopupCheckout: {
+      topupOrder: components['schemas']['TopupOrder'];
+      checkout: {
+        /** @enum {string} */
+        provider: 'razorpay' | 'fake';
+        /** @description Razorpay key id (public); null for test payments */
+        keyId: string | null;
+        providerOrderId: string;
+        amountPaise: number;
+        /** @enum {string} */
+        currency: 'INR';
+        name: string;
+        description: string;
+        prefill: {
+          name: string;
+          email: string;
+        };
+      };
+    };
     BillingProfile: {
       legalName: string;
       email: string;
@@ -15826,45 +17878,6 @@ export interface components {
       paymentId: string;
       topupOrderId: string;
       issuedAt: string;
-    };
-    TopupOrder: {
-      id: string;
-      /** @enum {string} */
-      provider: 'razorpay' | 'fake';
-      providerOrderId: string | null;
-      /** @enum {string} */
-      status: 'creating' | 'created' | 'paid' | 'failed' | 'expired' | 'refunded';
-      baseMicros: number;
-      cgstMicros: number;
-      sgstMicros: number;
-      igstMicros: number;
-      taxMicros: number;
-      totalMicros: number;
-      /** @enum {string} */
-      currency: 'INR';
-      failureReason: string | null;
-      paidAt: string | null;
-      invoiceId: string | null;
-      createdAt: string;
-    };
-    TopupCheckout: {
-      topupOrder: components['schemas']['TopupOrder'];
-      checkout: {
-        /** @enum {string} */
-        provider: 'razorpay' | 'fake';
-        /** @description Razorpay key id (public); null for test payments */
-        keyId: string | null;
-        providerOrderId: string;
-        amountPaise: number;
-        /** @enum {string} */
-        currency: 'INR';
-        name: string;
-        description: string;
-        prefill: {
-          name: string;
-          email: string;
-        };
-      };
     };
     RateCardVersion: {
       id: string;
@@ -16026,7 +18039,10 @@ export interface components {
         | 'billing.refund_received'
         | 'billing.payment_unmatched'
         | 'billing.payment_mismatch'
-        | 'billing.reconcile_mismatch';
+        | 'billing.reconcile_mismatch'
+        | 'campaign.completed'
+        | 'campaign.paused'
+        | 'campaign.run_skipped';
       title: string;
       body: string;
       link: string | null;
@@ -16038,8 +18054,15 @@ export interface components {
       /** @enum {string} */
       direction: 'outbound' | 'inbound';
       /** @enum {string} */
-      provider: 'webcall' | 'sip' | 'notifynow';
+      provider: 'webcall' | 'sip' | 'notifynow' | 'dryrun';
       isTest: boolean;
+      /** @description false for dry-run calls (priced, never charged) */
+      charged: boolean;
+      campaign: {
+        id: string;
+        name: string;
+        attempt: number;
+      } | null;
       /** @enum {string} */
       status:
         | 'queued'
@@ -16065,6 +18088,10 @@ export interface components {
         | 'server_shutdown'
         | 'canceled'
         | 'limit'
+        | 'busy'
+        | 'no_answer'
+        | 'invalid_number'
+        | 'campaign_canceled'
         | null;
       source: {
         /** @enum {string} */
@@ -16186,6 +18213,251 @@ export interface components {
       url: string;
       expiresAt: string;
       durationSec: number;
+    };
+    CampaignListItem: {
+      id: string;
+      name: string;
+      /** @enum {string} */
+      mode: 'dry_run' | 'live';
+      /** @enum {string} */
+      status: 'draft' | 'scheduled' | 'running' | 'paused' | 'completed' | 'canceled' | 'failed';
+      /** @enum {string|null} */
+      pauseReason:
+        | 'manual'
+        | 'wallet_empty'
+        | 'budget_reached'
+        | 'account_suspended'
+        | 'too_many_failures'
+        | 'admin'
+        | 'flow_not_runnable'
+        | null;
+      waitingUntil: string | null;
+      flow: {
+        id: string;
+        name: string;
+        version: number | null;
+      };
+      stats: {
+        total: number;
+        pending: number;
+        queued: number;
+        calling: number;
+        waiting: number;
+        completed: number;
+        failed: number;
+        skipped: number;
+        canceled: number;
+        answered: number;
+        attempts: number;
+        dispositions: {
+          [key: string]: number;
+        };
+        skippedBy: {
+          [key: string]: number;
+        };
+        spentMicros: number;
+        virtualCostMicros: number;
+        failureStreak: number;
+      };
+      progressPct: number;
+      spentMicros: number;
+      virtualCostMicros: number;
+      nextRunAt: string | null;
+      parentId: string | null;
+      runNumber: number | null;
+      recurring: boolean;
+      createdAt: string;
+      startedAt: string | null;
+      completedAt: string | null;
+    };
+    Campaign: components['schemas']['CampaignListItem'] & {
+      revision: number;
+      chosenVersion: number | null;
+      /** @enum {string} */
+      versionPolicy: 'pinned' | 'latest';
+      audience: {
+        listIds: string[];
+        segmentId: string | null;
+        filter: {
+          [key: string]: unknown;
+        } | null;
+        contactIds: string[];
+        excludeActiveCampaigns: boolean;
+        skipIfMissing: string[];
+      };
+      schedule: {
+        startAt: string | null;
+        endAt: string | null;
+        timezone: string;
+        recurrence: {
+          /** @enum {string} */
+          freq: 'daily' | 'weekly';
+          days: number[];
+          time: string;
+          until: string | null;
+        } | null;
+      };
+      window: {
+        start: string;
+        end: string;
+        days: number[];
+      };
+      retry: {
+        maxAttempts: number;
+        intervalMinutes: number;
+        retryOn: ('no_answer' | 'busy' | 'failed' | 'no_outcome')[];
+      };
+      followUps: {
+        callbacks: boolean;
+        callbackMaxDays: number;
+        promiseCheck: {
+          enabled: boolean;
+          daysAfter: number;
+        };
+      };
+      pacing: {
+        concurrency: number;
+        dialsPerMinute: number;
+        /** @enum {string} */
+        priority: 'high' | 'normal' | 'low';
+      };
+      autoResume: boolean;
+      dryRun: {
+        mix: {
+          [key: string]: number;
+        };
+        scenarios: {
+          [key: string]: number;
+        };
+        speed: number;
+      } | null;
+      estimate: {
+        contacts: number;
+        calls: number;
+        perCallMicros: number;
+        totalMicros: number;
+        minMicros: number;
+        maxMicros: number;
+        at: string;
+      } | null;
+      snapshot: {
+        done: boolean;
+        counts: {
+          [key: string]: number;
+        };
+      };
+      history: {
+        at: string;
+        /** @enum {string} */
+        status: 'draft' | 'scheduled' | 'running' | 'paused' | 'completed' | 'canceled' | 'failed';
+        /** @enum {string|null} */
+        pauseReason:
+          | 'manual'
+          | 'wallet_empty'
+          | 'budget_reached'
+          | 'account_suspended'
+          | 'too_many_failures'
+          | 'admin'
+          | 'flow_not_runnable'
+          | null;
+        by: {
+          id: string;
+          name: string;
+        } | null;
+      }[];
+      error: {
+        code: string;
+      } | null;
+      createdBy: {
+        id: string;
+        name: string;
+      } | null;
+      startedBy: {
+        id: string;
+        name: string;
+      } | null;
+      canceledAt: string | null;
+      pausedAt: string | null;
+      walletAvailableMicros: number;
+    };
+    CampaignContactRow: {
+      id: string;
+      contact: {
+        id: string;
+        name: string | null;
+      };
+      phoneLast4: string;
+      /** @enum {string} */
+      status:
+        | 'pending'
+        | 'queued'
+        | 'calling'
+        | 'retry_wait'
+        | 'callback_wait'
+        | 'completed'
+        | 'failed'
+        | 'skipped'
+        | 'canceled';
+      attempts: number;
+      /** @enum {string|null} */
+      lastResult: 'answered' | 'no_answer' | 'busy' | 'failed' | 'invalid_number' | null;
+      disposition: string | null;
+      promiseToPay: {
+        date: string;
+        amountMicros: number | null;
+      } | null;
+      callback: {
+        date: string;
+        time: string | null;
+      } | null;
+      /** @enum {string|null} */
+      skipReason:
+        | 'contact_deleted'
+        | 'dnd'
+        | 'opted_out'
+        | 'invalid_phone'
+        | 'duplicate_phone'
+        | 'in_active_campaign'
+        | 'missing_values'
+        | 'cap_reached'
+        | 'campaign_ended'
+        | null;
+      nextAttemptAt: string | null;
+      lastCallId: string | null;
+      lastAttemptAt: string | null;
+      costMicros: number;
+    };
+    AudiencePreview: {
+      total: number;
+      willCall: number;
+      tooMany: boolean;
+      excluded: {
+        [key: string]: number;
+      };
+      missing: {
+        field: string;
+        label: string;
+        count: number;
+      }[];
+      samples: {
+        name: string | null;
+        phoneLast4: string;
+      }[];
+    };
+    CampaignEstimate: {
+      contacts: number;
+      calls: number;
+      perCallMicros: number;
+      totalMicros: number;
+      minMicros: number;
+      maxMicros: number;
+      assumptions: {
+        avgDurationSec: number;
+        answerRateBps: number;
+        aiShareBps: number;
+        expectedAttempts: number;
+      };
+      walletAvailableMicros: number;
     };
   };
   responses: never;

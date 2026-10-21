@@ -6,6 +6,8 @@ export const fakeCall = (overrides: Partial<Call> = {}): Call => ({
   direction: 'outbound',
   provider: 'webcall',
   isTest: true,
+  charged: true,
+  campaign: null,
   status: 'completed',
   endReason: 'hangup_node',
   source: { kind: 'flow', flowId: 'f1', flowVersionRef: 1, agentId: null, name: 'Loan recovery' },

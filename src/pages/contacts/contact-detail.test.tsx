@@ -93,6 +93,7 @@ const CONTACT: Contact = {
   source: { type: 'import', importJobId: 'imp1' },
   lastCalledAt: null,
   callCount: 0,
+  lastDisposition: null,
   createdAt: '2026-10-08T06:30:00Z',
   updatedAt: '2026-10-08T06:30:00Z',
   lists: [{ id: 'l1', name: 'March' }],

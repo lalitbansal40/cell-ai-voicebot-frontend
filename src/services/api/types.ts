@@ -166,3 +166,24 @@ export type StartedWebCall = Schemas['StartedWebCall'];
 export type CallTranscriptTurn = Schemas['CallTranscriptTurn'];
 export type CallEvent = Schemas['CallEvent'];
 export type CallRecordingLink = Schemas['CallRecordingLink'];
+
+/** Campaigns & single calls (Phase 8). */
+export type Campaign = Schemas['Campaign'];
+export type CampaignListItem = Schemas['CampaignListItem'];
+export type CampaignStatus = Campaign['status'];
+export type CampaignPauseReason = NonNullable<Campaign['pauseReason']>;
+export type CampaignStats = Campaign['stats'];
+export type CampaignWindow = Campaign['window'];
+export type CampaignSchedule = Campaign['schedule'];
+export type CampaignRecurrence = NonNullable<CampaignSchedule['recurrence']>;
+export type CampaignRetry = Campaign['retry'];
+export type CampaignPacing = Campaign['pacing'];
+export type CampaignFollowUps = Campaign['followUps'];
+export type CampaignDryRun = NonNullable<Campaign['dryRun']>;
+export type CampaignAudience = Campaign['audience'];
+export type CampaignContactRow = Schemas['CampaignContactRow'];
+export type CampaignContactStatus = CampaignContactRow['status'];
+export type AudiencePreview = Schemas['AudiencePreview'];
+export type CampaignEstimate = Schemas['CampaignEstimate'];
+export type AccountLimits = Schemas['AccountLimits'];
+export type AccountWithWarning = Schemas['AccountWithWarning'];

@@ -40,6 +40,7 @@ export const OP_LABEL: Record<FilterOp, string> = {
   after: 'after',
   within_next_days: 'in the next … days',
   overdue_by_days: 'at least … days ago',
+  within_last_days: 'in the last … days',
   exists: 'has a value',
   not_exists: 'is empty',
 };

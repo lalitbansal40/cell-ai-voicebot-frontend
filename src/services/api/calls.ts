@@ -20,6 +20,14 @@ export interface StartWebCallInput {
   testPhone?: string;
 }
 
+/** `POST /calls` — one contact now (dry-run line until phone lines exist). */
+export interface StartCallInput {
+  contactId: string;
+  flowId?: string;
+  version?: 'published' | number;
+  agentId?: string;
+}
+
 export interface ListCallsQuery {
   cursor?: string;
   limit?: number;
@@ -27,6 +35,8 @@ export interface ListCallsQuery {
   flowId?: string;
   agentId?: string;
   contactId?: string;
+  campaignId?: string;
+  provider?: Call['provider'];
   isTest?: boolean;
   from?: string;
   to?: string;
@@ -44,6 +54,13 @@ export const callsApi = {
   /** Creates the call + wallet hold; join `/ws/media` with the ticket within 60 s. */
   startWeb: (body: StartWebCallInput) =>
     unwrap(apiClient.post<SuccessEnvelope<StartedWebCall>>('/calls/web', body)),
+  /** "Call now": one Idempotency-Key per attempt (a retry of the same submit reuses it). */
+  start: (body: StartCallInput, idempotencyKey: string) =>
+    unwrap(
+      apiClient.post<SuccessEnvelope<Call>>('/calls', body, {
+        headers: { 'Idempotency-Key': idempotencyKey },
+      }),
+    ),
   list: async (query: ListCallsQuery) =>
     (
       await apiClient.get<ListEnvelope<Call, CursorPageMeta>>('/calls', {

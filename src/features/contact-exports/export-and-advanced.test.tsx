@@ -70,6 +70,7 @@ const contact = (i: number): Contact => ({
   source: { type: 'manual', importJobId: null },
   lastCalledAt: null,
   callCount: 0,
+  lastDisposition: null,
   createdAt: '2026-10-08T00:00:00Z',
   updatedAt: '2026-10-08T00:00:00Z',
 });
@@ -80,6 +81,9 @@ const page = (rows: Contact[], total = rows.length) => ({
 });
 const job = (extra: Partial<ExportJob> = {}): ExportJob => ({
   id: 'e1',
+  kind: 'contacts',
+  campaignId: null,
+  format: 'csv',
   scope: 'filter',
   columns: [],
   status: 'pending',
