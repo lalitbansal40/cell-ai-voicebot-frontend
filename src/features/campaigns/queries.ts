@@ -53,7 +53,14 @@ export const useCampaign = (id: string) =>
         : false,
   });
 
-export const useCampaignContacts = (id: string, query: Omit<ListCampaignContactsQuery, 'cursor'>) =>
+/** Results refresh while the campaign may still change (live updates can be off). */
+export const RESULTS_POLL_MS = 10_000;
+
+export const useCampaignContacts = (
+  id: string,
+  query: Omit<ListCampaignContactsQuery, 'cursor'>,
+  live = false,
+) =>
   useInfiniteQuery({
     queryKey: campaignKeys.contactsList(id, query),
     queryFn: ({ pageParam }) =>
@@ -62,6 +69,7 @@ export const useCampaignContacts = (id: string, query: Omit<ListCampaignContacts
     getNextPageParam: (last) =>
       last.meta.hasMore ? (last.meta.nextCursor ?? undefined) : undefined,
     enabled: Boolean(id),
+    refetchInterval: live ? RESULTS_POLL_MS : false,
   });
 
 export const useCampaignRuns = (id: string, enabled = true) =>

@@ -11,7 +11,11 @@ import { ProgressPanel } from '@/features/campaigns/detail/ProgressPanel';
 import { ResultsTab } from '@/features/campaigns/detail/ResultsTab';
 import { StatusBanner } from '@/features/campaigns/detail/StatusBanner';
 import { useCampaignEta } from '@/features/campaigns/eta';
-import { CAMPAIGN_STATUS_LABELS, campaignStatusColor } from '@/features/campaigns/labels';
+import {
+  ACTIVE_CAMPAIGN_STATUSES,
+  CAMPAIGN_STATUS_LABELS,
+  campaignStatusColor,
+} from '@/features/campaigns/labels';
 import { useCampaign, useCampaignLiveUpdates } from '@/features/campaigns/queries';
 import { draftFromCampaign } from '@/features/campaigns/wizard/draft';
 import { ReviewStep } from '@/features/campaigns/wizard/ReviewStep';
@@ -81,7 +85,9 @@ export function CampaignDetailPage() {
           <Tab value="settings" label="Settings" />
           <Tab value="activity" label="Activity" />
         </Tabs>
-        {current === 'results' && <ResultsTab campaignId={c.id} />}
+        {current === 'results' && (
+          <ResultsTab campaignId={c.id} live={ACTIVE_CAMPAIGN_STATUSES.includes(c.status)} />
+        )}
         {current === 'runs' && <RunsTab campaignId={c.id} timezone={timezone} />}
         {current === 'settings' && <ReviewStep draft={draftFromCampaign(c)} />}
         {current === 'activity' && <ActivityTab campaign={c} timezone={timezone} />}

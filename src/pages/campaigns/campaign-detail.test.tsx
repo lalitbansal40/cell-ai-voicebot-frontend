@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -395,6 +395,30 @@ describe('/campaigns/:id', () => {
     );
     renderWithProviders({ route: '/campaigns/cp1' });
     expect(await screen.findByText('Campaign not found')).toBeInTheDocument();
+  });
+});
+
+describe('/campaigns/:id results refresh', () => {
+  it('polls the results while the campaign is active (live updates can be off); not when final', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      signInAs('viewer');
+      const view = renderWithProviders({ route: '/campaigns/cp1' });
+      await screen.findByRole('table', { name: 'Campaign results' });
+      await waitFor(() => expect(api.contacts).toHaveBeenCalledTimes(1));
+      await act(() => vi.advanceTimersByTimeAsync(10_000));
+      await waitFor(() => expect(api.contacts).toHaveBeenCalledTimes(2));
+      view.unmount();
+      api.contacts.mockClear();
+      api.get.mockResolvedValue(fakeCampaign({ status: 'completed' }));
+      renderWithProviders({ route: '/campaigns/cp1' });
+      await screen.findByRole('table', { name: 'Campaign results' });
+      await waitFor(() => expect(api.contacts).toHaveBeenCalledTimes(1));
+      await act(() => vi.advanceTimersByTimeAsync(30_000));
+      expect(api.contacts).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

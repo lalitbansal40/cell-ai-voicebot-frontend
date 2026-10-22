@@ -32,7 +32,7 @@ const callbackText = (r: CampaignContactRow) =>
   r.callback ? [r.callback.date, r.callback.time].filter(Boolean).join(' ') : '—';
 
 /** Per-contact results: filters, last 4 digits only, call links, Load more. */
-export function ResultsTab({ campaignId }: { campaignId: string }) {
+export function ResultsTab({ campaignId, live = false }: { campaignId: string; live?: boolean }) {
   const [status, setStatus] = useState<CampaignContactStatus | ''>('');
   const [lastResult, setLastResult] = useState<NonNullable<CampaignContactRow['lastResult']> | ''>(
     '',
@@ -49,7 +49,7 @@ export function ResultsTab({ campaignId }: { campaignId: string }) {
     ...(skipReason ? { skipReason } : {}),
     ...(q ? { q } : {}),
   };
-  const rows = useCampaignContacts(campaignId, query);
+  const rows = useCampaignContacts(campaignId, query, live);
   const filtered = Boolean(status || lastResult || disposition || skipReason || q);
   const columns: Column<CampaignContactRow>[] = [
     {
