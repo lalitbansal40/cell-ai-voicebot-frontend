@@ -4,6 +4,8 @@
  * src/core/realtime/events.ts — WS events are not part of the OpenAPI spec.
  */
 
+import type { InboxMessage } from '@/services/api/types';
+
 /** Server → client envelope (websocket.md §3). */
 export interface WsEventEnvelope<T = unknown> {
   id: string;
@@ -66,6 +68,27 @@ export interface WsEventMap {
     messagingLimitTier: string | null;
     nameStatus: string | null;
   };
+  /** Phase 10, account level — ids + counts only, never message text. */
+  'inbox.conversation.updated': {
+    conversationId: string;
+    status: 'open' | 'closed';
+    unreadCount: number;
+    assignedTo: string | null;
+    lastMessageAt: string | null;
+    lastMessageDirection: 'in' | 'out' | null;
+  };
+  'inbox.summary.updated': { unreadConversations: number };
+  /** Phase 10, topic `conversation:<id>` (inbox.read) — the full message. */
+  'inbox.message.created': { message: InboxMessage };
+  'inbox.message.updated': {
+    messageId: string;
+    status: InboxMessage['status'];
+    error: { code: number | null; reason: string } | null;
+    media: { status: NonNullable<InboxMessage['media']>['status'] } | null;
+    reactions: { emoji: string; by: 'customer' | 'agent' }[];
+  };
+  /** Another agent is typing (internal only). */
+  'inbox.typing': { conversationId: string; userId: string; name: string };
   'wallet.updated': {
     balanceMicros: number;
     holdMicros: number;
@@ -110,6 +133,11 @@ export const WS_EVENT_TYPES: readonly WsEventType[] = [
   'campaign.status',
   'campaign.progress',
   'whatsapp.channel.updated',
+  'inbox.conversation.updated',
+  'inbox.summary.updated',
+  'inbox.message.created',
+  'inbox.message.updated',
+  'inbox.typing',
   'wallet.updated',
   'wallet.low_balance',
   'wallet.exhausted',
@@ -135,7 +163,7 @@ export type WsEvent<K extends WsEventType = WsEventType> = WsEventEnvelope<WsEve
   type: K;
 };
 
-/** Client → server messages (websocket.md §4). Topics: `call:<id>`, `campaign:<id>`. */
+/** Client → server messages (websocket.md §4). Topics: `call:<id>`, `campaign:<id>`, `conversation:<id>`. */
 export type WsClientMessage =
   | { type: 'ping' }
   | { type: 'subscribe'; topics: string[] }

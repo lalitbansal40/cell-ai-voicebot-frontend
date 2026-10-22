@@ -290,6 +290,29 @@ export const routes: RouteObject[] = [
             ],
           },
           {
+            path: '/inbox',
+            element: (
+              <RequirePermission perm="inbox.read">
+                <Outlet />
+              </RequirePermission>
+            ),
+            children: [
+              {
+                // the Inbox page is its own chunk
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/inbox/InboxPage')).InboxPage,
+                }),
+              },
+              {
+                path: ':conversationId',
+                lazy: async () => ({
+                  Component: (await import('@/pages/inbox/InboxPage')).InboxPage,
+                }),
+              },
+            ],
+          },
+          {
             path: '/whatsapp',
             element: (
               <RequirePermission perm="whatsapp.read">

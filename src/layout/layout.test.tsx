@@ -5,7 +5,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useAuthStore } from '@/features/auth/store';
 import { adminApi } from '@/services/api/admin';
 import { authApi } from '@/services/api/auth';
+import { inboxApi } from '@/services/api/inbox';
 import { fakeSession, signInAs } from '@/test/auth';
+import { fakeInboxSummary } from '@/test/inbox';
+import { fakeRealtime } from '@/test/realtime';
 import { renderWithProviders } from '@/test/render';
 
 import { NAV_ITEMS, visibleNavItems } from './nav-config';
@@ -55,10 +58,12 @@ describe('nav config', () => {
     expect(phase4).not.toContain('knowledge');
     // Phase 5 builds hid call flows
     expect(visibleNavItems(() => true, false, 5).map((i) => i.key)).not.toContain('flows');
-    // Phase 8 builds hid WhatsApp; Reports / Integrations come in Phases 14 / 15
+    // Phase 8 builds hid WhatsApp, Phase 9 builds the Inbox; Reports / Integrations come in Phases 14 / 15
     expect(visibleNavItems(() => true, false, 8).map((i) => i.key)).not.toContain('whatsapp');
+    expect(visibleNavItems(() => true, false, 9).map((i) => i.key)).not.toContain('inbox');
     const live = visibleNavItems(() => true, false).map((i) => i.key);
     expect(live).toContain('whatsapp');
+    expect(live.indexOf('inbox')).toBe(live.indexOf('whatsapp') - 1);
     expect(live).not.toContain('reports');
     expect(live).not.toContain('integrations');
     expect(visibleNavItems((p) => p === 'flows.read', false).map((i) => i.key)).toEqual([
@@ -88,6 +93,7 @@ describe('AppLayout', () => {
       'Call flows',
       'Calls',
       'Campaigns',
+      'Inbox',
       'WhatsApp',
       'Team',
       'Settings',
@@ -110,6 +116,7 @@ describe('AppLayout', () => {
       'Call flows',
       'Calls',
       'Campaigns',
+      'Inbox',
       'WhatsApp',
       'Settings',
     ]);
@@ -126,6 +133,7 @@ describe('AppLayout', () => {
       'Call flows',
       'Calls',
       'Campaigns',
+      'Inbox',
       'WhatsApp',
       'Settings',
     ]);
@@ -138,6 +146,35 @@ describe('AppLayout', () => {
     expect(navLabels()).toContain('Accounts');
     expect(navLabels()).toContain('Billing');
     expect(navLabels()).toContain('WhatsApp setup');
+  });
+
+  it('shows the unread badge on Inbox, live from inbox.summary.updated', async () => {
+    const summary = vi
+      .spyOn(inboxApi, 'summary')
+      .mockResolvedValueOnce(fakeInboxSummary({ unreadConversations: 3 }))
+      .mockResolvedValue(fakeInboxSummary({ unreadConversations: 120 }));
+    signInAs('agent');
+    const rt = fakeRealtime();
+    renderWithProviders({ route: '/', realtime: rt.client });
+    expect((await screen.findAllByRole('link', { name: 'Inbox, 3 unread' }))[0]).toHaveAttribute(
+      'href',
+      '/inbox',
+    );
+    rt.emit('inbox.summary.updated', { unreadConversations: 120 });
+    expect(await screen.findAllByRole('link', { name: 'Inbox, 120 unread' })).not.toHaveLength(0);
+    expect(screen.getAllByText('99+').length).toBeGreaterThan(0);
+    summary.mockRestore();
+  });
+
+  it('hides the badge at zero and when the summary fails (WhatsApp off)', async () => {
+    const summary = vi
+      .spyOn(inboxApi, 'summary')
+      .mockResolvedValue(fakeInboxSummary({ unreadConversations: 0 }));
+    signInAs('owner');
+    renderWithProviders({ route: '/' });
+    await waitFor(() => expect(summary).toHaveBeenCalled());
+    expect(screen.getAllByRole('link', { name: 'Inbox' })[0]).toHaveAttribute('href', '/inbox');
+    summary.mockRestore();
   });
 
   it('opens the mobile drawer from the header', async () => {

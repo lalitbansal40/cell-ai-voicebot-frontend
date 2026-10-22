@@ -1,3 +1,4 @@
+import Badge from '@mui/material/Badge';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
@@ -11,6 +12,7 @@ import { NavLink, useLocation } from 'react-router';
 
 import { useCan, useIsPlatformAdmin } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/store';
+import { useInboxSummary } from '@/features/inbox/summary';
 
 import { visibleNavItems, type NavItem } from './nav-config';
 
@@ -20,6 +22,49 @@ const isActive = (item: NavItem, pathname: string) =>
   item.path === '/'
     ? pathname === '/'
     : pathname.startsWith(item.path.replace(/\/[^/]+$/, '') || item.path);
+
+interface NavEntryProps {
+  item: NavItem;
+  selected: boolean;
+  onNavigate?: (() => void) | undefined;
+  /** Count badge on the icon (hidden at 0, "99+" above 99). */
+  count?: number;
+}
+
+function NavEntry({ item, selected, onNavigate, count }: NavEntryProps) {
+  return (
+    <ListItemButton
+      component={NavLink}
+      to={item.path}
+      selected={selected}
+      onClick={onNavigate}
+      aria-label={count ? `${item.label}, ${String(count)} unread` : undefined}
+    >
+      <ListItemIcon>
+        {count === undefined ? (
+          <item.icon />
+        ) : (
+          <Badge
+            color="success"
+            badgeContent={count}
+            max={99}
+            invisible={count === 0}
+            slotProps={{ badge: { 'aria-hidden': true } }}
+          >
+            <item.icon />
+          </Badge>
+        )}
+      </ListItemIcon>
+      <ListItemText primary={item.label} />
+    </ListItemButton>
+  );
+}
+
+/** The Inbox item with its unread-conversations badge (live). */
+function InboxNavEntry(props: Omit<NavEntryProps, 'count'>) {
+  const count = useInboxSummary().data?.unreadConversations ?? 0;
+  return <NavEntry {...props} count={count} />;
+}
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const can = useCan();
@@ -33,20 +78,17 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
   );
   const main = items.filter((i) => !i.platformOnly);
   const admin = items.filter((i) => i.platformOnly);
-  const render = (item: NavItem) => (
-    <ListItemButton
-      key={item.key}
-      component={NavLink}
-      to={item.path}
-      selected={isActive(item, pathname)}
-      onClick={onNavigate}
-    >
-      <ListItemIcon>
-        <item.icon />
-      </ListItemIcon>
-      <ListItemText primary={item.label} />
-    </ListItemButton>
-  );
+  const render = (item: NavItem) => {
+    const Entry = item.badge === 'inbox-unread' ? InboxNavEntry : NavEntry;
+    return (
+      <Entry
+        key={item.key}
+        item={item}
+        selected={isActive(item, pathname)}
+        onNavigate={onNavigate}
+      />
+    );
+  };
   return (
     <nav aria-label="Main">
       <List>{main.map(render)}</List>

@@ -2,6 +2,7 @@ import { apiClient, unwrap } from './client';
 import type {
   MetaWebhookReceipt,
   SuccessEnvelope,
+  WhatsAppBusinessProfile,
   WhatsAppChannel,
   WhatsAppChannelDetail,
   WhatsAppChannelList,
@@ -45,6 +46,41 @@ export const SIMULATOR_KINDS = [
 ] as const;
 export type SimulatorKind = (typeof SIMULATOR_KINDS)[number];
 
+/** Editable business profile fields (Meta limits: about ≤ 139, two websites). */
+export interface BusinessProfilePatch {
+  about?: string;
+  address?: string;
+  description?: string;
+  /** `''` clears it. */
+  email?: string;
+  websites?: string[];
+  /** One of `BUSINESS_VERTICALS`. */
+  vertical?: string;
+}
+
+/** Meta's business categories (backend `BUSINESS_VERTICALS`). */
+export const BUSINESS_VERTICALS = [
+  'UNDEFINED',
+  'OTHER',
+  'AUTO',
+  'BEAUTY',
+  'APPAREL',
+  'EDU',
+  'ENTERTAIN',
+  'EVENT_PLAN',
+  'FINANCE',
+  'GROCERY',
+  'GOVT',
+  'HOTEL',
+  'HEALTH',
+  'NONPROFIT',
+  'PROF_SERVICES',
+  'RETAIL',
+  'TRAVEL',
+  'RESTAURANT',
+  'NOT_A_BIZ',
+] as const;
+
 const channel = (id: string, action = '') => `/whatsapp/channels/${id}${action}`;
 
 /** `/api/v1/whatsapp` (PHASE_9_PLAN §1n). */
@@ -81,6 +117,27 @@ export const whatsappApi = {
     ),
   disconnect: (id: string) =>
     unwrap(apiClient.post<SuccessEnvelope<WhatsAppChannel>>(channel(id, '/disconnect'))),
+  /** Business profile on WhatsApp (Phase 10). */
+  profile: (id: string) =>
+    unwrap(apiClient.get<SuccessEnvelope<WhatsAppBusinessProfile>>(channel(id, '/profile'))),
+  updateProfile: (id: string, patch: BusinessProfilePatch) =>
+    unwrap(
+      apiClient.patch<SuccessEnvelope<WhatsAppBusinessProfile>>(channel(id, '/profile'), patch),
+    ),
+  /** JPEG / PNG photo (multipart `file`). */
+  uploadProfilePhoto: (id: string, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return unwrap(
+      apiClient.post<SuccessEnvelope<WhatsAppBusinessProfile>>(
+        channel(id, '/profile/photo'),
+        form,
+        {
+          timeout: 0,
+        },
+      ),
+    );
+  },
   /** DEV ONLY — `POST /dev/meta/webhooks` (absent in production). */
   simulate: (channelId: string, kind: SimulatorKind) =>
     unwrap(

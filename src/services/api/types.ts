@@ -206,3 +206,25 @@ export type WhatsAppAdminStatus = Schemas['WhatsAppAdminStatus'];
 export type MetaWebhookEventRow = Schemas['MetaWebhookEventRow'];
 export type MetaWebhookReceipt = Schemas['MetaWebhookReceipt'];
 export type AdminWhatsAppChannelRow = AdminAccountDetail['whatsappChannels'][number];
+
+/** WhatsApp Inbox (Phase 10). */
+export type InboxConversation = Schemas['InboxConversation'];
+export type InboxConversationDetail = Schemas['InboxConversationDetail'];
+export type InboxConversationStatus = InboxConversation['status'];
+export type InboxLastMessage = NonNullable<InboxConversation['lastMessage']>;
+export type InboxMessage = Schemas['InboxMessage'];
+export type InboxMessageType = InboxMessage['type'];
+export type InboxMessageStatus = InboxMessage['status'];
+export type InboxMessageOrigin = InboxMessage['origin'];
+export type InboxMedia = NonNullable<InboxMessage['media']>;
+export type InboxInteractive = NonNullable<InboxMessage['interactive']>;
+export type InboxSendMessage = Schemas['InboxSendMessage'];
+export type InboxSendType = InboxSendMessage['type'];
+export type InboxUpload = Schemas['InboxUpload'];
+export type InboxUploadKind = InboxUpload['kind'];
+export type InboxSettings = Schemas['InboxSettings'];
+export type InboxNotifyMode = InboxSettings['notifyOnNewMessage'];
+export type InboxConfig = Schemas['InboxConfig'];
+export type InboxSummary = Schemas['InboxSummary'];
+export type InboxContactPanel = Schemas['InboxContactPanel'];
+export type WhatsAppBusinessProfile = Schemas['WhatsAppBusinessProfile'];

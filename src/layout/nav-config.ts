@@ -27,6 +27,8 @@ export interface NavItem {
   platformOnly?: boolean;
   /** Not built yet — hidden until its phase ships. */
   phase?: number;
+  /** Shows a count badge (see `Sidebar`). */
+  badge?: 'inbox-unread';
 }
 
 /** Sidebar menu. Items with `phase` stay hidden until that phase is live. */
@@ -89,6 +91,15 @@ export const NAV_ITEMS: NavItem[] = [
     phase: 8,
   },
   {
+    key: 'inbox',
+    label: 'Inbox',
+    path: '/inbox',
+    icon: ForumOutlined,
+    permission: 'inbox.read',
+    phase: 10,
+    badge: 'inbox-unread',
+  },
+  {
     key: 'whatsapp',
     label: 'WhatsApp',
     path: '/whatsapp',
@@ -140,7 +151,7 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 /** The phase currently shipped — items of later phases are hidden. */
-export const LIVE_PHASE = 9;
+export const LIVE_PHASE = 10;
 
 export const visibleNavItems = (
   can: (permission: string) => boolean,

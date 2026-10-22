@@ -59,3 +59,11 @@ export const fieldInputValue = (type: FieldType, value: string | number | undefi
   if (type === 'currency' && typeof value === 'number') return microsToRupees(value);
   return String(value);
 };
+
+/** Bytes → `500 B` / `2 KB` / `3.0 MB`. */
+export const formatBytes = (n: number): string =>
+  n < 1024
+    ? `${n} B`
+    : n < 1024 * 1024
+      ? `${(n / 1024).toFixed(0)} KB`
+      : `${(n / 1024 / 1024).toFixed(1)} MB`;

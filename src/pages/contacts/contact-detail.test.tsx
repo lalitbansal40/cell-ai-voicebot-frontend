@@ -94,6 +94,7 @@ const CONTACT: Contact = {
   lastCalledAt: null,
   callCount: 0,
   lastDisposition: null,
+  whatsapp: null,
   createdAt: '2026-10-08T06:30:00Z',
   updatedAt: '2026-10-08T06:30:00Z',
   lists: [{ id: 'l1', name: 'March' }],

@@ -61,6 +61,7 @@ const contact = (i: number, extra: Partial<Contact> = {}): Contact => ({
   lastCalledAt: null,
   callCount: 0,
   lastDisposition: null,
+  whatsapp: null,
   createdAt: '2026-10-08T00:00:00Z',
   updatedAt: '2026-10-08T00:00:00Z',
   ...extra,
