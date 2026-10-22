@@ -11,7 +11,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 
 import { agentKeys } from '@/features/agents/keys';
@@ -139,6 +139,8 @@ export function CallSetup({
     queryKey: ['flows', 'picker', flowQ],
     queryFn: () => flowsApi.list({ q: flowQ || undefined, limit: 20 }),
     enabled: kind === 'flow',
+    // the input's own label starts a search: keep the prefilled flow while it runs
+    placeholderData: keepPreviousData,
   });
   const agents = useQuery({
     queryKey: ['agents', 'picker'],
