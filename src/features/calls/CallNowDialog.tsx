@@ -14,7 +14,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link as RouterLink } from 'react-router';
 
 import { useAgents } from '@/features/agents/queries';
@@ -25,7 +25,7 @@ import { callsApi, type StartCallInput } from '@/services/api/calls';
 import { callNowErrorText } from './call-now';
 import { callKeys } from './keys';
 import { STATUS_LABELS, statusColor } from './labels';
-import { useCall, useCallLiveUpdates } from './queries';
+import { LIVE_STATUSES, useCall, useCallLiveUpdates } from './queries';
 
 /** "Call now" from a contact: a flow (published, campaign trigger) or an agent → live status. */
 export function CallNowDialog({
@@ -62,6 +62,11 @@ export function CallNowDialog({
   useCallLiveUpdates();
   const call = useCall(start.data?.id ?? '', { untilSettled: true });
   const live = call.data ?? start.data;
+  const settled = Boolean(call.data && !LIVE_STATUSES.includes(call.data.status));
+  // the call's end updates the contact's call facts (last called, count, outcome)
+  useEffect(() => {
+    if (settled) void queryClient.invalidateQueries({ queryKey: contactKeys.detail(contactId) });
+  }, [settled, contactId, queryClient]);
   const choose = (patch: () => void) => {
     patch();
     key.current = null;

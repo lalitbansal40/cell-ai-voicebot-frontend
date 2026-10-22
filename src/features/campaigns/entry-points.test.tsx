@@ -1,3 +1,4 @@
+import { QueryClient } from '@tanstack/react-query';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -104,7 +105,10 @@ describe('Call now', () => {
       .mockResolvedValue(fakeCall({ id: 'n1', status: 'ringing', provider: 'dryrun' }));
     calls.get.mockResolvedValue(fakeCall({ id: 'n1', status: 'completed', provider: 'dryrun' }));
     const onClose = vi.fn();
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
     renderWithProviders({
+      queryClient,
       routes: routes(<CallNowDialog contactId="k1" timezone="Asia/Kolkata" onClose={onClose} />),
     });
     const dialog = await screen.findByRole('dialog');
@@ -127,6 +131,13 @@ describe('Call now', () => {
     await waitFor(() => expect(calls.start).toHaveBeenCalledTimes(2));
     expect(calls.start.mock.calls[1]).toEqual([{ contactId: 'k1', flowId: 'f1' }, firstKey]);
     expect(await within(dialog).findByText('Completed')).toBeInTheDocument();
+    // the settled call refreshes the contact (its call facts changed)
+    // once when it started and once when it ended
+    const contactRefreshes = () =>
+      invalidate.mock.calls.filter(
+        ([f]) => JSON.stringify(f?.queryKey) === JSON.stringify(['contacts', 'detail', 'k1']),
+      ).length;
+    await waitFor(() => expect(contactRefreshes()).toBe(2));
     expect(within(dialog).getByRole('link', { name: 'Open the call' })).toHaveAttribute(
       'href',
       '/calls/n1',
