@@ -148,9 +148,11 @@ export function PlaygroundTab({ agent, catalog, readOnly, onAgentChange }: Edito
     endRef.current?.scrollIntoView?.({ block: 'end' });
   }, [turns.length, pending?.state]);
 
+  // a message typed while a new conversation starts would land in the old one
+  const switching = start.isPending || reset.isPending;
   const submit = () => {
     const body = text.trim();
-    if (!body || !currentId || send.isPending) return;
+    if (!body || !currentId || send.isPending || switching) return;
     const p: Pending = { text: body, clientTurnId: newId(), state: 'sending' };
     setPending(p);
     setText('');
@@ -441,14 +443,14 @@ export function PlaygroundTab({ agent, catalog, readOnly, onAgentChange }: Edito
                     maxRows={5}
                     fullWidth
                     size="small"
-                    disabled={pending?.state === 'sending'}
+                    disabled={pending?.state === 'sending' || switching}
                     helperText={`${text.length} / ${MAX} · Enter to send, Shift+Enter for a new line`}
                     slotProps={{ htmlInput: { maxLength: MAX } }}
                   />
                   <Button
                     variant="contained"
                     onClick={submit}
-                    disabled={!text.trim() || pending?.state === 'sending'}
+                    disabled={!text.trim() || pending?.state === 'sending' || switching}
                     aria-label="Send"
                     sx={{ mb: 3 }}
                   >

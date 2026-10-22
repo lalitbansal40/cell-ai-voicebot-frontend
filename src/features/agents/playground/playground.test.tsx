@@ -306,6 +306,30 @@ describe('playground', () => {
     expect(screen.getByText(/reply blocked once: asked for a secret/)).toBeInTheDocument();
   });
 
+  it('while a new conversation starts, the open one takes no message (it would go to the old one)', async () => {
+    signInAs('manager');
+    pg.list.mockResolvedValue([ROW]);
+    pg.get.mockResolvedValue(SESSION());
+    let started: (s: PlaygroundSession) => void = () => undefined;
+    pg.start.mockReturnValue(
+      new Promise((resolve) => {
+        started = resolve;
+      }),
+    );
+    renderWithProviders({ route: '/agents/a1/playground' });
+    const box = await screen.findByRole('textbox', { name: 'Message' });
+    expect(box).toBeEnabled();
+    await userEvent.type(screen.getByRole('textbox', { name: '{{name}}' }), 'Ravi');
+    await userEvent.click(screen.getByRole('button', { name: 'Start new conversation' }));
+    await waitFor(() => expect(box).toBeDisabled());
+    pg.get.mockResolvedValue(
+      SESSION({ id: 's2', turns: [turn({ id: 'open2', text: 'Namaste Ravi ji' })] }),
+    );
+    started(SESSION({ id: 's2', turns: [turn({ id: 'open2', text: 'Namaste Ravi ji' })] }));
+    expect(await screen.findByText('Namaste Ravi ji')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('textbox', { name: 'Message' })).toBeEnabled());
+  });
+
   it('starts from a contact', async () => {
     signInAs('owner');
     contacts.list.mockResolvedValue({
