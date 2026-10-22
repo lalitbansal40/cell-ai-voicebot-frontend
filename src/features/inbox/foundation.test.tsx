@@ -518,6 +518,8 @@ describe('sending', () => {
       }),
     );
     expect(messagesOf().map((m) => m.id)).not.toContain('tmp_k4');
+    // the reaction itself is not a row
+    expect(messagesOf().map((m) => m.id)).not.toContain('r1');
   });
 
   it('server-side failure → POST /messages/:id/retry; no session → no sender', async () => {

@@ -218,12 +218,14 @@ const insertByTime = (list: InboxMessage[], message: InboxMessage): InboxMessage
 /**
  * Adds a message (WS `created`, send / retry response) — deduped by id and by
  * `clientId` (replaces its optimistic bubble), never moving a status back.
+ * Reaction messages are skipped (the list API leaves them out too).
  */
 export const upsertMessage = (
   data: MessagesData | undefined,
   message: InboxMessage,
 ): MessagesData | undefined => {
-  if (!data) return data;
+  // reactions are not rows: they show on their target (`reactions`, via `updated`)
+  if (!data || message.type === 'reaction') return data;
   let found = false;
   const pages = data.pages.map((page) => {
     const index = page.data.findIndex(

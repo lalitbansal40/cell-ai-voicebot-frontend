@@ -46,11 +46,14 @@ export function ContactFormDialog({
   onClose,
   fields,
   contact,
+  initial,
 }: {
   open: boolean;
   onClose: () => void;
   fields: CustomField[];
   contact?: Contact;
+  /** New contact prefilled (e.g. a contact card shared on WhatsApp). */
+  initial?: Partial<Pick<ContactFormValues, 'phone' | 'name' | 'email'>>;
 }) {
   const queryClient = useQueryClient();
   const schema = useMemo(() => buildContactSchema(fields), [fields]);
@@ -58,7 +61,7 @@ export function ContactFormDialog({
   const tags = useContactTags();
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: contactDefaults(fields, contact),
+    defaultValues: { ...contactDefaults(fields, contact), ...initial },
   });
   const save = useMutation({
     mutationFn: (values: ContactFormValues) => {

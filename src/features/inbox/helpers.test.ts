@@ -504,6 +504,8 @@ describe('message cache merges', () => {
 
   it('inserts by time, dedupes by id and clientId, never moves a status back', () => {
     expect(upsertMessage(undefined, a)).toBeUndefined();
+    const withA = messages([a]);
+    expect(upsertMessage(withA, fakeMessage('reaction', { id: 'rx' }))).toBe(withA);
     const empty: MessagesData = { pages: [], pageParams: [] };
     expect(upsertMessage(empty, a)).toBe(empty);
     // out-of-order: b arrives after c → goes between a and c
