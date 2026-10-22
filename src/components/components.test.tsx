@@ -157,6 +157,11 @@ describe('small components', () => {
     expect(screen.getByRole('heading', { name: 'Team' })).toBeInTheDocument();
     expect(document.title).toBe('Team · Cell AI Voicebot');
   });
+
+  it('PageHeader subtitles may hold chips (no <div> inside a <p>)', () => {
+    render(<PageHeader title="October recovery" subtitle={<StatusChip status="active" />} />);
+    expect(screen.getByText('Active').closest('p')).toBeNull();
+  });
 });
 
 describe('ErrorPage', () => {

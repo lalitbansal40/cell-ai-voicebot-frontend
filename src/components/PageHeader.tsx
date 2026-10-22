@@ -26,7 +26,8 @@ export function PageHeader({
           {title}
         </Typography>
         {subtitle && (
-          <Typography variant="body2" color="text.secondary">
+          // a div: subtitles hold chips and links (a <p> can't contain a <div>)
+          <Typography variant="body2" color="text.secondary" component="div">
             {subtitle}
           </Typography>
         )}
