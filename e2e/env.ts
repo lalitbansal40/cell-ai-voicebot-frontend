@@ -14,3 +14,7 @@ export const SUPERADMIN = { email: 'e2e-superadmin@example.com', password: 'e2e-
 
 /** Default password for users the specs create. */
 export const PASSWORD = 'blue-tiger-river-42';
+
+/** Fake Meta provider (Phase 9, dev / test only — never a real Meta secret). */
+export const FAKE_META_APP_SECRET = 'e2e-fake-meta-app-secret';
+export const META_VERIFY_TOKEN = 'e2e-meta-verify-token-0123456789';

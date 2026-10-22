@@ -38,6 +38,7 @@ export const KIND_LABELS: Record<SimulatorKind, string> = {
   history_declined: 'Chat history declined',
   contacts_sync: 'Contacts received',
   payment_method_added: 'Payment method added',
+  phone_number_added: 'Phone number added in WhatsApp Manager',
 };
 
 /** Dev only: the simulator exists outside production builds with the fake provider. */

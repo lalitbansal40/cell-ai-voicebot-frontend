@@ -7,7 +7,9 @@ import {
   E2E_MONGODB_URI,
   E2E_REDIS_URL,
   FRONTEND_PORT,
+  FAKE_META_APP_SECRET,
   FRONTEND_URL,
+  META_VERIFY_TOKEN,
   SUPERADMIN,
 } from './e2e/env';
 
@@ -95,6 +97,11 @@ export default defineConfig({
         APP_URL: 'http://localhost:5100',
         // one sign-up per spec: the whole suite goes over the default 30 per 15 min
         AUTH_RATE_LIMIT_MAX: '500',
+        // Phase 9: WhatsApp on the fake Meta provider (signup, webhooks, simulator)
+        WHATSAPP_ENABLED: 'true',
+        META_PROVIDER: 'fake',
+        FAKE_META_APP_SECRET: FAKE_META_APP_SECRET,
+        META_WEBHOOK_VERIFY_TOKEN: META_VERIFY_TOKEN,
         E2E_SUPERADMIN_EMAIL: SUPERADMIN.email,
         E2E_SUPERADMIN_PASSWORD: SUPERADMIN.password,
       },

@@ -20709,7 +20709,8 @@ export interface components {
         | 'history_chunk'
         | 'history_declined'
         | 'contacts_sync'
-        | 'payment_method_added';
+        | 'payment_method_added'
+        | 'phone_number_added';
     };
   };
   responses: never;

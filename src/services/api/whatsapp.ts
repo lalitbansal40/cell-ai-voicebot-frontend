@@ -41,6 +41,7 @@ export const SIMULATOR_KINDS = [
   'history_declined',
   'contacts_sync',
   'payment_method_added',
+  'phone_number_added',
 ] as const;
 export type SimulatorKind = (typeof SIMULATOR_KINDS)[number];
 
