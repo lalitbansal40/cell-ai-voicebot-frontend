@@ -63,8 +63,14 @@ export async function startPlayground(
       await page.getByLabel(`{{${name}}}`).fill(value);
     }
   }
-  await page.getByRole('button', { name: 'Start new conversation' }).click();
-  await expect(page.getByRole('textbox', { name: 'Message' })).toBeVisible();
+  // wait for the new conversation: until it opens, the message box belongs to the last one
+  await Promise.all([
+    page.waitForResponse(
+      (r) => r.request().method() === 'POST' && /\/playground\/sessions$/.test(r.url()),
+    ),
+    page.getByRole('button', { name: 'Start new conversation' }).click(),
+  ]);
+  await expect(page.getByRole('textbox', { name: 'Message' })).toBeEnabled();
 }
 
 /** Sends one message and waits for the agent's reply. Returns the reply's list item. */
