@@ -35,6 +35,8 @@ const ALL = [
   'reports.export',
   'integrations.manage',
   'telephony.manage',
+  'whatsapp.read',
+  'whatsapp.manage',
 ];
 
 /** Mirrors the backend role matrix (PHASE_2_PLAN §1b) for UI tests. */
@@ -64,6 +66,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'campaigns.export',
     'reports.read',
     'reports.export',
+    'whatsapp.read',
   ],
   agent: [
     'account.read',
@@ -74,6 +77,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'calls.trigger',
     'calls.listen',
     'campaigns.read',
+    'whatsapp.read',
   ],
   viewer: [
     'account.read',
@@ -84,6 +88,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'calls.read',
     'campaigns.read',
     'reports.read',
+    'whatsapp.read',
   ],
   superadmin: [
     ...ALL,

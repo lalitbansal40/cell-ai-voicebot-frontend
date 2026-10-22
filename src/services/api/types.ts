@@ -188,3 +188,21 @@ export type AudiencePreview = Schemas['AudiencePreview'];
 export type CampaignEstimate = Schemas['CampaignEstimate'];
 export type AccountLimits = Schemas['AccountLimits'];
 export type AccountWithWarning = Schemas['AccountWithWarning'];
+
+/** WhatsApp (Phase 9). */
+export type WhatsAppChannel = Schemas['WhatsAppChannel'];
+export type WhatsAppChannelDetail = Schemas['WhatsAppChannelDetail'];
+export type WhatsAppChannelList = Schemas['WhatsAppChannelList'];
+export type WhatsAppConnectResult = Schemas['WhatsAppConnectResult'];
+export type WhatsAppConfig = Schemas['WhatsAppConfig'];
+export type WhatsAppChannelStatus = WhatsAppChannel['status'];
+export type WhatsAppMode = WhatsAppChannel['mode'];
+export type WhatsAppQuality = WhatsAppChannel['qualityRating'];
+export type WhatsAppLimitTier = NonNullable<WhatsAppChannel['messagingLimitTier']>;
+export type WhatsAppSyncStatus = NonNullable<WhatsAppChannel['coexistence']>['contactsSync'];
+export type WhatsAppMetaPayer = WhatsAppChannel['billing']['metaPayer'];
+export type WhatsAppConnectStep = NonNullable<NonNullable<WhatsAppChannel['statusReason']>['step']>;
+export type WhatsAppAdminStatus = Schemas['WhatsAppAdminStatus'];
+export type MetaWebhookEventRow = Schemas['MetaWebhookEventRow'];
+export type MetaWebhookReceipt = Schemas['MetaWebhookReceipt'];
+export type AdminWhatsAppChannelRow = AdminAccountDetail['whatsappChannels'][number];

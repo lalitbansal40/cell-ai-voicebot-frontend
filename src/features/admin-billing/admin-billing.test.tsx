@@ -81,6 +81,8 @@ const DETAIL: AdminAccountDetail = {
   limits: { maxConcurrentCalls: 10, dialsPerMinute: 60 },
   activeCampaigns: 0,
   adminPausedCampaigns: [],
+  whatsappBilling: { metaPayer: 'platform' },
+  whatsappChannels: [],
   recentAudit: [],
 };
 const CARD = {

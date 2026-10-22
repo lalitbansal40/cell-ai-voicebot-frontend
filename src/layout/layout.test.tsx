@@ -54,6 +54,12 @@ describe('nav config', () => {
     expect(phase4).not.toContain('knowledge');
     // Phase 5 builds hid call flows
     expect(visibleNavItems(() => true, false, 5).map((i) => i.key)).not.toContain('flows');
+    // Phase 8 builds hid WhatsApp; Reports / Integrations come in Phases 14 / 15
+    expect(visibleNavItems(() => true, false, 8).map((i) => i.key)).not.toContain('whatsapp');
+    const live = visibleNavItems(() => true, false).map((i) => i.key);
+    expect(live).toContain('whatsapp');
+    expect(live).not.toContain('reports');
+    expect(live).not.toContain('integrations');
     expect(visibleNavItems((p) => p === 'flows.read', false).map((i) => i.key)).toEqual([
       'dashboard',
       'flows',
@@ -81,6 +87,7 @@ describe('AppLayout', () => {
       'Call flows',
       'Calls',
       'Campaigns',
+      'WhatsApp',
       'Team',
       'Settings',
     ]);
@@ -102,6 +109,7 @@ describe('AppLayout', () => {
       'Call flows',
       'Calls',
       'Campaigns',
+      'WhatsApp',
       'Settings',
     ]);
   });
@@ -117,6 +125,7 @@ describe('AppLayout', () => {
       'Call flows',
       'Calls',
       'Campaigns',
+      'WhatsApp',
       'Settings',
     ]);
   });

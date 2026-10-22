@@ -40,3 +40,9 @@
 - Errors: use `ApiError` / `getErrorMessage()` / `applyFieldErrors()` — never read raw axios errors. 4xx are handled by the screen; unexpected errors (5xx, network, timeout) get a global toast automatically. Pass `meta: { silent: true }` when the screen shows the error itself.
 - Queries retry only network / timeout / 5xx (max 2); mutations never retry.
 - Realtime: subscribe with `useWsEvent(type, handler)` / `useWsTopic('call:<id>')` inside components; after a reconnect all queries are invalidated (missed events are not replayed).
+
+## WhatsApp (Phase 9)
+
+- **Foundation:** `services/api/whatsapp.ts` (`/whatsapp/*` + the dev simulator), `admin-whatsapp.ts` (superadmin), `meta-public.ts` (`/data-deletion` status); `features/whatsapp/` — `keys.ts`, `queries.ts` (`useWhatsAppConfig`, `useChannels` / `useChannel` polled every 5 s while a number is connecting / needs action, mutations that store the returned channel, `useWhatsAppLiveUpdates` for `whatsapp.channel.updated`), `permissions.ts` (`useCanManageWhatsApp`: `whatsapp.manage`, not impersonating, account active), `labels.ts` (statuses, quality, "1K / day" tiers, modes, sync statuses, error texts per code).
+- **Embedded Signup:** `meta-sdk.ts` loads Meta's SDK once (15 s timeout, never in fake mode or tests) and parses `WA_EMBEDDED_SIGNUP` messages (origin-checked, safe JSON; any `FINISH*` is a finish); `embedded-signup.ts` (`runEmbeddedSignup` / `useEmbeddedSignup`: `FB.login` with `config_id`, `response_type: 'code'` and the coexistence feature type, the code sent at once, session ids awaited ≤ 3 s; outcomes finished / cancelled / error / popup blocked / SDK failed); fake mode: `TestSignupDialog` + `fake-signup.ts` (`fake.<base64url JSON>` codes with a nonce, session ids hashed like the backend fake).
+- **Routes:** `/whatsapp` → `/whatsapp/numbers` (lazy, `whatsapp.read`), public `/data-deletion` (Meta's data deletion status page).

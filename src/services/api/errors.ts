@@ -29,6 +29,10 @@ export interface ApiErrorDetail {
   severity?: 'error' | 'warning';
   nodeId?: string;
   edgeId?: string;
+  /** On `META_API_ERROR`: Meta's error code / subcode / trace id. */
+  metaCode?: number;
+  metaSubcode?: number;
+  fbtraceId?: string;
 }
 
 interface ApiErrorInit {
@@ -81,6 +85,9 @@ const ErrorEnvelopeSchema = z.object({
           severity: z.enum(['error', 'warning']).optional(),
           nodeId: z.string().optional(),
           edgeId: z.string().optional(),
+          metaCode: z.number().optional(),
+          metaSubcode: z.number().optional(),
+          fbtraceId: z.string().optional(),
         }),
       )
       .optional(),

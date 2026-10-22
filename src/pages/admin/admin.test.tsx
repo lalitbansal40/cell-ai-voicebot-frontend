@@ -48,6 +48,8 @@ const detail = (overrides: Partial<AdminAccountDetail['account']> = {}): AdminAc
   limits: { maxConcurrentCalls: 10, dialsPerMinute: 60 },
   activeCampaigns: 1,
   adminPausedCampaigns: [],
+  whatsappBilling: { metaPayer: 'platform' },
+  whatsappChannels: [],
   recentAudit: [
     {
       id: 'e1',

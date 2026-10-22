@@ -2,6 +2,7 @@ import type { SvgIconComponent } from '@mui/icons-material';
 import AccountBalanceWalletOutlined from '@mui/icons-material/AccountBalanceWalletOutlined';
 import AccountTreeOutlined from '@mui/icons-material/AccountTreeOutlined';
 import CampaignOutlined from '@mui/icons-material/CampaignOutlined';
+import ChatOutlined from '@mui/icons-material/ChatOutlined';
 import ContactsOutlined from '@mui/icons-material/ContactsOutlined';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import DomainOutlined from '@mui/icons-material/DomainOutlined';
@@ -87,12 +88,20 @@ export const NAV_ITEMS: NavItem[] = [
     phase: 8,
   },
   {
+    key: 'whatsapp',
+    label: 'WhatsApp',
+    path: '/whatsapp',
+    icon: ChatOutlined,
+    permission: 'whatsapp.read',
+    phase: 9,
+  },
+  {
     key: 'reports',
     label: 'Reports',
     path: '/reports',
     icon: InsightsOutlined,
     permission: 'reports.read',
-    phase: 9,
+    phase: 14,
   },
   {
     key: 'integrations',
@@ -100,7 +109,7 @@ export const NAV_ITEMS: NavItem[] = [
     path: '/integrations',
     icon: ExtensionOutlined,
     permission: 'integrations.manage',
-    phase: 10,
+    phase: 15,
   },
   { key: 'team', label: 'Team', path: '/team', icon: GroupOutlined, permission: 'team.read' },
   { key: 'settings', label: 'Settings', path: '/settings/profile', icon: SettingsOutlined },
@@ -122,7 +131,7 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 /** The phase currently shipped — items of later phases are hidden. */
-export const LIVE_PHASE = 8;
+export const LIVE_PHASE = 9;
 
 export const visibleNavItems = (
   can: (permission: string) => boolean,

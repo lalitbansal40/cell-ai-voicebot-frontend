@@ -94,6 +94,13 @@ export const routes: RouteObject[] = [
       { path: '/reset-password', element: <ResetPasswordPage /> },
       { path: '/accept-invite', element: <AcceptInvitePage /> },
       {
+        // public: Meta's data deletion status page (no login)
+        path: '/data-deletion',
+        lazy: async () => ({
+          Component: (await import('@/pages/DataDeletionPage')).DataDeletionPage,
+        }),
+      },
+      {
         element: (
           <RequireAuth>
             <AppLayout />
@@ -278,6 +285,24 @@ export const routes: RouteObject[] = [
                 path: ':id',
                 lazy: async () => ({
                   Component: (await import('@/pages/calls/CallDetailPage')).CallDetailPage,
+                }),
+              },
+            ],
+          },
+          {
+            path: '/whatsapp',
+            element: (
+              <RequirePermission perm="whatsapp.read">
+                <Outlet />
+              </RequirePermission>
+            ),
+            children: [
+              { index: true, element: <Navigate to="/whatsapp/numbers" replace /> },
+              {
+                // the WhatsApp page is its own chunk
+                path: 'numbers',
+                lazy: async () => ({
+                  Component: (await import('@/pages/whatsapp/WhatsAppPage')).WhatsAppPage,
                 }),
               },
             ],
