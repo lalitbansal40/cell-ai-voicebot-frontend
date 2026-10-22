@@ -6,6 +6,15 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 9 · WhatsApp Connect (T9.8–T9.12)** — 2026-10-22
+  - API clients and query hooks for `/whatsapp/*`, the superadmin WhatsApp routes and the public data deletion status (regenerated types), `whatsapp.channel.updated` WS event, WhatsApp in the menu (`LIVE_PHASE = 9`; Reports → Phase 14, Integrations → Phase 15), routes `/whatsapp/numbers`, `/admin/whatsapp`, public `/data-deletion`.
+  - Embedded Signup: Meta SDK loaded once (15 s timeout), `WA_EMBEDDED_SIGNUP` listener (origin-checked, any `FINISH*`), `FB.login` with the config id, code response and the coexistence feature type, code sent at once with session ids awaited ≤ 3 s; fake provider: Test signup dialog (`fake.` code with a nonce, session ids like the backend fake).
+  - WhatsApp → Numbers: connect wizard (Cloud API / WhatsApp Business app with the calling warning; connected, action needed, needs reconnect, cancelled, Meta error, number in use, pop-ups blocked), number cards (status, quality, mode, limit, name status, billing line with the WhatsApp Manager link, coexistence syncs + Retry sync, reason), Sync now / Retry setup / Enter PIN / Reconnect / Rename / Disconnect for owners and admins, details drawer (ids with copy, Meta statuses, webhook health, history, dev Send test event), live updates + polling while a number settles.
+  - Superadmin WhatsApp card (force disconnect with a reason, manual connect, Meta billing with the irreversibility confirm) and WhatsApp setup page (configured flags, webhook / callback URLs, failed events + Replay); bell icons for the 6 WhatsApp notification types; dashboard WhatsApp card; `/data-deletion` page.
+  - Bundle: main 451.3 → 454.3 KB gzip (+3.0 KB; every WhatsApp screen lazy).
+  - E2E: 16 WhatsApp tests in 4 specs (connect "Done when", outcomes, roles + billing + superadmin, Meta endpoints); 77 total.
+  - Tests: 737 → 803.
+
 - **Phase 8 · Campaigns (T8.10–T8.15)** — 2026-10-22
   - API clients and query hooks for every `/campaigns` route (regenerated types), `campaign.status` / `campaign.progress` WS events, Campaigns in the menu (`LIVE_PHASE = 8`), routes `/campaigns`, `/campaigns/new`, `/campaigns/:id`, `/campaigns/:id/edit` (list, wizard and detail as lazy chunks); calling window, schedule and outcome / scenario weight fields.
   - Campaigns list (status, mode, flow, progress, next run, filters, "Load more") and the 5-step wizard (basics, audience with a live preview of who is called and who is skipped, schedule and window, retries / pacing / dry-run simulation, review with the estimate; save on the way, unsaved-changes guard, revision conflicts, Start with an Idempotency-Key; prefilled from flows, lists and segments).
