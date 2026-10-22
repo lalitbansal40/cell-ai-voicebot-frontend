@@ -321,6 +321,12 @@ export const routes: RouteObject[] = [
               { path: 'accounts', element: <AdminAccountsPage /> },
               { path: 'accounts/:id', element: <AdminAccountDetailPage /> },
               { path: 'billing', element: <AdminBillingPage /> },
+              {
+                path: 'whatsapp',
+                lazy: async () => ({
+                  Component: (await import('@/pages/admin/AdminWhatsAppPage')).AdminWhatsAppPage,
+                }),
+              },
             ],
           },
         ],

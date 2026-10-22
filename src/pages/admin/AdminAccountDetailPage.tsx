@@ -34,6 +34,10 @@ const LimitsCard = lazy(async () => ({
   default: (await import('@/features/admin/LimitsCard')).LimitsCard,
 }));
 
+const WhatsAppCard = lazy(async () => ({
+  default: (await import('@/features/admin/WhatsAppCard')).WhatsAppCard,
+}));
+
 const TAB_KEYS = ['overview', 'rates', 'wallet'] as const;
 
 const LANGUAGES: Record<string, string> = { hi: 'Hindi', en: 'English', hinglish: 'Hinglish' };
@@ -89,6 +93,9 @@ function Overview({ detail }: { detail: AdminAccountDetail }) {
           key={`${String(detail.limits.maxConcurrentCalls)}:${String(detail.limits.dialsPerMinute)}`}
           detail={detail}
         />
+      </Suspense>
+      <Suspense fallback={<Skeleton variant="rounded" height={160} />}>
+        <WhatsAppCard key={detail.whatsappBilling.metaPayer} detail={detail} />
       </Suspense>
       <div>
         <Typography variant="subtitle1" component="h2" sx={{ mb: 1 }}>

@@ -44,8 +44,9 @@ describe('nav config', () => {
       'settings',
       'admin',
       'admin-billing',
+      'admin-whatsapp',
     ]);
-    expect(visibleNavItems(() => true, false, 99)).toHaveLength(NAV_ITEMS.length - 2);
+    expect(visibleNavItems(() => true, false, 99)).toHaveLength(NAV_ITEMS.length - 3);
     // Phase 3 builds did not show the wallet
     expect(visibleNavItems(() => true, false, 3).map((i) => i.key)).not.toContain('wallet');
     // Phase 4 builds hid AI agents and knowledge
@@ -136,6 +137,7 @@ describe('AppLayout', () => {
     expect(screen.getAllByText('Superadmin')[0]).toBeInTheDocument();
     expect(navLabels()).toContain('Accounts');
     expect(navLabels()).toContain('Billing');
+    expect(navLabels()).toContain('WhatsApp setup');
   });
 
   it('opens the mobile drawer from the header', async () => {

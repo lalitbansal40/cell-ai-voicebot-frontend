@@ -7,6 +7,7 @@ import ContactsOutlined from '@mui/icons-material/ContactsOutlined';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import DomainOutlined from '@mui/icons-material/DomainOutlined';
 import ExtensionOutlined from '@mui/icons-material/ExtensionOutlined';
+import ForumOutlined from '@mui/icons-material/ForumOutlined';
 import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import InsightsOutlined from '@mui/icons-material/InsightsOutlined';
 import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
@@ -127,6 +128,14 @@ export const NAV_ITEMS: NavItem[] = [
     icon: ReceiptLongOutlined,
     platformOnly: true,
     phase: 4,
+  },
+  {
+    key: 'admin-whatsapp',
+    label: 'WhatsApp setup',
+    path: '/admin/whatsapp',
+    icon: ForumOutlined,
+    platformOnly: true,
+    phase: 9,
   },
 ];
 
