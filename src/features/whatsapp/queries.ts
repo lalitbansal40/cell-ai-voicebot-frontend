@@ -26,6 +26,8 @@ export const useWhatsAppConfig = (enabled = true) =>
     queryFn: whatsappApi.config,
     enabled,
     staleTime: Infinity,
+    // the page explains "not set up" (503) itself
+    meta: { silent: true },
   });
 
 export const useChannels = (enabled = true) =>
@@ -92,18 +94,21 @@ export const useWhatsAppLiveUpdates = (): void => {
 
 const useChannelMutation = <TArgs, TResult extends { channel: WhatsAppChannel } | WhatsAppChannel>(
   fn: (args: TArgs) => Promise<TResult>,
+  silent = false,
 ) => {
   const client = useQueryClient();
   return useMutation({
     mutationFn: fn,
+    meta: { silent },
     onSuccess: (result) => {
       storeChannel(client, 'channel' in result ? result.channel : result);
     },
   });
 };
 
+/** Silent: the connect wizard shows every error (Meta's too) itself. */
 export const useConnectWhatsApp = () =>
-  useChannelMutation((body: EmbeddedSignupInput) => whatsappApi.signup(body));
+  useChannelMutation((body: EmbeddedSignupInput) => whatsappApi.signup(body), true);
 export const useRenameChannel = () =>
   useChannelMutation(({ id, label }: { id: string; label: string }) =>
     whatsappApi.rename(id, label),
