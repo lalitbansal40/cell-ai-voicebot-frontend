@@ -1,4 +1,7 @@
+import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
+import EventBusyOutlined from '@mui/icons-material/EventBusyOutlined';
 import NotificationsNoneOutlined from '@mui/icons-material/NotificationsNoneOutlined';
+import PauseCircleOutlined from '@mui/icons-material/PauseCircleOutlined';
 import Alert from '@mui/material/Alert';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
@@ -24,6 +27,27 @@ import type { Notification } from '@/services/api/types';
 import { useWsEvent } from '@/services/realtime';
 
 const LATEST = 20;
+
+/** Campaign notifications get an icon (the text and link come from the server). */
+const TYPE_ICONS: Partial<
+  Record<
+    Notification['type'],
+    { icon: typeof CheckCircleOutlined; color: 'success' | 'warning' | 'info'; label: string }
+  >
+> = {
+  'campaign.completed': { icon: CheckCircleOutlined, color: 'success', label: 'Campaign finished' },
+  'campaign.paused': { icon: PauseCircleOutlined, color: 'warning', label: 'Campaign paused' },
+  'campaign.run_skipped': { icon: EventBusyOutlined, color: 'info', label: 'Run skipped' },
+};
+
+function TypeIcon({ type }: { type: Notification['type'] }) {
+  const t = TYPE_ICONS[type];
+  if (!t) return null;
+  const Icon = t.icon;
+  return (
+    <Icon fontSize="small" color={t.color} titleAccess={t.label} sx={{ mt: 0.25, flexShrink: 0 }} />
+  );
+}
 
 /** Visually hidden, still read by screen readers. */
 const SR_ONLY = {
@@ -156,6 +180,7 @@ export function NotificationsBell() {
                 bgcolor: n.readAt ? 'transparent' : 'primary.main',
               }}
             />
+            <TypeIcon type={n.type} />
             <ListItemText
               primary={
                 <>

@@ -1,6 +1,8 @@
 import Box from '@mui/material/Box';
+import Skeleton from '@mui/material/Skeleton';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import { lazy, Suspense } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 
 import { PageHeader } from '@/components/PageHeader';
@@ -9,10 +11,14 @@ import { AccountTab } from '@/features/settings/AccountTab';
 import { ApiKeysTab } from '@/features/settings/ApiKeysTab';
 import { AuditTab } from '@/features/settings/AuditTab';
 import { BillingTab } from '@/features/settings/BillingTab';
-import { CallsTab } from '@/features/settings/CallsTab';
 import { ProfileTab } from '@/features/settings/ProfileTab';
 import { SecurityTab } from '@/features/settings/SecurityTab';
 import { useHasWallet } from '@/features/wallet/queries';
+
+// the calls tab uses the campaign window field (date-fns tz) → its own chunk
+const CallsTab = lazy(async () => ({
+  default: (await import('@/features/settings/CallsTab')).CallsTab,
+}));
 
 const TABS = [
   { key: 'profile', label: 'Profile', Component: ProfileTab },
@@ -51,7 +57,9 @@ export function SettingsPage() {
           ))}
         </Tabs>
       </Box>
-      <current.Component />
+      <Suspense fallback={<Skeleton variant="rounded" height={240} />}>
+        <current.Component />
+      </Suspense>
     </>
   );
 }

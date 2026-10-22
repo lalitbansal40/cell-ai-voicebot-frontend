@@ -170,6 +170,7 @@ export type CallRecordingLink = Schemas['CallRecordingLink'];
 /** Campaigns & single calls (Phase 8). */
 export type Campaign = Schemas['Campaign'];
 export type CampaignListItem = Schemas['CampaignListItem'];
+export type CampaignSummary = Schemas['CampaignSummary'];
 export type CampaignStatus = Campaign['status'];
 export type CampaignPauseReason = NonNullable<Campaign['pauseReason']>;
 export type CampaignStats = Campaign['stats'];

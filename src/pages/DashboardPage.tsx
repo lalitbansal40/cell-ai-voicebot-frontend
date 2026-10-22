@@ -1,7 +1,9 @@
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
+import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
+import { lazy, Suspense } from 'react';
 
 import { PageHeader } from '@/components/PageHeader';
 import { usePermission, useSession } from '@/features/auth/hooks';
@@ -10,12 +12,15 @@ import { SystemInfoCard } from '@/features/system/SystemInfoCard';
 import { useHasWallet } from '@/features/wallet/queries';
 import { WalletCard } from '@/features/wallet/WalletCard';
 
-const UPCOMING = [{ title: 'Campaigns', text: 'Running campaigns and progress — Phase 8.' }];
+const CampaignsCard = lazy(async () => ({
+  default: (await import('@/features/campaigns/CampaignsCard')).CampaignsCard,
+}));
 
 export function DashboardPage() {
   const session = useSession();
   const canSeeWallet = useHasWallet();
   const canSeeCalls = usePermission('calls.read');
+  const canSeeCampaigns = usePermission('campaigns.read');
   return (
     <>
       <PageHeader title="Dashboard" subtitle={`Welcome, ${session?.user.name ?? ''}`} />
@@ -46,18 +51,13 @@ export function DashboardPage() {
             <RecentCallsCard />
           </Grid>
         )}
-        {UPCOMING.map((card) => (
-          <Grid key={card.title} size={{ xs: 12, md: 4 }}>
-            <Card variant="outlined" sx={{ height: '100%' }}>
-              <CardContent>
-                <Typography variant="subtitle1">{card.title}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {card.text}
-                </Typography>
-              </CardContent>
-            </Card>
+        {canSeeCampaigns && (
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Suspense fallback={<Skeleton variant="rounded" height={120} />}>
+              <CampaignsCard />
+            </Suspense>
           </Grid>
-        ))}
+        )}
       </Grid>
     </>
   );

@@ -7,6 +7,7 @@ import { useCallback, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 
 import { TestCallButton } from '@/features/calls/TestCallButton';
+import { FlowCampaignsButton } from '@/features/campaigns/FlowCampaignsButton';
 import { FlowBuilder } from '@/features/flows/builder/FlowBuilder';
 import { FlowDialogs } from '@/features/flows/inspector/FlowDialogs';
 import { StepForm } from '@/features/flows/inspector/StepForm';
@@ -110,6 +111,7 @@ export function FlowBuilderPage() {
               dirty={state.dirty}
             />
           )}
+          {!versionNumber && <FlowCampaignsButton flow={flow.data} />}
           {!versionNumber && (
             <Button
               startIcon={<ScienceOutlined />}

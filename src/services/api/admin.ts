@@ -1,5 +1,6 @@
 import { apiClient, unwrap } from './client';
 import type {
+  AccountLimits,
   AdminAccountDetail,
   AdminAccountRow,
   AuthSession,
@@ -34,5 +35,20 @@ export const adminApi = {
     unwrap(apiClient.post<SuccessEnvelope<PublicAccount>>(`/admin/accounts/${id}/enable`)),
   impersonate: (id: string) =>
     unwrap(apiClient.post<SuccessEnvelope<AuthSession>>(`/admin/accounts/${id}/impersonate`)),
+  /** Dialing limits (max concurrent calls, dials per minute); audited. */
+  setLimits: (id: string, body: Partial<AccountLimits>) =>
+    unwrap(apiClient.patch<SuccessEnvelope<AccountLimits>>(`/admin/accounts/${id}/limits`, body)),
+  /** Emergency stop: every scheduled / running campaign pauses as `admin`. */
+  pauseCampaigns: (id: string) =>
+    unwrap(
+      apiClient.post<SuccessEnvelope<{ paused: number }>>(`/admin/accounts/${id}/campaigns/pause`),
+    ),
+  /** Lifts an `admin` pause (superadmins only). */
+  resumeCampaign: (id: string, campaignId: string) =>
+    unwrap(
+      apiClient.post<SuccessEnvelope<{ id: string; status: string }>>(
+        `/admin/accounts/${id}/campaigns/${campaignId}/resume`,
+      ),
+    ),
   stopImpersonation: () => apiClient.post('/admin/impersonation/stop').then(() => undefined),
 };

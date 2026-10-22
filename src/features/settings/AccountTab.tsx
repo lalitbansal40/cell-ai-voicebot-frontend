@@ -8,9 +8,6 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Typography from '@mui/material/Typography';
 import { useMutation } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
 import { useMemo, useState } from 'react';
@@ -22,18 +19,16 @@ import { getErrorMessage } from '@/services/api/errors';
 import type { PublicAccount } from '@/services/api/types';
 import { timezoneOptions } from '@/utils/timezone';
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-type Draft = Pick<PublicAccount, 'name' | 'timezone' | 'country' | 'defaultLanguage' | 'settings'>;
+// the calling window, call caps and recording live in Settings → Calls
+type Draft = Pick<PublicAccount, 'name' | 'timezone' | 'country' | 'defaultLanguage'> & {
+  settings: Pick<PublicAccount['settings'], 'aiDisclosureEnabled'>;
+};
 const draftOf = (a: PublicAccount): Draft => ({
   name: a.name,
   timezone: a.timezone,
   country: a.country,
   defaultLanguage: a.defaultLanguage,
-  settings: {
-    ...a.settings,
-    callingWindow: { ...a.settings.callingWindow, days: [...a.settings.callingWindow.days] },
-  },
+  settings: { aiDisclosureEnabled: a.settings.aiDisclosureEnabled },
 });
 
 /** Remounts the form whenever the saved account changes (fresh draft, no effect sync). */
@@ -63,8 +58,6 @@ function AccountForm({ account, canEdit }: { account: PublicAccount; canEdit: bo
     },
   });
   const dirty = JSON.stringify(draft) !== JSON.stringify(draftOf(account));
-  const window = draft.settings.callingWindow;
-  const invalidWindow = window.start >= window.end || window.days.length === 0;
   const set = (patch: Partial<Draft>) => setDraft({ ...draft, ...patch });
   const setSettings = (patch: Partial<Draft['settings']>) =>
     set({ settings: { ...draft.settings, ...patch } });
@@ -120,50 +113,6 @@ function AccountForm({ account, canEdit }: { account: PublicAccount; canEdit: bo
             </TextField>
           </Grid>
         </Grid>
-        <div>
-          <Typography variant="subtitle2" gutterBottom>
-            Calling window ({draft.timezone})
-          </Typography>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
-            sx={{ alignItems: { sm: 'center' } }}
-          >
-            <TextField
-              label="From"
-              type="time"
-              value={window.start}
-              disabled={!canEdit}
-              onChange={(e) => setSettings({ callingWindow: { ...window, start: e.target.value } })}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-            <TextField
-              label="To"
-              type="time"
-              value={window.end}
-              disabled={!canEdit}
-              onChange={(e) => setSettings({ callingWindow: { ...window, end: e.target.value } })}
-              slotProps={{ inputLabel: { shrink: true } }}
-              error={window.start >= window.end}
-              helperText={window.start >= window.end ? 'Must be after the start' : ' '}
-            />
-            <ToggleButtonGroup
-              size="small"
-              value={window.days}
-              disabled={!canEdit}
-              onChange={(_e, days: number[]) =>
-                setSettings({ callingWindow: { ...window, days: [...days].sort() } })
-              }
-              aria-label="Calling days"
-            >
-              {DAYS.map((d, i) => (
-                <ToggleButton key={d} value={i} aria-label={d}>
-                  {d}
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
-          </Stack>
-        </div>
         <Stack>
           <FormControlLabel
             control={
@@ -183,7 +132,7 @@ function AccountForm({ account, canEdit }: { account: PublicAccount; canEdit: bo
             </Button>
             <Button
               variant="contained"
-              disabled={!dirty || invalidWindow || save.isPending}
+              disabled={!dirty || save.isPending}
               onClick={() => save.mutate(draft)}
             >
               Save changes

@@ -17,6 +17,9 @@ vi.mock('@/services/api/admin', () => ({
     enable: vi.fn(),
     impersonate: vi.fn(),
     stopImpersonation: vi.fn(),
+    setLimits: vi.fn(),
+    pauseCampaigns: vi.fn(),
+    resumeCampaign: vi.fn(),
   },
 }));
 vi.mock('@/services/api/auth', () => ({
@@ -44,6 +47,7 @@ const detail = (overrides: Partial<AdminAccountDetail['account']> = {}): AdminAc
   usersByStatus: { active: 2, invited: 1, disabled: 0 },
   limits: { maxConcurrentCalls: 10, dialsPerMinute: 60 },
   activeCampaigns: 1,
+  adminPausedCampaigns: [],
   recentAudit: [
     {
       id: 'e1',
@@ -260,5 +264,65 @@ describe('Admin account detail', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByRole('button', { name: 'Impersonate' })).toBeDisabled();
     expect(screen.getByText('—')).toBeInTheDocument();
+  });
+
+  it('calling limits: validated save, pause all (confirmed), resume an admin pause', async () => {
+    const user = userEvent.setup();
+    signInAs('superadmin');
+    api.account.mockResolvedValue(detail());
+    api.setLimits.mockResolvedValue({ maxConcurrentCalls: 25, dialsPerMinute: 60 });
+    renderWithProviders({ route: '/admin/accounts/acc1' });
+    const card = await screen.findByRole('region', { name: 'Calling limits' });
+    expect(
+      within(card).getByText(/Active campaigns \(scheduled, running or paused\): 1/),
+    ).toBeInTheDocument();
+    const save = within(card).getByRole('button', { name: 'Save limits' });
+    expect(save).toBeDisabled();
+    const max = within(card).getByLabelText('Max concurrent calls');
+    await user.clear(max);
+    await user.type(max, '500');
+    expect(save).toBeDisabled();
+    await user.clear(max);
+    await user.type(max, '25');
+    await user.click(save);
+    await waitFor(() =>
+      expect(api.setLimits).toHaveBeenCalledWith('acc1', {
+        maxConcurrentCalls: 25,
+        dialsPerMinute: 60,
+      }),
+    );
+    expect(await screen.findByText('Limits saved')).toBeInTheDocument();
+
+    api.pauseCampaigns.mockResolvedValue({ paused: 2 });
+    api.account.mockResolvedValue({
+      ...detail(),
+      adminPausedCampaigns: [
+        { id: 'cp1', name: 'October recovery' },
+        { id: 'cp2', name: 'Daily reminders' },
+      ],
+    });
+    await user.click(within(card).getByRole('button', { name: 'Pause all campaigns' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(/Only a superadmin can resume them/)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Pause all' }));
+    await waitFor(() => expect(api.pauseCampaigns).toHaveBeenCalledWith('acc1'));
+    expect(await screen.findByText('2 campaigns paused')).toBeInTheDocument();
+    const list = await screen.findByRole('list', { name: 'Paused by the platform team' });
+    api.resumeCampaign.mockRejectedValueOnce(
+      new ApiError({
+        status: 409,
+        code: 'CONFLICT_INVALID_STATE',
+        kind: 'http',
+        message: 'Only a campaign paused by the platform team is resumed here.',
+      }),
+    );
+    await user.click(within(list).getByRole('button', { name: 'Resume Daily reminders' }));
+    expect(
+      await screen.findByText('Only a campaign paused by the platform team is resumed here.'),
+    ).toBeInTheDocument();
+    api.resumeCampaign.mockResolvedValue({ id: 'cp1', status: 'running' });
+    await user.click(within(list).getByRole('button', { name: 'Resume October recovery' }));
+    await waitFor(() => expect(api.resumeCampaign).toHaveBeenLastCalledWith('acc1', 'cp1'));
+    expect(await screen.findByText('Campaign resumed')).toBeInTheDocument();
   });
 });

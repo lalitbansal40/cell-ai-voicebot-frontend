@@ -1,7 +1,5 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { usePermission } from '@/features/auth/hooks';
-import { useImpersonating } from '@/features/wallet/queries';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
   campaignsApi,
@@ -20,23 +18,22 @@ export const CAMPAIGN_POLL_MS = 5_000;
 /** Debounce of the audience preview while the wizard is edited. */
 export const PREVIEW_DEBOUNCE_MS = 400;
 
-const useCan = (permission: string): boolean => {
-  const can = usePermission(permission);
-  const impersonating = useImpersonating();
-  return can && !impersonating;
-};
+export { useCanExportCampaigns, useCanRunCampaigns, useCanWriteCampaigns } from './permissions';
 
-/** campaigns.write and not impersonating (create / edit / duplicate / delete). */
-export const useCanWriteCampaigns = (): boolean => useCan('campaigns.write');
-/** campaigns.run and not impersonating (start / pause / resume / cancel). */
-export const useCanRunCampaigns = (): boolean => useCan('campaigns.run');
-/** campaigns.export and not impersonating. */
-export const useCanExportCampaigns = (): boolean => useCan('campaigns.export');
+/** Dashboard card; refreshed every 30 s (and by live campaign events through `campaignKeys.all`). */
+export const useCampaignSummary = (enabled = true) =>
+  useQuery({
+    queryKey: campaignKeys.summary,
+    queryFn: campaignsApi.summary,
+    enabled,
+    refetchInterval: 30_000,
+  });
 
 /** Cursor pages ("Load more"). */
-export const useCampaigns = (query: Omit<ListCampaignsQuery, 'cursor'>) =>
+export const useCampaigns = (query: Omit<ListCampaignsQuery, 'cursor'>, enabled = true) =>
   useInfiniteQuery({
     queryKey: campaignKeys.list(query),
+    enabled,
     queryFn: ({ pageParam }) =>
       campaignsApi.list({ ...query, ...(pageParam ? { cursor: pageParam } : {}) }),
     initialPageParam: '',

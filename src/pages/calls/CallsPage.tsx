@@ -19,6 +19,7 @@ import { Link as RouterLink, useSearchParams } from 'react-router';
 import { DataTable, type Column } from '@/components/DataTable';
 import { PageHeader } from '@/components/PageHeader';
 import { RelativeTime } from '@/components/RelativeTime';
+import { usePermission } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/store';
 import {
   dispositionLabel,
@@ -27,6 +28,7 @@ import {
   statusColor,
 } from '@/features/calls/labels';
 import { useCallLiveUpdates, useCalls, useCanTriggerCalls } from '@/features/calls/queries';
+import { useCampaigns } from '@/features/campaigns/queries';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import type { ListCallsQuery } from '@/services/api/calls';
 import type { Call } from '@/services/api/types';
@@ -36,6 +38,14 @@ import { formatCurrencyMicros } from '@/utils/format';
 const PAGE = 25;
 const STATUSES = ['in_progress', 'completed', 'failed', 'canceled'] as const;
 const YMD = /^\d{4}-\d{2}-\d{2}$/;
+const PROVIDER_LABELS: Record<NonNullable<Call['provider']>, string> = {
+  webcall: 'Browser',
+  dryrun: 'Simulated',
+  sip: 'Phone line',
+  notifynow: 'NotifyNow',
+};
+const isProvider = (v: string | null): v is NonNullable<Call['provider']> =>
+  v !== null && v in PROVIDER_LABELS;
 
 const sourceText = (c: Call) => {
   const name = c.source.name ?? (c.source.kind === 'flow' ? 'Deleted flow' : 'Deleted agent');
@@ -48,7 +58,9 @@ const sourceText = (c: Call) => {
 export function CallsPage() {
   const timezone = useAuthStore((s) => s.session?.account.timezone ?? 'Asia/Kolkata');
   const canTrigger = useCanTriggerCalls();
+  const canCampaigns = usePermission('campaigns.read');
   const [params, setParams] = useSearchParams();
+  const campaignOptions = useCampaigns({ limit: 50 }, canCampaigns);
   useCallLiveUpdates();
 
   const status = (params.get('status') ?? '')
@@ -58,6 +70,8 @@ export function CallsPage() {
   const from = YMD.test(params.get('from') ?? '') ? (params.get('from') ?? '') : '';
   const to = YMD.test(params.get('to') ?? '') ? (params.get('to') ?? '') : '';
   const badRange = Boolean(from && to && from > to);
+  const provider = params.get('provider');
+  const campaignId = params.get('campaignId') ?? '';
   const [search, setSearch] = useState(params.get('q') ?? '');
   const q = useDebouncedValue(search.trim(), 300);
 
@@ -82,12 +96,21 @@ export function CallsPage() {
     ...(params.get('q') ? { q: params.get('q') ?? '' } : {}),
     ...(params.get('flowId') ? { flowId: params.get('flowId') ?? '' } : {}),
     ...(params.get('agentId') ? { agentId: params.get('agentId') ?? '' } : {}),
+    ...(params.get('contactId') ? { contactId: params.get('contactId') ?? '' } : {}),
+    ...(campaignId ? { campaignId } : {}),
+    ...(isProvider(provider) ? { provider } : {}),
     ...(from ? { from: startOfDayIso(from, timezone) } : {}),
     ...(to ? { to: startOfDayIso(shiftYmd(to, 1), timezone) } : {}),
   };
   const calls = useCalls(query);
   const filtered =
-    status.length > 0 || testOnly || Boolean(params.get('q')) || Boolean(from) || Boolean(to);
+    status.length > 0 ||
+    testOnly ||
+    Boolean(params.get('q')) ||
+    Boolean(from) ||
+    Boolean(to) ||
+    Boolean(campaignId) ||
+    isProvider(provider);
 
   const columns: Column<Call>[] = [
     {
@@ -106,6 +129,12 @@ export function CallsPage() {
         <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
           <span>{sourceText(c)}</span>
           {c.isTest && <Chip size="small" variant="outlined" label="Test" />}
+          {c.provider === 'dryrun' && <Chip size="small" variant="outlined" label="Simulated" />}
+          {c.campaign && (
+            <Link component={RouterLink} to={`/campaigns/${c.campaign.id}`} variant="body2">
+              {c.campaign.name}
+            </Link>
+          )}
         </Stack>
       ),
     },
@@ -221,6 +250,44 @@ export function CallsPage() {
             helperText={badRange ? 'Must be after From' : undefined}
             slotProps={{ inputLabel: { shrink: true } }}
           />
+          <TextField
+            select
+            label="Line"
+            size="small"
+            sx={{ minWidth: 140 }}
+            value={isProvider(provider) ? provider : ''}
+            onChange={(e) => set('provider', e.target.value)}
+            slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+          >
+            <MenuItem value="">All</MenuItem>
+            {(Object.keys(PROVIDER_LABELS) as NonNullable<Call['provider']>[]).map((p) => (
+              <MenuItem key={p} value={p}>
+                {PROVIDER_LABELS[p]}
+              </MenuItem>
+            ))}
+          </TextField>
+          {canCampaigns && (
+            <TextField
+              select
+              label="Campaign"
+              size="small"
+              sx={{ minWidth: 180 }}
+              value={
+                campaignOptions.data?.pages[0]?.data.some((cp) => cp.id === campaignId)
+                  ? campaignId
+                  : ''
+              }
+              onChange={(e) => set('campaignId', e.target.value)}
+              slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+            >
+              <MenuItem value="">All</MenuItem>
+              {(campaignOptions.data?.pages[0]?.data ?? []).map((cp) => (
+                <MenuItem key={cp.id} value={cp.id}>
+                  {cp.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
           <FormControlLabel
             control={
               <Switch
@@ -242,15 +309,17 @@ export function CallsPage() {
             </Button>
           )}
         </Stack>
-        {(params.get('flowId') || params.get('agentId')) && (
+        {(params.get('flowId') || params.get('agentId') || params.get('contactId')) && (
           <Typography variant="body2" color="text.secondary">
-            Showing the calls of one {params.get('flowId') ? 'flow' : 'agent'}.{' '}
+            Showing the calls of one{' '}
+            {params.get('flowId') ? 'flow' : params.get('agentId') ? 'agent' : 'contact'}.{' '}
             <Link
               component="button"
               onClick={() => {
                 const next = new URLSearchParams(params);
                 next.delete('flowId');
                 next.delete('agentId');
+                next.delete('contactId');
                 setParams(next, { replace: true });
               }}
             >

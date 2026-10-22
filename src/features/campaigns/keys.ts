@@ -7,6 +7,7 @@ import type {
 /** Query keys (src/README.md convention). */
 export const campaignKeys = {
   all: ['campaigns'] as const,
+  summary: ['campaigns', 'summary'] as const,
   lists: ['campaigns', 'list'] as const,
   list: (query: Omit<ListCampaignsQuery, 'cursor'>) => ['campaigns', 'list', query] as const,
   detail: (id: string) => ['campaigns', 'detail', id] as const,

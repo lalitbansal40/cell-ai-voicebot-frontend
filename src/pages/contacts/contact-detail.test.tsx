@@ -129,11 +129,44 @@ beforeEach(() => {
 });
 afterEach(() => vi.clearAllMocks());
 
-const open = async (role: 'owner' | 'manager' | 'agent' = 'owner') => {
+const open = async (role: 'owner' | 'manager' | 'agent' | 'viewer' = 'owner') => {
   signInAs(role);
   renderWithProviders({ route: '/contacts/c/c1' });
   return screen.findByRole('heading', { level: 1, name: 'Asha Verma' });
 };
+
+describe('contact detail: calling', () => {
+  it('Call now + Test in browser for calls.trigger; blocked for opted-out; hidden for viewers', async () => {
+    const user = userEvent.setup();
+    await open('agent');
+    expect(screen.getByRole('link', { name: 'Test in browser' })).toHaveAttribute(
+      'href',
+      '/calls/test?contactId=c1',
+    );
+    await user.click(screen.getByRole('button', { name: 'Call now' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(/Simulated call/)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    // agents can't edit contacts, so no More menu either
+    expect(screen.queryByRole('button', { name: 'More' })).not.toBeInTheDocument();
+  });
+
+  it('opted-out contacts cannot be called', async () => {
+    vi.mocked(contactsApi.get).mockResolvedValue({
+      ...CONTACT,
+      optedOutAt: '2026-10-09T00:00:00Z',
+    });
+    await open('agent');
+    expect(screen.getByRole('button', { name: 'Call now' })).toBeDisabled();
+  });
+
+  it('viewers get no call buttons', async () => {
+    await open('viewer');
+    expect(screen.queryByRole('button', { name: 'Call now' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Test in browser' })).not.toBeInTheDocument();
+  });
+});
 
 describe('contact detail', () => {
   it('shows details and typed variables in field order', async () => {
@@ -148,7 +181,7 @@ describe('contact detail', () => {
       '/contacts/import/imp1',
     );
     expect(screen.getByText('Loan agreement · 01 Oct 2026, 05:30')).toBeInTheDocument();
-    expect(screen.getByText(/Phase 7/)).toBeInTheDocument();
+    expect(screen.getByText('Never called.')).toBeInTheDocument();
     expect(screen.getAllByText('08 Oct 2026, 12:00', { selector: 'div' })).toHaveLength(2); // added + last changed
   });
 

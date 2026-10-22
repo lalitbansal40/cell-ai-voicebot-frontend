@@ -12,6 +12,7 @@ import { useConfirm } from '@/components/confirm-context';
 import { DataTable, type Column } from '@/components/DataTable';
 import { RelativeTime } from '@/components/RelativeTime';
 import { useCan } from '@/features/auth/hooks';
+import { useCanWriteCampaigns } from '@/features/campaigns/permissions';
 import { ExportDialog } from '@/features/contact-exports/ExportDialog';
 import { useCanExport } from '@/features/contact-exports/useExportJob';
 import { segmentKeys } from '@/features/contacts/keys';
@@ -28,6 +29,7 @@ import { SegmentDialog } from './SegmentDialog';
 export function SegmentsTab() {
   const can = useCan();
   const canExport = useCanExport();
+  const canCampaign = useCanWriteCampaigns();
   const confirm = useConfirm();
   const queryClient = useQueryClient();
   const segments = useSegments(true);
@@ -82,6 +84,11 @@ export function SegmentsTab() {
       align: 'right',
       render: (s) => (
         <Stack direction="row" spacing={0.5} sx={{ justifyContent: 'flex-end' }}>
+          {canCampaign && (
+            <Button size="small" component={RouterLink} to={`/campaigns/new?segmentId=${s.id}`}>
+              Create campaign
+            </Button>
+          )}
           {canExport && (
             <Button size="small" onClick={() => setExporting(s.id)}>
               Export

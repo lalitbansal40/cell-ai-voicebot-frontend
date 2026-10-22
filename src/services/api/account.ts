@@ -1,5 +1,5 @@
 import { apiClient, unwrap } from './client';
-import type { AuthMe, PublicAccount, SuccessEnvelope } from './types';
+import type { AccountWithWarning, AuthMe, SuccessEnvelope } from './types';
 
 export interface AccountUpdate {
   name?: string;
@@ -8,6 +8,8 @@ export interface AccountUpdate {
   defaultLanguage?: 'hi' | 'en' | 'hinglish';
   settings?: {
     callingWindow?: { start: string; end: string; days: number[] };
+    /** Owner / admin only. */
+    callCaps?: { perDay: number; perWeek: number; minGapMinutes: number };
     recordingEnabled?: boolean;
     recordingNotice?: string;
     aiDisclosureEnabled?: boolean;
@@ -16,9 +18,10 @@ export interface AccountUpdate {
 
 /** `/api/v1/account` + own profile. */
 export const accountApi = {
-  get: () => unwrap(apiClient.get<SuccessEnvelope<PublicAccount>>('/account')),
+  /** The account + `callingWindowWarning` (TRAI / RBI bounds the window crosses). */
+  get: () => unwrap(apiClient.get<SuccessEnvelope<AccountWithWarning>>('/account')),
   update: (body: AccountUpdate) =>
-    unwrap(apiClient.patch<SuccessEnvelope<PublicAccount>>('/account', body)),
+    unwrap(apiClient.patch<SuccessEnvelope<AccountWithWarning>>('/account', body)),
   updateProfile: (body: { name?: string; phone?: string | null }) =>
     unwrap(apiClient.patch<SuccessEnvelope<AuthMe>>('/auth/me', body)),
 };

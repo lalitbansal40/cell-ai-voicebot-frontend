@@ -172,6 +172,10 @@ describe('Lists tab', () => {
     );
     signInAs('owner');
     renderWithProviders({ route: '/contacts/lists' });
+    expect(await screen.findByRole('link', { name: 'Create campaign' })).toHaveAttribute(
+      'href',
+      '/campaigns/new?listId=l9',
+    );
     await userEvent.click(await screen.findByRole('button', { name: 'Delete' }));
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete list' }),

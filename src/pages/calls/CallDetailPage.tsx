@@ -205,6 +205,16 @@ export function CallDetailPage() {
                   {c.isTest && <Chip size="small" variant="outlined" label="Web test call" />}
                 </Stack>
                 <Row label="Flow / agent" value={sourceLink} />
+                {c.campaign && (
+                  <Row
+                    label="Campaign"
+                    value={
+                      <Link component={RouterLink} to={`/campaigns/${c.campaign.id}`}>
+                        {c.campaign.name} · attempt {c.campaign.attempt}
+                      </Link>
+                    }
+                  />
+                )}
                 <Row
                   label="Contact"
                   value={

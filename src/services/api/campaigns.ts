@@ -7,6 +7,7 @@ import type {
   CampaignEstimate,
   CampaignListItem,
   CampaignStatus,
+  CampaignSummary,
   ContactFilter,
   CursorPageMeta,
   ExportJob,
@@ -109,6 +110,8 @@ export interface AudiencePreviewInput {
 
 /** `/api/v1/campaigns` (PHASE_8_PLAN §1r). */
 export const campaignsApi = {
+  /** Dashboard card: campaigns by live status + today's campaign calls. */
+  summary: () => unwrap(apiClient.get<SuccessEnvelope<CampaignSummary>>('/campaigns/summary')),
   list: async (query: ListCampaignsQuery) =>
     (
       await apiClient.get<ListEnvelope<CampaignListItem, CursorPageMeta>>('/campaigns', {

@@ -12,7 +12,7 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
-import { useState, type ReactNode } from 'react';
+import { lazy, Suspense, useState, type ReactNode } from 'react';
 import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'react-router';
 
 import { useConfirm } from '@/components/confirm-context';
@@ -29,6 +29,10 @@ import { getErrorMessage } from '@/services/api/errors';
 import type { AdminAccountDetail } from '@/services/api/types';
 import { auditActorText, auditMetaText } from '@/utils/audit-format';
 import { formatInAccountTz } from '@/utils/datetime';
+
+const LimitsCard = lazy(async () => ({
+  default: (await import('@/features/admin/LimitsCard')).LimitsCard,
+}));
 
 const TAB_KEYS = ['overview', 'rates', 'wallet'] as const;
 
@@ -80,6 +84,12 @@ function Overview({ detail }: { detail: AdminAccountDetail }) {
           </Card>
         </Grid>
       </Grid>
+      <Suspense fallback={<Skeleton variant="rounded" height={200} />}>
+        <LimitsCard
+          key={`${String(detail.limits.maxConcurrentCalls)}:${String(detail.limits.dialsPerMinute)}`}
+          detail={detail}
+        />
+      </Suspense>
       <div>
         <Typography variant="subtitle1" component="h2" sx={{ mb: 1 }}>
           Recent activity

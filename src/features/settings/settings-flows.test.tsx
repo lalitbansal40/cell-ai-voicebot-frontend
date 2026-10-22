@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAuthStore } from '@/features/auth/store';
 import { accountApi } from '@/services/api/account';
@@ -31,6 +31,12 @@ vi.mock('@/services/api/auth', () => ({
   },
 }));
 
+beforeEach(() => {
+  vi.mocked(accountApi.get).mockResolvedValue({
+    ...fakeSession('owner').account,
+    callingWindowWarning: null,
+  });
+});
 afterEach(() => vi.clearAllMocks());
 
 const KEY = {
@@ -106,18 +112,14 @@ describe('API keys tab', () => {
 });
 
 describe('Account tab', () => {
-  it('discards changes and blocks an invalid calling window', async () => {
+  it('discards changes', async () => {
     signInAs('owner');
     renderWithProviders({ route: '/settings/account' });
     const name = await screen.findByLabelText('Business name');
     await userEvent.type(name, ' X');
     await userEvent.click(screen.getByRole('button', { name: 'Discard' }));
     expect(name).toHaveValue('Demo Finance');
-    const from = screen.getByLabelText('From');
-    await userEvent.clear(from);
-    await userEvent.type(from, '20:00');
-    expect(screen.getByText('Must be after the start')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+    expect(screen.queryByLabelText('From')).not.toBeInTheDocument();
   });
 
   it('edits language, country, switches; shows save errors', async () => {
@@ -176,7 +178,12 @@ describe('Calls tab', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(await screen.findByText('Call settings saved')).toBeInTheDocument();
     expect(accountApi.update).toHaveBeenLastCalledWith({
-      settings: { recordingEnabled: true, recordingNotice: 'Yeh call record ho rahi hai.' },
+      settings: {
+        callingWindow: { start: '09:00', end: '19:00', days: [1, 2, 3, 4, 5, 6] },
+        callCaps: { perDay: 3, perWeek: 10, minGapMinutes: 30 },
+        recordingEnabled: true,
+        recordingNotice: 'Yeh call record ho rahi hai.',
+      },
     });
     await userEvent.click(screen.getByLabelText('Record calls'));
     expect(notice).toBeDisabled();
@@ -205,6 +212,91 @@ describe('Calls tab', () => {
     renderWithProviders({ route: '/settings/calls' });
     expect(await screen.findByLabelText('Recording notice')).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Save changes' })).not.toBeInTheDocument();
+  });
+});
+
+describe('Calls tab: window and call caps', () => {
+  it('owners edit the window and the caps; bad values block saving; the saved warning shows', async () => {
+    signInAs('owner');
+    vi.mocked(accountApi.get).mockResolvedValue({
+      ...fakeSession('owner').account,
+      callingWindowWarning: 'outside_rbi_recovery',
+    });
+    vi.mocked(accountApi.update).mockResolvedValue({
+      ...fakeSession('owner').account,
+      callingWindowWarning: null,
+    });
+    renderWithProviders({ route: '/settings/calls' });
+    expect(
+      await screen.findByText(
+        /outside 08:00–19:00\. Live recovery calls never go out then \(RBI\)/,
+      ),
+    ).toBeInTheDocument();
+    const from = screen.getByLabelText('From');
+    await userEvent.clear(from);
+    await userEvent.type(from, '20:00');
+    expect(screen.getByText('Must be after the start')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+    await userEvent.click(screen.getByRole('button', { name: 'Discard' }));
+    const perDay = screen.getByLabelText('Calls per day');
+    await userEvent.clear(perDay);
+    await userEvent.type(perDay, '20');
+    expect(screen.getByText('Use whole numbers between 1 and 10.')).toBeInTheDocument();
+    await userEvent.clear(perDay);
+    await userEvent.type(perDay, '5');
+    const perWeek = screen.getByLabelText('Calls per week');
+    await userEvent.clear(perWeek);
+    await userEvent.type(perWeek, '4');
+    expect(
+      screen.getByText('Calls per week must be at least the calls per day.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+    await userEvent.clear(perWeek);
+    await userEvent.type(perWeek, '12');
+    await userEvent.click(screen.getByRole('button', { name: 'Sun' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+    await waitFor(() =>
+      expect(accountApi.update).toHaveBeenCalledWith({
+        settings: {
+          callingWindow: { start: '09:00', end: '19:00', days: [0, 1, 2, 3, 4, 5, 6] },
+          callCaps: { perDay: 5, perWeek: 12, minGapMinutes: 30 },
+          recordingEnabled: true,
+          recordingNotice: 'Yeh call quality ke liye record ki ja rahi hai.',
+        },
+      }),
+    );
+  });
+
+  it('TRAI warning; caps are read-only for roles below admin', async () => {
+    signInAs('manager', {
+      permissions: [...fakeSession('manager').permissions, 'account.update'],
+    });
+    vi.mocked(accountApi.get).mockResolvedValue({
+      ...fakeSession('owner').account,
+      callingWindowWarning: 'outside_trai',
+    });
+    vi.mocked(accountApi.update).mockResolvedValue({
+      ...fakeSession('owner').account,
+      callingWindowWarning: null,
+    });
+    renderWithProviders({ route: '/settings/calls' });
+    expect(await screen.findByText(/outside 09:00–21:00/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Calls per day')).toBeDisabled();
+    expect(
+      screen.getByText(/Only the owner and admins can change these limits/),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Sun' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+    // no callCaps for a manager (the server refuses them)
+    await waitFor(() =>
+      expect(accountApi.update).toHaveBeenCalledWith({
+        settings: {
+          callingWindow: { start: '09:00', end: '19:00', days: [0, 1, 2, 3, 4, 5, 6] },
+          recordingEnabled: true,
+          recordingNotice: 'Yeh call quality ke liye record ki ja rahi hai.',
+        },
+      }),
+    );
   });
 });
 

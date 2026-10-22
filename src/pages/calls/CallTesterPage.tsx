@@ -33,6 +33,7 @@ export function CallTesterPage({ deps = browserCallDeps }: { deps?: WebCallDeps 
   const prefill: SetupPrefill = {
     flowId: params.get('flowId'),
     agentId: params.get('agentId'),
+    contactId: params.get('contactId'),
     version: version === 'draft' || version === 'published' ? version : null,
   };
   const failure = state.failure;

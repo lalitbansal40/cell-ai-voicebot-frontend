@@ -1,4 +1,5 @@
 import ArrowBack from '@mui/icons-material/ArrowBack';
+import PhoneInTalkOutlined from '@mui/icons-material/PhoneInTalkOutlined';
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
@@ -16,13 +17,14 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
-import { useState, type ReactNode } from 'react';
+import { lazy, Suspense, useState, type ReactNode } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router';
 
 import { useConfirm } from '@/components/confirm-context';
 import { EmptyState } from '@/components/EmptyState';
 import { PageHeader } from '@/components/PageHeader';
 import { useCan, useSession } from '@/features/auth/hooks';
+import { useCanTriggerCalls } from '@/features/calls/queries';
 import { ContactFormDialog } from '@/features/contacts/ContactFormDialog';
 import { ContactStatusChips } from '@/features/contacts/ContactsTab';
 import { contactKeys, dndKeys } from '@/features/contacts/keys';
@@ -34,6 +36,14 @@ import type { Contact } from '@/services/api/types';
 import { formatInAccountTz } from '@/utils/datetime';
 import { formatFieldValue } from '@/utils/format';
 import { formatPhone } from '@/utils/phone';
+
+// calling widgets pull campaign code (labels, time zones) → their own chunks
+const CallNowDialog = lazy(async () => ({
+  default: (await import('@/features/calls/CallNowDialog')).CallNowDialog,
+}));
+const ContactCallsCard = lazy(async () => ({
+  default: (await import('@/features/calls/ContactCallsCard')).ContactCallsCard,
+}));
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -64,6 +74,8 @@ export function ContactDetailPage() {
   const timezone = useSession()?.account.timezone ?? 'Asia/Kolkata';
   const [menu, setMenu] = useState<HTMLElement | null>(null);
   const [editing, setEditing] = useState(false);
+  const [calling, setCalling] = useState(false);
+  const canCall = useCanTriggerCalls();
   const fields = useCustomFields();
   const lists = useListOptions();
   const tags = useContactTags();
@@ -212,14 +224,32 @@ export function ContactDetailPage() {
           </Stack>
         }
         actions={
-          writable || can('dnd.manage') ? (
+          writable || can('dnd.manage') || canCall ? (
             <>
+              {canCall && (
+                <>
+                  <Button
+                    variant="contained"
+                    startIcon={<PhoneInTalkOutlined />}
+                    onClick={() => setCalling(true)}
+                    disabled={Boolean(c.optedOutAt || c.dnd)}
+                    title={c.optedOutAt || c.dnd ? 'This contact must not be called' : undefined}
+                  >
+                    Call now
+                  </Button>
+                  <Button component={RouterLink} to={`/calls/test?contactId=${c.id}`}>
+                    Test in browser
+                  </Button>
+                </>
+              )}
               {writable && (
                 <Button variant="outlined" onClick={() => setEditing(true)}>
                   Edit
                 </Button>
               )}
-              <Button onClick={(e) => setMenu(e.currentTarget)}>More</Button>
+              {(writable || can('dnd.manage')) && (
+                <Button onClick={(e) => setMenu(e.currentTarget)}>More</Button>
+              )}
               <Menu anchorEl={menu} open={Boolean(menu)} onClose={() => setMenu(null)}>
                 {writable && !c.optedOutAt && (
                   <MenuItem onClick={() => void act('optOut')}>Opt out</MenuItem>
@@ -352,19 +382,19 @@ export function ContactDetailPage() {
                 )}
               </CardContent>
             </Card>
-            <Card variant="outlined">
-              <CardContent>
-                <Typography variant="subtitle1" component="h2" sx={{ mb: 1 }}>
-                  Call history
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Calls to this contact will appear here once calling is live (Phase 7).
-                </Typography>
-              </CardContent>
-            </Card>
+            {can('calls.read') && (
+              <Suspense fallback={<Skeleton variant="rounded" height={120} />}>
+                <ContactCallsCard contact={c} />
+              </Suspense>
+            )}
           </Stack>
         </Grid>
       </Grid>
+      {calling && (
+        <Suspense fallback={null}>
+          <CallNowDialog contactId={c.id} timezone={timezone} onClose={() => setCalling(false)} />
+        </Suspense>
+      )}
       {editing && (
         <ContactFormDialog
           open

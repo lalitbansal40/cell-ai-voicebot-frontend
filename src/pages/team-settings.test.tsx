@@ -280,7 +280,10 @@ describe('SettingsPage', () => {
     unmount();
 
     signInAs('owner');
-    vi.mocked(accountApi.update).mockResolvedValue(fakeSession('owner').account);
+    vi.mocked(accountApi.update).mockResolvedValue({
+      ...fakeSession('owner').account,
+      callingWindowWarning: null,
+    });
     vi.mocked(authApi.me).mockResolvedValue({
       ...fakeSession('owner'),
       accessToken: undefined,
@@ -290,17 +293,17 @@ describe('SettingsPage', () => {
     expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
     await userEvent.clear(name);
     await userEvent.type(name, 'Renamed Finance');
-    await userEvent.click(screen.getByRole('button', { name: 'Sun' }));
+    // the calling window moved to Settings → Calls
+    expect(screen.queryByRole('button', { name: 'Sun' })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     await waitFor(() =>
-      expect(accountApi.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: 'Renamed Finance',
-          settings: expect.objectContaining({
-            callingWindow: { start: '09:00', end: '19:00', days: [0, 1, 2, 3, 4, 5, 6] },
-          }) as unknown,
-        }),
-      ),
+      expect(accountApi.update).toHaveBeenCalledWith({
+        name: 'Renamed Finance',
+        timezone: 'Asia/Kolkata',
+        country: 'IN',
+        defaultLanguage: 'hinglish',
+        settings: { aiDisclosureEnabled: true },
+      }),
     );
   });
 

@@ -3,9 +3,11 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { callsApi } from '@/services/api/calls';
+import { campaignsApi } from '@/services/api/campaigns';
 import { ApiError } from '@/services/api/errors';
 import { signInAs } from '@/test/auth';
 import { fakeCall, fakeEvents, fakeTranscript } from '@/test/calls';
+import { fakeCampaignListItem } from '@/test/campaigns';
 import { fakeRealtime } from '@/test/realtime';
 import { renderWithProviders } from '@/test/render';
 
@@ -21,6 +23,8 @@ vi.mock('@/services/api/calls', () => ({
   },
 }));
 
+vi.mock('@/services/api/campaigns', () => ({ campaignsApi: { list: vi.fn() } }));
+
 const api = vi.mocked(callsApi);
 const page = (data: ReturnType<typeof fakeCall>[], nextCursor: string | null = null) => ({
   success: true as const,
@@ -31,6 +35,11 @@ const page = (data: ReturnType<typeof fakeCall>[], nextCursor: string | null = n
 beforeEach(() => {
   vi.clearAllMocks();
   api.list.mockResolvedValue(page([]));
+  vi.mocked(campaignsApi.list).mockResolvedValue({
+    success: true,
+    data: [fakeCampaignListItem()],
+    meta: { hasMore: false, nextCursor: null },
+  } as never);
   api.get.mockResolvedValue(fakeCall());
   api.transcript.mockResolvedValue(fakeTranscript());
   api.events.mockResolvedValue(fakeEvents());
@@ -152,6 +161,66 @@ describe('/calls list', () => {
     const before = api.list.mock.calls.length;
     rt.emit('call.created', { callId: 'c9', isTest: true });
     await waitFor(() => expect(api.list.mock.calls.length).toBeGreaterThan(before));
+  });
+});
+
+describe('/calls campaign entry points', () => {
+  it('Simulated badge + campaign link; line, campaign and contact filters from the URL', async () => {
+    const user = userEvent.setup();
+    signInAs('viewer');
+    api.list.mockResolvedValue(
+      page([
+        fakeCall({
+          provider: 'dryrun',
+          campaign: { id: 'cp1', name: 'October recovery', attempt: 2 },
+        }),
+      ]),
+    );
+    renderWithProviders({ route: '/calls?contactId=k1' });
+    const table = await screen.findByRole('table', { name: 'Calls' });
+    expect(await within(table).findByText('Simulated')).toBeInTheDocument();
+    expect(within(table).getByRole('link', { name: 'October recovery' })).toHaveAttribute(
+      'href',
+      '/campaigns/cp1',
+    );
+    expect(screen.getByText(/Showing the calls of one contact/)).toBeInTheDocument();
+    expect(api.list).toHaveBeenLastCalledWith({ limit: 25, contactId: 'k1' });
+    await user.click(screen.getByLabelText('Line'));
+    await user.click(screen.getByRole('option', { name: 'Simulated' }));
+    await waitFor(() =>
+      expect(api.list).toHaveBeenLastCalledWith({ limit: 25, contactId: 'k1', provider: 'dryrun' }),
+    );
+    await user.click(screen.getByLabelText('Campaign'));
+    await user.click(await screen.findByRole('option', { name: 'October recovery' }));
+    await waitFor(() =>
+      expect(api.list).toHaveBeenLastCalledWith({
+        limit: 25,
+        contactId: 'k1',
+        campaignId: 'cp1',
+        provider: 'dryrun',
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Show all' }));
+    await waitFor(() =>
+      expect(api.list).toHaveBeenLastCalledWith({
+        limit: 25,
+        campaignId: 'cp1',
+        provider: 'dryrun',
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    await waitFor(() => expect(api.list).toHaveBeenLastCalledWith({ limit: 25 }));
+  });
+
+  it('call detail: "Campaign X · attempt N" links to the campaign', async () => {
+    signInAs('viewer');
+    api.get.mockResolvedValue(
+      fakeCall({ campaign: { id: 'cp1', name: 'October recovery', attempt: 2 } }),
+    );
+    renderWithProviders({ route: '/calls/c1' });
+    expect(
+      await screen.findByRole('link', { name: 'October recovery · attempt 2' }),
+    ).toHaveAttribute('href', '/campaigns/cp1');
   });
 });
 

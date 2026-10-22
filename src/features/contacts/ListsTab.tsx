@@ -15,6 +15,7 @@ import { useConfirm } from '@/components/confirm-context';
 import { DataTable, type Column } from '@/components/DataTable';
 import { RelativeTime } from '@/components/RelativeTime';
 import { useCan } from '@/features/auth/hooks';
+import { useCanWriteCampaigns } from '@/features/campaigns/permissions';
 import { ExportDialog } from '@/features/contact-exports/ExportDialog';
 import { useCanExport } from '@/features/contact-exports/useExportJob';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
@@ -96,6 +97,7 @@ function ListDialog({ list, onClose }: { list?: ContactList; onClose: () => void
 export function ListsTab() {
   const can = useCan();
   const canExport = useCanExport();
+  const canCampaign = useCanWriteCampaigns();
   const confirm = useConfirm();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
@@ -154,6 +156,11 @@ export function ListsTab() {
       align: 'right',
       render: (l) => (
         <Stack direction="row" spacing={0.5} sx={{ justifyContent: 'flex-end' }}>
+          {canCampaign && (
+            <Button size="small" component={RouterLink} to={`/campaigns/new?listId=${l.id}`}>
+              Create campaign
+            </Button>
+          )}
           {canExport && (
             <Button size="small" onClick={() => setExporting(l.id)}>
               Export

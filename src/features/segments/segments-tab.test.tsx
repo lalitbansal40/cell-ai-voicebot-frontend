@@ -118,6 +118,10 @@ describe('Segments tab', () => {
     expect(within(table).getByText('Days past due more than 30')).toBeInTheDocument();
     expect(within(table).getByText('Needs fixing')).toBeInTheDocument();
     expect(segmentsApi.list).toHaveBeenCalledWith(true);
+    expect(within(table).getAllByRole('link', { name: 'Create campaign' })[0]).toHaveAttribute(
+      'href',
+      '/campaigns/new?segmentId=s1',
+    );
   });
 
   it('builds a segment with operators by type and a live count', async () => {
@@ -338,6 +342,7 @@ describe('Segments tab', () => {
     expect(screen.queryByRole('button', { name: 'New segment' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Export' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Create campaign' })).not.toBeInTheDocument();
     unmount();
     signInAs('owner', {
       impersonation: { impersonatorId: 'p1', expiresAt: '2026-10-09T01:00:00Z' },
@@ -346,6 +351,8 @@ describe('Segments tab', () => {
     await screen.findByText('Overdue > 30 days');
     expect(screen.queryByRole('button', { name: 'Export' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Edit' }).length).toBeGreaterThan(0);
+    // campaigns are not created while impersonating
+    expect(screen.queryByRole('link', { name: 'Create campaign' })).not.toBeInTheDocument();
   });
 
   it('shows the empty state and the no-fields hint', async () => {

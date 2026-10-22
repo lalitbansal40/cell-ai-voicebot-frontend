@@ -14278,6 +14278,73 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/campaigns/summary': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Dashboard card: campaigns by live status and today’s campaign calls (campaigns.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['CampaignSummary'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/campaigns/audience/preview': {
     parameters: {
       query?: never;
@@ -15972,6 +16039,11 @@ export interface components {
       limits: components['schemas']['AccountLimits'];
       /** @description Scheduled, running or paused */
       activeCampaigns: number;
+      /** @description Paused by the platform team — only a superadmin resumes them (≤ 100) */
+      adminPausedCampaigns: {
+        id: string;
+        name: string;
+      }[];
       recentAudit: components['schemas']['AuditEntry'][];
     };
     AgentFunction: {
@@ -18458,6 +18530,13 @@ export interface components {
         expectedAttempts: number;
       };
       walletAvailableMicros: number;
+    };
+    CampaignSummary: {
+      running: number;
+      scheduled: number;
+      paused: number;
+      /** @description Campaign calls since midnight in the account's time zone */
+      callsToday: number;
     };
   };
   responses: never;

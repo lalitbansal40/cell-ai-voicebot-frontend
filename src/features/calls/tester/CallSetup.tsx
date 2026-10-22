@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 
 import { agentKeys } from '@/features/agents/keys';
+import { contactKeys } from '@/features/contacts/keys';
 import { flowKeys } from '@/features/flows/keys';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { agentsApi } from '@/services/api/agents';
@@ -35,6 +36,8 @@ export interface SetupPrefill {
   flowId?: string | null;
   version?: 'draft' | 'published' | null;
   agentId?: string | null;
+  /** `?contactId=` (contact page "Test in browser") → that contact is preselected. */
+  contactId?: string | null;
 }
 
 /** Microphone check: a live level meter until the call starts. */
@@ -120,10 +123,13 @@ export function CallSetup({
   const [flowChoice, setFlow] = useState<FlowListItem | null | undefined>(undefined);
   const [agentChoice, setAgent] = useState<AgentRow | null | undefined>(undefined);
   const [version, setVersion] = useState<'draft' | 'published'>(prefill.version ?? 'published');
-  const [source, setSource] = useState<'manual' | 'contact'>('manual');
+  const [source, setSource] = useState<'manual' | 'contact'>(
+    prefill.contactId ? 'contact' : 'manual',
+  );
   const [values, setValues] = useState<Record<string, string>>({});
   const [testPhone, setTestPhone] = useState('');
-  const [contact, setContact] = useState<Contact | null>(null);
+  // undefined = not chosen yet → the prefilled one (?contactId=) once loaded
+  const [contactChoice, setContact] = useState<Contact | null | undefined>(undefined);
   const [contactSearch, setContactSearch] = useState('');
   const [flowSearch, setFlowSearch] = useState('');
   const contactQ = useDebouncedValue(contactSearch.trim(), 300);
@@ -145,6 +151,12 @@ export function CallSetup({
     enabled: source === 'contact',
   });
 
+  const prefilledContact = useQuery({
+    queryKey: contactKeys.detail(prefill.contactId ?? ''),
+    queryFn: () => contactsApi.get(prefill.contactId ?? ''),
+    enabled: Boolean(prefill.contactId) && contactChoice === undefined,
+  });
+  const contact = contactChoice !== undefined ? contactChoice : (prefilledContact.data ?? null);
   const flow =
     flowChoice !== undefined
       ? flowChoice
@@ -256,7 +268,11 @@ export function CallSetup({
       </RadioGroup>
       {source === 'contact' ? (
         <Autocomplete
-          options={contacts.data?.data ?? []}
+          options={
+            contact && !(contacts.data?.data ?? []).some((c) => c.id === contact.id)
+              ? [contact, ...(contacts.data?.data ?? [])]
+              : (contacts.data?.data ?? [])
+          }
           value={contact}
           onChange={(_e, v) => setContact(v)}
           onInputChange={(_e, v) => setContactSearch(v)}
