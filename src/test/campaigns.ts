@@ -145,6 +145,7 @@ export const fakeCampaignContact = (
   promiseToPay: null,
   callback: null,
   skipReason: null,
+  waitReason: null,
   nextAttemptAt: null,
   lastAttemptAt: '2026-10-20T05:00:00.000Z',
   lastCallId: 'c1',

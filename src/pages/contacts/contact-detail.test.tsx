@@ -152,15 +152,6 @@ describe('contact detail: calling', () => {
     expect(screen.queryByRole('button', { name: 'More' })).not.toBeInTheDocument();
   });
 
-  it('opted-out contacts cannot be called', async () => {
-    vi.mocked(contactsApi.get).mockResolvedValue({
-      ...CONTACT,
-      optedOutAt: '2026-10-09T00:00:00Z',
-    });
-    await open('agent');
-    expect(screen.getByRole('button', { name: 'Call now' })).toBeDisabled();
-  });
-
   it('viewers get no call buttons', async () => {
     await open('viewer');
     expect(screen.queryByRole('button', { name: 'Call now' })).not.toBeInTheDocument();

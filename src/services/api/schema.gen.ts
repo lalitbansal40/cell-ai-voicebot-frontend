@@ -18494,6 +18494,11 @@ export interface components {
         | 'cap_reached'
         | 'campaign_ended'
         | null;
+      /**
+       * @description Why it waits for nextAttemptAt: window, daily_cap, weekly_cap or min_gap
+       * @enum {string|null}
+       */
+      waitReason: 'window' | 'daily_cap' | 'weekly_cap' | 'min_gap' | null;
       nextAttemptAt: string | null;
       lastCallId: string | null;
       lastAttemptAt: string | null;

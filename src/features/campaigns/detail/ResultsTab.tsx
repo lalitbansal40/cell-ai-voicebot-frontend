@@ -18,6 +18,7 @@ import {
   RESULT_LABELS,
   SKIP_REASON_LABELS,
   skipReasonLabel,
+  WAIT_REASON_LABELS,
 } from '../labels';
 import { useCampaignContacts } from '../queries';
 
@@ -74,6 +75,9 @@ export function ResultsTab({ campaignId }: { campaignId: string }) {
             label={CONTACT_STATUS_LABELS[r.status]}
           />
           {r.skipReason && <span>{skipReasonLabel(r.skipReason)}</span>}
+          {r.waitReason && (r.status === 'pending' || r.status === 'retry_wait') && (
+            <span>{WAIT_REASON_LABELS[r.waitReason]}</span>
+          )}
         </Stack>
       ),
     },

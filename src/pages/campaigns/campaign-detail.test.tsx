@@ -74,6 +74,15 @@ beforeEach(() => {
           nextAttemptAt: '2026-10-22T11:30:00.000Z',
           lastCallId: null,
         }),
+        fakeCampaignContact({
+          id: 'cc3',
+          contact: { id: 'k3', name: 'Capped Kumar' },
+          phoneLast4: '1111',
+          status: 'pending',
+          waitReason: 'daily_cap',
+          nextAttemptAt: '2026-10-22T03:30:00.000Z',
+          lastCallId: null,
+        }),
       ],
       'n1',
     ),
@@ -122,6 +131,7 @@ describe('/campaigns/:id', () => {
     // the status chip (the column header says Callback too)
     expect(within(table).getAllByText('Callback')).toHaveLength(2);
     expect(within(table).getByText('2026-10-22 17:00')).toBeInTheDocument();
+    expect(within(table).getByText('Daily call limit reached')).toBeInTheDocument();
     expect(within(table).getByText('2026-10-25 · ₹500.00')).toBeInTheDocument();
     expect(within(table).getByRole('link', { name: 'Call' })).toHaveAttribute('href', '/calls/c1');
     expect(within(table).getByRole('link', { name: 'Asha Verma' })).toHaveAttribute(

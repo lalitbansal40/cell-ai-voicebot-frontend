@@ -231,9 +231,8 @@ export function ContactDetailPage() {
                   <Button
                     variant="contained"
                     startIcon={<PhoneInTalkOutlined />}
+                    // the server's dial guard refuses DND / opted-out contacts with the reason
                     onClick={() => setCalling(true)}
-                    disabled={Boolean(c.optedOutAt || c.dnd)}
-                    title={c.optedOutAt || c.dnd ? 'This contact must not be called' : undefined}
                   >
                     Call now
                   </Button>

@@ -202,7 +202,11 @@ export function CallDetailPage() {
                     color={statusColor(c.status)}
                     label={STATUS_LABELS[c.status]}
                   />
-                  {c.isTest && <Chip size="small" variant="outlined" label="Web test call" />}
+                  {c.provider === 'dryrun' ? (
+                    <Chip size="small" variant="outlined" label="Simulated call" />
+                  ) : (
+                    c.isTest && <Chip size="small" variant="outlined" label="Web test call" />
+                  )}
                 </Stack>
                 <Row label="Flow / agent" value={sourceLink} />
                 {c.campaign && (

@@ -86,6 +86,14 @@ export const SKIP_REASON_LABELS: Record<string, string> = {
   cap_reached: 'Call limit reached',
   campaign_ended: 'Campaign ended',
 };
+/** Why a contact waits for its next attempt (the dispatcher's dial guard). */
+export const WAIT_REASON_LABELS: Record<NonNullable<CampaignContactRow['waitReason']>, string> = {
+  window: 'Waiting for the calling window',
+  daily_cap: 'Daily call limit reached',
+  weekly_cap: 'Weekly call limit reached',
+  min_gap: 'Called a short while ago',
+};
+
 export const skipReasonLabel = (value: string | null | undefined): string | null =>
   value ? (SKIP_REASON_LABELS[value] ?? value) : null;
 

@@ -222,6 +222,14 @@ describe('/calls campaign entry points', () => {
       await screen.findByRole('link', { name: 'October recovery · attempt 2' }),
     ).toHaveAttribute('href', '/campaigns/cp1');
   });
+
+  it('simulated (dry-run) calls say so instead of "Web test call"', async () => {
+    signInAs('viewer');
+    api.get.mockResolvedValue(fakeCall({ provider: 'dryrun', isTest: true }));
+    renderWithProviders({ route: '/calls/c1' });
+    expect(await screen.findByText('Simulated call')).toBeInTheDocument();
+    expect(screen.queryByText('Web test call')).not.toBeInTheDocument();
+  });
 });
 
 describe('/calls/:id detail', () => {
