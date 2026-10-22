@@ -93,6 +93,8 @@ export default defineConfig({
         MOCK_APIS_ENABLED: 'true',
         AI_FUNCTIONS_ALLOW_PRIVATE_HOSTS: 'true',
         APP_URL: 'http://localhost:5100',
+        // one sign-up per spec: the whole suite goes over the default 30 per 15 min
+        AUTH_RATE_LIMIT_MAX: '500',
         E2E_SUPERADMIN_EMAIL: SUPERADMIN.email,
         E2E_SUPERADMIN_PASSWORD: SUPERADMIN.password,
       },
