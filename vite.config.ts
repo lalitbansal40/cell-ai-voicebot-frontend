@@ -11,6 +11,11 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  // pre-bundle the dependencies of lazy screens at start-up: a dependency found on first
+  // use makes the dev server reload the page (lost dialogs / state in E2E runs)
+  optimizeDeps: {
+    entries: ['index.html', 'src/**/*.tsx', '!src/**/*.test.tsx', '!src/test/**'],
+  },
   server: {
     port: 3100,
     strictPort: true,

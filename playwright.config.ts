@@ -102,6 +102,8 @@ export default defineConfig({
         META_PROVIDER: 'fake',
         FAKE_META_APP_SECRET: FAKE_META_APP_SECRET,
         META_WEBHOOK_VERIFY_TOKEN: META_VERIFY_TOKEN,
+        // Phase 10: fast fake sent → delivered → read ticks
+        FAKE_META_STATUS_DELAYS_MS: '200,500,800',
         E2E_SUPERADMIN_EMAIL: SUPERADMIN.email,
         E2E_SUPERADMIN_PASSWORD: SUPERADMIN.password,
       },
