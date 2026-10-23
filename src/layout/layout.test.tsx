@@ -48,8 +48,9 @@ describe('nav config', () => {
       'admin',
       'admin-billing',
       'admin-whatsapp',
+      'admin-whatsapp-billing',
     ]);
-    expect(visibleNavItems(() => true, false, 99)).toHaveLength(NAV_ITEMS.length - 3);
+    expect(visibleNavItems(() => true, false, 99)).toHaveLength(NAV_ITEMS.length - 4);
     // Phase 3 builds did not show the wallet
     expect(visibleNavItems(() => true, false, 3).map((i) => i.key)).not.toContain('wallet');
     // Phase 4 builds hid AI agents and knowledge
@@ -61,6 +62,10 @@ describe('nav config', () => {
     // Phase 8 builds hid WhatsApp, Phase 9 builds the Inbox; Reports / Integrations come in Phases 14 / 15
     expect(visibleNavItems(() => true, false, 8).map((i) => i.key)).not.toContain('whatsapp');
     expect(visibleNavItems(() => true, false, 9).map((i) => i.key)).not.toContain('inbox');
+    // Phase 10 builds hid the superadmin WhatsApp billing page
+    expect(visibleNavItems(() => false, true, 10).map((i) => i.key)).not.toContain(
+      'admin-whatsapp-billing',
+    );
     const live = visibleNavItems(() => true, false).map((i) => i.key);
     expect(live).toContain('whatsapp');
     expect(live.indexOf('inbox')).toBe(live.indexOf('whatsapp') - 1);
@@ -146,6 +151,7 @@ describe('AppLayout', () => {
     expect(navLabels()).toContain('Accounts');
     expect(navLabels()).toContain('Billing');
     expect(navLabels()).toContain('WhatsApp setup');
+    expect(navLabels()).toContain('WhatsApp billing');
   });
 
   it('shows the unread badge on Inbox, live from inbox.summary.updated', async () => {

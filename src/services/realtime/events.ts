@@ -4,7 +4,12 @@
  * src/core/realtime/events.ts — WS events are not part of the OpenAPI spec.
  */
 
-import type { InboxMessage } from '@/services/api/types';
+import type {
+  InboxMessage,
+  WhatsAppTemplateCategory,
+  WhatsAppTemplateQuality,
+  WhatsAppTemplateStatus,
+} from '@/services/api/types';
 
 /** Server → client envelope (websocket.md §3). */
 export interface WsEventEnvelope<T = unknown> {
@@ -67,6 +72,13 @@ export interface WsEventMap {
     qualityRating: string;
     messagingLimitTier: string | null;
     nameStatus: string | null;
+  };
+  /** Phase 11: a template's status, quality or category changed — never template text. */
+  'whatsapp.template.updated': {
+    templateId: string;
+    status: WhatsAppTemplateStatus;
+    quality: WhatsAppTemplateQuality | null;
+    category: WhatsAppTemplateCategory;
   };
   /** Phase 10, account level — ids + counts only, never message text. */
   'inbox.conversation.updated': {
@@ -133,6 +145,7 @@ export const WS_EVENT_TYPES: readonly WsEventType[] = [
   'campaign.status',
   'campaign.progress',
   'whatsapp.channel.updated',
+  'whatsapp.template.updated',
   'inbox.conversation.updated',
   'inbox.summary.updated',
   'inbox.message.created',

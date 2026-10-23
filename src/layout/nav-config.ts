@@ -13,6 +13,7 @@ import InsightsOutlined from '@mui/icons-material/InsightsOutlined';
 import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
 import PhoneInTalkOutlined from '@mui/icons-material/PhoneInTalkOutlined';
 import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
+import RequestQuoteOutlined from '@mui/icons-material/RequestQuoteOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
 import SmartToyOutlined from '@mui/icons-material/SmartToyOutlined';
 
@@ -148,10 +149,18 @@ export const NAV_ITEMS: NavItem[] = [
     platformOnly: true,
     phase: 9,
   },
+  {
+    key: 'admin-whatsapp-billing',
+    label: 'WhatsApp billing',
+    path: '/admin/whatsapp-billing',
+    icon: RequestQuoteOutlined,
+    platformOnly: true,
+    phase: 11,
+  },
 ];
 
 /** The phase currently shipped — items of later phases are hidden. */
-export const LIVE_PHASE = 10;
+export const LIVE_PHASE = 11;
 
 export const visibleNavItems = (
   can: (permission: string) => boolean,

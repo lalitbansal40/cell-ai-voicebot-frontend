@@ -40,6 +40,8 @@ const ALL = [
   'inbox.read',
   'inbox.reply',
   'inbox.assign',
+  'templates.read',
+  'templates.manage',
 ];
 
 /** Mirrors the backend role matrix (PHASE_2_PLAN §1b) for UI tests. */
@@ -73,6 +75,8 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'inbox.read',
     'inbox.reply',
     'inbox.assign',
+    'templates.read',
+    'templates.manage',
   ],
   agent: [
     'account.read',
@@ -86,6 +90,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'whatsapp.read',
     'inbox.read',
     'inbox.reply',
+    'templates.read',
   ],
   viewer: [
     'account.read',
@@ -98,6 +103,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'reports.read',
     'whatsapp.read',
     'inbox.read',
+    'templates.read',
   ],
   superadmin: [
     ...ALL,

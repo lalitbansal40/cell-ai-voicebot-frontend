@@ -10,6 +10,8 @@ import type {
   WhatsAppConfig,
   WhatsAppConnectResult,
   WhatsAppMode,
+  WhatsAppPricePreview,
+  WhatsAppPricePreviewBody,
 } from './types';
 
 export interface EmbeddedSignupInput {
@@ -45,6 +47,43 @@ export const SIMULATOR_KINDS = [
   'phone_number_added',
 ] as const;
 export type SimulatorKind = (typeof SIMULATOR_KINDS)[number];
+
+/** Template + billing simulator kinds (backend `TEMPLATE_SIMULATOR_KINDS`, Phase 11). */
+export const TEMPLATE_SIMULATOR_KINDS = [
+  'template_approved',
+  'template_rejected',
+  'template_paused',
+  'template_disabled',
+  'template_quality_red',
+  'template_category_changed',
+  'template_components_changed',
+  'user_stopped_marketing',
+  'user_resumed_marketing',
+  'pricing_tier_update',
+  'run_template_sync',
+  'run_hold_reaper',
+  'run_whatsapp_reconcile',
+  'late_billable_status',
+] as const;
+export type TemplateSimulatorKind = (typeof TEMPLATE_SIMULATOR_KINDS)[number];
+
+export interface TemplateSimulateOptions {
+  templateId?: string;
+  /** `late_billable_status`: the outgoing message Meta bills late. */
+  messageId?: string;
+  /** Customer number (`user_*_marketing`). */
+  from?: string;
+}
+
+/** What the fake Meta holds for a number's WABA (names / statuses — no bodies). */
+export interface FakeTemplateRow {
+  id: string;
+  name: string;
+  language: string;
+  status: string;
+  category: string;
+  quality: string | null;
+}
 
 /** Editable business profile fields (Meta limits: about ≤ 139, two websites). */
 export interface BusinessProfilePatch {
@@ -138,6 +177,9 @@ export const whatsappApi = {
       ),
     );
   },
+  /** Price of one message to a contact / phone (template category or a service reply). */
+  pricePreview: (body: WhatsAppPricePreviewBody) =>
+    unwrap(apiClient.post<SuccessEnvelope<WhatsAppPricePreview>>('/whatsapp/price-preview', body)),
   /** DEV ONLY — `POST /dev/meta/webhooks` (absent in production). */
   simulate: (channelId: string, kind: SimulatorKind) =>
     unwrap(
@@ -145,5 +187,23 @@ export const whatsappApi = {
         '/dev/meta/webhooks',
         { channelId, kind },
       ),
+    ),
+  /** DEV ONLY — a template / billing event (`POST /dev/meta/webhooks`). */
+  simulateTemplate: (
+    channelId: string,
+    kind: TemplateSimulatorKind,
+    options: TemplateSimulateOptions = {},
+  ) =>
+    unwrap(
+      apiClient.post<
+        SuccessEnvelope<Partial<MetaWebhookReceipt> & { kind: string; field: string }>
+      >('/dev/meta/webhooks', { channelId, kind, ...options }),
+    ),
+  /** DEV ONLY — the fake Meta's templates of the number's WABA. */
+  fakeTemplates: (channelId: string) =>
+    unwrap(
+      apiClient.get<SuccessEnvelope<FakeTemplateRow[]>>('/dev/meta/templates', {
+        params: { channelId },
+      }),
     ),
 };

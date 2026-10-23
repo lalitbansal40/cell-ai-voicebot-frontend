@@ -10815,6 +10815,8 @@ export interface paths {
               monthlyCallMicros?: number;
               /** @description Integer micros (₹1 = 1,000,000) */
               monthlyAiMicros?: number;
+              /** @description Integer micros (₹1 = 1,000,000) */
+              monthlyWhatsappMicros?: number;
             };
           };
         };
@@ -10989,7 +10991,15 @@ export interface paths {
           /** @description Comma-separated types */
           type?: string;
           status?: 'held' | 'captured' | 'released';
-          refType?: 'call' | 'campaign' | 'topup' | 'manual' | 'simulator' | 'usage' | 'seed';
+          refType?:
+            | 'call'
+            | 'campaign'
+            | 'topup'
+            | 'manual'
+            | 'simulator'
+            | 'usage'
+            | 'seed'
+            | 'whatsapp_message';
           from?: string;
           to?: string;
         };
@@ -12430,7 +12440,15 @@ export interface paths {
           /** @description Comma-separated types */
           type?: string;
           status?: 'held' | 'captured' | 'released';
-          refType?: 'call' | 'campaign' | 'topup' | 'manual' | 'simulator' | 'usage' | 'seed';
+          refType?:
+            | 'call'
+            | 'campaign'
+            | 'topup'
+            | 'manual'
+            | 'simulator'
+            | 'usage'
+            | 'seed'
+            | 'whatsapp_message';
           from?: string;
           to?: string;
         };
@@ -17353,7 +17371,7 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    /** Who pays Meta for numbers connected from now on (a credit line can’t be removed later) */
+    /** Who pays Meta for numbers connected from now on (a credit line can’t be removed later) and the account WhatsApp price override: markup, fixed prices, platform fee (Phase 11) */
     patch: {
       parameters: {
         query?: never;
@@ -17381,6 +17399,16 @@ export interface paths {
               data: {
                 /** @enum {string} */
                 metaPayer: 'platform' | 'customer';
+                whatsappBilling: {
+                  markupBps: number | null;
+                  fixedPrices: {
+                    marketing?: number;
+                    utility?: number;
+                    authentication?: number;
+                    service?: number;
+                  } | null;
+                  platformFeeMicros: number | null;
+                };
               };
             };
           };
@@ -17872,6 +17900,32 @@ export interface paths {
           'application/json': {
             channelId: string;
             contactId: string;
+            template?: {
+              /**
+               * Format: uuid
+               * @example 6f1c2b8e-9d1a-4c55-8a3e-2b1f0c9d7e61
+               */
+              clientId?: string;
+              replyToMessageId?: string;
+              /** @enum {string} */
+              type: 'template';
+              templateId: string;
+              variables?: {
+                [key: string]: string;
+              };
+              header?:
+                | {
+                    mediaToken: string;
+                  }
+                | {
+                    location: {
+                      latitude: number;
+                      longitude: number;
+                      name?: string | null;
+                      address?: string | null;
+                    };
+                  };
+            };
           };
         };
       };
@@ -20117,6 +20171,1770 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/whatsapp/price-preview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Price of one WhatsApp message to a contact / phone: template category or service (inbox.read or templates.read) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['WhatsAppPricePreviewBody'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppPricePreview'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/whatsapp-rates': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Meta's WhatsApp rate card in force, scheduled ones and history (platform.billing.manage) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                current: {
+                  id: string;
+                  effectiveFrom: string;
+                  /** @enum {string} */
+                  currency: 'INR';
+                  /** @enum {string} */
+                  source: 'meta_csv' | 'manual';
+                  note: string | null;
+                  createdAt: string;
+                  markets: {
+                    market: string;
+                    label: string;
+                    callingCodes: string[];
+                    marketingMicros: number;
+                    utilityMicros: number;
+                    authenticationMicros: number;
+                    authenticationInternationalMicros: number | null;
+                    serviceMicros: number;
+                    /** @default [] */
+                    utilityTiers: {
+                      fromMessages: number;
+                      micros: number;
+                    }[];
+                    /** @default [] */
+                    authenticationTiers: {
+                      fromMessages: number;
+                      micros: number;
+                    }[];
+                  }[];
+                } | null;
+                scheduled: {
+                  id: string;
+                  effectiveFrom: string;
+                  /** @enum {string} */
+                  currency: 'INR';
+                  /** @enum {string} */
+                  source: 'meta_csv' | 'manual';
+                  note: string | null;
+                  createdAt: string;
+                  markets: {
+                    market: string;
+                    label: string;
+                    callingCodes: string[];
+                    marketingMicros: number;
+                    utilityMicros: number;
+                    authenticationMicros: number;
+                    authenticationInternationalMicros: number | null;
+                    serviceMicros: number;
+                    /** @default [] */
+                    utilityTiers: {
+                      fromMessages: number;
+                      micros: number;
+                    }[];
+                    /** @default [] */
+                    authenticationTiers: {
+                      fromMessages: number;
+                      micros: number;
+                    }[];
+                  }[];
+                }[];
+                history: {
+                  id: string;
+                  effectiveFrom: string;
+                  source: string;
+                  note: string | null;
+                  markets: number;
+                }[];
+              };
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    /** Save a rate card (insert-only history; effectiveFrom now or later) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['WhatsAppRateCardSave'];
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                id: string;
+                effectiveFrom: string;
+                /** @enum {string} */
+                currency: 'INR';
+                /** @enum {string} */
+                source: 'meta_csv' | 'manual';
+                note: string | null;
+                createdAt: string;
+                markets: {
+                  market: string;
+                  label: string;
+                  callingCodes: string[];
+                  marketingMicros: number;
+                  utilityMicros: number;
+                  authenticationMicros: number;
+                  authenticationInternationalMicros: number | null;
+                  serviceMicros: number;
+                  /** @default [] */
+                  utilityTiers: {
+                    fromMessages: number;
+                    micros: number;
+                  }[];
+                  /** @default [] */
+                  authenticationTiers: {
+                    fromMessages: number;
+                    micros: number;
+                  }[];
+                }[];
+              };
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/whatsapp-rates/import': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Preview Meta's INR rate card CSV (multipart `file`, ≤ 2 MB): markets, row errors, diff — nothing saved */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'multipart/form-data': {
+            /** Format: binary */
+            file: string;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                markets: {
+                  market: string;
+                  label: string;
+                  callingCodes: string[];
+                  marketingMicros: number;
+                  utilityMicros: number;
+                  authenticationMicros: number;
+                  authenticationInternationalMicros: number | null;
+                  serviceMicros: number;
+                  /** @default [] */
+                  utilityTiers: {
+                    fromMessages: number;
+                    micros: number;
+                  }[];
+                  /** @default [] */
+                  authenticationTiers: {
+                    fromMessages: number;
+                    micros: number;
+                  }[];
+                }[];
+                errors: {
+                  row: number;
+                  message: string;
+                }[];
+                diff: {
+                  added: string[];
+                  removed: string[];
+                  changed: {
+                    market: string;
+                    field: string;
+                    fromMicros: number | null;
+                    toMicros: number | null;
+                  }[];
+                } | null;
+              };
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Body or file too large (PAYLOAD_TOO_LARGE) */
+        413: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/whatsapp-billing': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Global WhatsApp markup / platform fee / hold age + platform-paid numbers not billed in INR (deadline 31 Dec 2026) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                settings: {
+                  markupBps: number;
+                  platformFeeMicros: number;
+                  holdMaxAgeHours: number;
+                };
+                defaults: {
+                  markupBps: number;
+                  platformFeeMicros: number;
+                  holdMaxAgeHours: number;
+                };
+                nonInrPlatformChannels: {
+                  channelId: string;
+                  accountId: string;
+                  label: string;
+                  wabaCurrency: string;
+                }[];
+              };
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Change the global WhatsApp price settings */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['WhatsAppBillingSettingsPatch'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                settings: {
+                  markupBps: number;
+                  platformFeeMicros: number;
+                  holdMaxAgeHours: number;
+                };
+                defaults: {
+                  markupBps: number;
+                  platformFeeMicros: number;
+                  holdMaxAgeHours: number;
+                };
+                nonInrPlatformChannels: {
+                  channelId: string;
+                  accountId: string;
+                  label: string;
+                  wabaCurrency: string;
+                }[];
+              };
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/api/v1/admin/reports/whatsapp-margin': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Per account × category for a month: messages, billed, Meta cost (analytics or list), margin, mismatches; `format=csv` downloads */
+    get: {
+      parameters: {
+        query: {
+          month: string;
+          accountId?: string;
+          format?: 'json' | 'csv';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                accountId: string;
+                accountName: string;
+                category: string;
+                messages: number;
+                billedMicros: number;
+                metaCostMicros: number;
+                /** @enum {string} */
+                metaCostSource: 'analytics' | 'list';
+                marginMicros: number;
+                marginBps: number | null;
+                mismatches: number;
+              }[];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/reports/whatsapp-reconciliation': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Daily rows: Meta's pricing analytics vs our captured charges per WABA × category */
+    get: {
+      parameters: {
+        query: {
+          month: string;
+          accountId?: string;
+          format?: 'json' | 'csv';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                accountId: string;
+                wabaId: string;
+                day: string;
+                category: string;
+                metaVolume: number;
+                metaCostMicros: number;
+                ourCaptured: number;
+                ourBilledMicros: number;
+                diffVolume: number;
+                diffMicros: number;
+                fetchedAt: string;
+              }[];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/whatsapp/templates': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Templates of the account — list rows carry no bodies or examples (templates.read) */
+    get: {
+      parameters: {
+        query?: {
+          channelId?: string;
+          status?: string;
+          category?: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION';
+          purpose?: 'general' | 'call_permission';
+          q?: string;
+          includeDeleted?: 'true' | 'false';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppTemplateListItem'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    /** Create a template: draft (`submit: false`) or submitted to Meta (templates.manage, rl:templates: 20 / h / user) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['WhatsAppTemplateCreate'];
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppTemplate'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Meta refused (META_API_ERROR) */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/whatsapp/templates/sync': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Sync the number's WABA templates from Meta (templates.manage, 1 / min / number) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            channelId: string;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppTemplateSyncResult'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Meta refused (META_API_ERROR) */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/whatsapp/templates/call-permission': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** The ready-made "may we call you?" template — utility, one per number × language (templates.manage) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['WhatsAppCallPermissionTemplate'];
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppTemplate'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Meta refused (META_API_ERROR) */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/whatsapp/templates/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Template detail: components, variables + sources, history, usage, edit window (templates.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppTemplate'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    /** Delete at Meta — this language or every language of the name; rows stay as DELETED, the name is locked 30 days (templates.manage) */
+    delete: {
+      parameters: {
+        query?: {
+          scope?: 'language' | 'name';
+        };
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                deleted: number;
+              };
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Meta refused (META_API_ERROR) */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /** Edit — drafts freely; Meta templates when approved / rejected / paused (approved: 1 / 24 h, 10 / 30 days, category fixed) (templates.manage) */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['WhatsAppTemplateEdit'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppTemplate'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Meta refused (META_API_ERROR) */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/api/v1/whatsapp/templates/{id}/submit': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Submit a draft to Meta for review (templates.manage) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppTemplate'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Meta refused (META_API_ERROR) */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/whatsapp/templates/{id}/variables': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Default source per variable: contact name / phone / email, a custom field, a text, ask (templates.manage) */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['WhatsAppTemplateVariableSources'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppTemplate'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Meta refused (META_API_ERROR) */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/api/v1/whatsapp/templates/{id}/media': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Media header example (multipart `file`: JPEG / PNG 5 MB, MP4 16 MB, PDF 100 MB) → storage + Meta handle (templates.manage) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'multipart/form-data': {
+            /** Format: binary */
+            file: string;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppTemplate'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Body or file too large (PAYLOAD_TOO_LARGE) */
+        413: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Meta refused (META_API_ERROR) */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -20406,7 +22224,19 @@ export interface components {
         | 'inbox.history_imported'
         | 'inbox.messages_purged'
         | 'inbox.settings_updated'
-        | 'whatsapp.profile_updated';
+        | 'whatsapp.profile_updated'
+        | 'template.created'
+        | 'template.submitted'
+        | 'template.updated'
+        | 'template.deleted'
+        | 'template.synced'
+        | 'template.status_changed'
+        | 'template.category_changed'
+        | 'template.variables_updated'
+        | 'whatsapp.rate_card_saved'
+        | 'whatsapp.billing_settings_updated'
+        | 'account.whatsapp_billing_updated'
+        | 'contact.whatsapp_marketing_changed';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
@@ -22187,6 +24017,8 @@ export interface components {
       budgets: {
         monthlyCallMicros: number;
         monthlyAiMicros: number;
+        /** @description 0 = no WhatsApp budget */
+        monthlyWhatsappMicros: number;
       };
       monthSpend: {
         /** @example 2026-10 */
@@ -22194,6 +24026,7 @@ export interface components {
         callMicros: number;
         aiMicros: number;
         ttsMicros: number;
+        whatsappMicros: number;
         totalMicros: number;
       };
       updatedAt: string;
@@ -22210,6 +24043,21 @@ export interface components {
       /** @enum {string} */
       source: 'account' | 'default';
       effectiveFrom: string;
+      whatsapp: {
+        /** @enum {string} */
+        payer: 'platform' | 'customer';
+        effectiveFrom: string;
+        markets: {
+          market: string;
+          label: string;
+          prices: {
+            marketing: number;
+            utility: number;
+            authentication: number;
+            service: number;
+          };
+        }[];
+      };
     };
     WalletEstimate: {
       answeredCalls: number;
@@ -22230,7 +24078,8 @@ export interface components {
         | 'adjustment'
         | 'refund'
         | 'subscription'
-        | 'recording_charge';
+        | 'recording_charge'
+        | 'whatsapp_charge';
       /** @enum {string} */
       direction: 'credit' | 'debit';
       /** @enum {string} */
@@ -22255,11 +24104,19 @@ export interface components {
         embeddingTokens?: number;
         model?: string;
         /** @enum {string} */
-        kind?: 'playground' | 'kb_ingest' | 'call' | 'flow_simulator' | 'flow_intent';
+        kind?: 'playground' | 'kb_ingest' | 'call' | 'flow_simulator' | 'flow_intent' | 'whatsapp';
       } | null;
       ref: {
         /** @enum {string} */
-        type: 'call' | 'campaign' | 'topup' | 'manual' | 'simulator' | 'usage' | 'seed';
+        type:
+          | 'call'
+          | 'campaign'
+          | 'topup'
+          | 'manual'
+          | 'simulator'
+          | 'usage'
+          | 'seed'
+          | 'whatsapp_message';
         id: string;
       };
       holdId: string | null;
@@ -22284,6 +24141,7 @@ export interface components {
         aiMicros: number;
         ttsMicros: number;
         otherMicros: number;
+        whatsappMicros: number;
         totalMicros: number;
       }[];
       totals: {
@@ -22291,6 +24149,7 @@ export interface components {
         aiMicros: number;
         ttsMicros: number;
         otherMicros: number;
+        whatsappMicros: number;
         totalMicros: number;
       };
     };
@@ -22483,7 +24342,8 @@ export interface components {
             | 'adjustment'
             | 'refund'
             | 'subscription'
-            | 'recording_charge';
+            | 'recording_charge'
+            | 'whatsapp_charge';
           amountMicros: number;
         }[];
         totalMicros: number;
@@ -22567,7 +24427,14 @@ export interface components {
         | 'whatsapp.name_rejected'
         | 'whatsapp.channel_disconnected_by_admin'
         | 'inbox.message_received'
-        | 'inbox.conversation_assigned';
+        | 'inbox.conversation_assigned'
+        | 'template.approved'
+        | 'template.rejected'
+        | 'template.paused'
+        | 'template.disabled'
+        | 'template.category_changed'
+        | 'template.quality_low'
+        | 'wallet.whatsapp_late_charge';
       title: string;
       body: string;
       link: string | null;
@@ -23188,7 +25055,7 @@ export interface components {
        * @description `business_app` = sent from the WhatsApp Business app (coexistence); `history` = imported
        * @enum {string}
        */
-      origin: 'customer' | 'agent' | 'business_app' | 'history' | 'system';
+      origin: 'customer' | 'agent' | 'business_app' | 'history' | 'system' | 'api';
       /**
        * @description `note` = internal team note, never sent
        * @enum {string}
@@ -23208,7 +25075,8 @@ export interface components {
         | 'order'
         | 'system'
         | 'unsupported'
-        | 'note';
+        | 'note'
+        | 'template';
       /** @description Body / caption (customer data) */
       text: string | null;
       /** @description Fetch the file with GET /inbox/messages/{id}/media */
@@ -23315,7 +25183,8 @@ export interface components {
           | 'order'
           | 'system'
           | 'unsupported'
-          | 'note';
+          | 'note'
+          | 'template';
         /** @enum {string} */
         direction: 'in' | 'out';
         preview: string;
@@ -23359,6 +25228,22 @@ export interface components {
         name: string;
       } | null;
       retryOf: string | null;
+      template: {
+        templateId: string;
+        name: string;
+        language: string;
+        /** @enum {string} */
+        category: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION';
+      } | null;
+      billing: {
+        /** @enum {string} */
+        payer: 'platform' | 'customer';
+        category: string;
+        market: string;
+        priceMicros: number;
+        /** @enum {string} */
+        status: 'none' | 'held' | 'captured' | 'released' | 'late_charged' | 'waived';
+      } | null;
       at: string;
       createdAt: string;
     };
@@ -23403,7 +25288,8 @@ export interface components {
           | 'order'
           | 'system'
           | 'unsupported'
-          | 'note';
+          | 'note'
+          | 'template';
         preview: string;
         at: string;
         /** @enum {string} */
@@ -23555,7 +25441,15 @@ export interface components {
     };
     WhatsAppBillingInput: {
       /** @enum {string} */
-      metaPayer: 'platform' | 'customer';
+      metaPayer?: 'platform' | 'customer';
+      markupBps?: number | null;
+      fixedPrices?: {
+        marketing?: number;
+        utility?: number;
+        authentication?: number;
+        service?: number;
+      } | null;
+      platformFeeMicros?: number | null;
     };
     WhatsAppManualConnectInput: {
       /** @example 106540352242922 */
@@ -23612,11 +25506,27 @@ export interface components {
         | 'status_failed'
         | 'window_expired'
         | 'age_messages'
-        | 'run_retention';
+        | 'run_retention'
+        | 'template_approved'
+        | 'template_rejected'
+        | 'template_paused'
+        | 'template_disabled'
+        | 'template_quality_red'
+        | 'template_category_changed'
+        | 'template_components_changed'
+        | 'user_stopped_marketing'
+        | 'user_resumed_marketing'
+        | 'pricing_tier_update'
+        | 'run_template_sync'
+        | 'run_hold_reaper'
+        | 'run_whatsapp_reconcile'
+        | 'late_billable_status';
       from?: string;
       text?: string;
       conversationId?: string;
       days?: number;
+      templateId?: string;
+      messageId?: string;
     };
     InboxSendMessage:
       | {
@@ -23813,7 +25723,239 @@ export interface components {
           /** @enum {string} */
           type: 'note';
           text: string;
+        }
+      | {
+          /**
+           * Format: uuid
+           * @example 6f1c2b8e-9d1a-4c55-8a3e-2b1f0c9d7e61
+           */
+          clientId: string;
+          replyToMessageId?: string;
+          /** @enum {string} */
+          type: 'template';
+          templateId: string;
+          variables?: {
+            [key: string]: string;
+          };
+          header?:
+            | {
+                mediaToken: string;
+              }
+            | {
+                location: {
+                  latitude: number;
+                  longitude: number;
+                  name?: string | null;
+                  address?: string | null;
+                };
+              };
         };
+    WhatsAppPricePreview: {
+      /** @enum {string} */
+      payer: 'platform' | 'customer';
+      market: string;
+      marketLabel: string;
+      /** @enum {string} */
+      category:
+        'marketing' | 'utility' | 'authentication' | 'authentication_international' | 'service';
+      priceMicros: number;
+      /** @enum {string} */
+      currency: 'INR';
+      /** @enum {string} */
+      note: 'billed_when_delivered' | 'free_tier_may_apply' | 'customer_pays_meta';
+    };
+    WhatsAppPricePreviewBody: {
+      channelId: string;
+      contactId?: string;
+      phone?: string;
+      templateId?: string;
+      /** @enum {string} */
+      category?: 'marketing' | 'utility' | 'authentication' | 'service';
+    };
+    WhatsAppRateCardSave: {
+      markets: {
+        market: string;
+        label: string;
+        callingCodes: string[];
+        marketingMicros: number;
+        utilityMicros: number;
+        authenticationMicros: number;
+        authenticationInternationalMicros: number | null;
+        serviceMicros: number;
+        /** @default [] */
+        utilityTiers: {
+          fromMessages: number;
+          micros: number;
+        }[];
+        /** @default [] */
+        authenticationTiers: {
+          fromMessages: number;
+          micros: number;
+        }[];
+      }[];
+      /** Format: date-time */
+      effectiveFrom?: string;
+      /** @enum {string} */
+      source: 'meta_csv' | 'manual';
+      note?: string | null;
+    };
+    WhatsAppBillingSettingsPatch: {
+      markupBps?: number;
+      platformFeeMicros?: number;
+      holdMaxAgeHours?: number;
+    };
+    WhatsAppTemplateListItem: {
+      id: string;
+      name: string;
+      language: string;
+      /** @enum {string} */
+      category: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION';
+      /** @enum {string|null} */
+      previousCategory: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION' | null;
+      /** @enum {string} */
+      status:
+        | 'DRAFT'
+        | 'PENDING'
+        | 'APPROVED'
+        | 'REJECTED'
+        | 'PAUSED'
+        | 'DISABLED'
+        | 'IN_APPEAL'
+        | 'FLAGGED'
+        | 'PENDING_DELETION'
+        | 'DELETED'
+        | 'ARCHIVED'
+        | 'LIMIT_EXCEEDED';
+      statusReason: {
+        reason: string;
+        title: string | null;
+        description: string | null;
+      } | null;
+      /** @enum {string|null} */
+      quality: 'GREEN' | 'YELLOW' | 'RED' | 'UNKNOWN' | null;
+      pausedUntil: string | null;
+      /** @enum {string} */
+      purpose: 'general' | 'call_permission';
+      editable: boolean;
+      /** @enum {string} */
+      parameterFormat: 'positional' | 'named';
+      channelIds: string[];
+      variablesCount: number;
+      submitted: boolean;
+      usage: {
+        sent: number;
+        delivered: number;
+        read: number;
+        failed: number;
+        lastSentAt: string | null;
+      };
+      syncedAt: string | null;
+      createdAt: string;
+      updatedAt: string;
+    };
+    WhatsAppTemplate: components['schemas']['WhatsAppTemplateListItem'] & {
+      subCategory: string | null;
+      components: ({
+        type: string;
+      } & {
+        [key: string]: unknown;
+      })[];
+      variables: {
+        key: string;
+        /** @enum {string} */
+        component: 'header' | 'body' | 'button';
+        index: number;
+        example: string;
+        defaultSource: {
+          /** @enum {string} */
+          kind: 'contact.name' | 'contact.phone' | 'contact.email' | 'field' | 'static' | 'ask';
+          value: string | null;
+        };
+      }[];
+      statusHistory: {
+        /** @enum {string} */
+        status:
+          | 'DRAFT'
+          | 'PENDING'
+          | 'APPROVED'
+          | 'REJECTED'
+          | 'PAUSED'
+          | 'DISABLED'
+          | 'IN_APPEAL'
+          | 'FLAGGED'
+          | 'PENDING_DELETION'
+          | 'DELETED'
+          | 'ARCHIVED'
+          | 'LIMIT_EXCEEDED';
+        reason: string | null;
+        at: string;
+        /** @enum {string} */
+        source: 'user' | 'webhook' | 'sync';
+      }[];
+      ttlSeconds: number | null;
+      headerMedia: {
+        mimeType: string;
+        size: number;
+        fileName: string | null;
+        uploaded: boolean;
+      } | null;
+      editsLast30Days: number;
+      nextEditAt: string | null;
+      deletedAt: string | null;
+      createdBy: string | null;
+    };
+    WhatsAppTemplateCreate: {
+      channelId: string;
+      name: string;
+      language: string;
+      /** @enum {string} */
+      category: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION';
+      /** @enum {string} */
+      parameterFormat?: 'positional' | 'named';
+      /** @description Meta template components (HEADER / BODY / FOOTER / BUTTONS) */
+      components: ({
+        type: string;
+      } & {
+        [key: string]: unknown;
+      })[];
+      ttlSeconds?: number | null;
+      submit?: boolean;
+    };
+    WhatsAppTemplateSyncResult: {
+      created: number;
+      updated: number;
+      deleted: number;
+      unchanged: number;
+    };
+    WhatsAppCallPermissionTemplate: {
+      channelId: string;
+      language?: string;
+      body?: string;
+      submit?: boolean;
+    };
+    WhatsAppTemplateEdit: {
+      name?: string;
+      language?: string;
+      /** @enum {string} */
+      category?: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION';
+      /** @enum {string} */
+      parameterFormat?: 'positional' | 'named';
+      /** @description Meta template components (HEADER / BODY / FOOTER / BUTTONS) */
+      components?: ({
+        type: string;
+      } & {
+        [key: string]: unknown;
+      })[];
+      ttlSeconds?: number | null;
+    };
+    WhatsAppTemplateVariableSources: {
+      sources: {
+        key: string;
+        /** @enum {string} */
+        kind: 'contact.name' | 'contact.phone' | 'contact.email' | 'field' | 'static' | 'ask';
+        value?: string | null;
+      }[];
+    };
   };
   responses: never;
   parameters: never;

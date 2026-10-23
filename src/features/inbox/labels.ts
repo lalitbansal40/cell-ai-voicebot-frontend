@@ -25,6 +25,7 @@ export const tabQuery = (tab: InboxTab): { status: 'open' | 'closed'; filter: In
 
 const TYPE_LABELS: Record<InboxMessageType, string> = {
   text: 'Message',
+  template: 'Template',
   image: 'Photo',
   video: 'Video',
   audio: 'Audio',

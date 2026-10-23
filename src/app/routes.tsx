@@ -322,8 +322,14 @@ export const routes: RouteObject[] = [
             children: [
               { index: true, element: <Navigate to="/whatsapp/numbers" replace /> },
               {
-                // the WhatsApp page is its own chunk
+                // the WhatsApp page is its own chunk; the tab follows the URL
                 path: 'numbers',
+                lazy: async () => ({
+                  Component: (await import('@/pages/whatsapp/WhatsAppPage')).WhatsAppPage,
+                }),
+              },
+              {
+                path: 'templates',
                 lazy: async () => ({
                   Component: (await import('@/pages/whatsapp/WhatsAppPage')).WhatsAppPage,
                 }),
@@ -348,6 +354,13 @@ export const routes: RouteObject[] = [
                 path: 'whatsapp',
                 lazy: async () => ({
                   Component: (await import('@/pages/admin/AdminWhatsAppPage')).AdminWhatsAppPage,
+                }),
+              },
+              {
+                path: 'whatsapp-billing',
+                lazy: async () => ({
+                  Component: (await import('@/pages/admin/AdminWhatsAppBillingPage'))
+                    .AdminWhatsAppBillingPage,
                 }),
               },
             ],

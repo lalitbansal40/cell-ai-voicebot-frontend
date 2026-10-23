@@ -286,6 +286,7 @@ const USAGE = (total = 5 * R): UsageSeries => ({
       aiMicros: R,
       ttsMicros: 500_000,
       otherMicros: 0,
+      whatsappMicros: 0,
       totalMicros: 3_500_000,
     },
     {
@@ -294,6 +295,7 @@ const USAGE = (total = 5 * R): UsageSeries => ({
       aiMicros: 500_000,
       ttsMicros: 0,
       otherMicros: 0,
+      whatsappMicros: 0,
       totalMicros: 1_500_000,
     },
   ],
@@ -302,6 +304,7 @@ const USAGE = (total = 5 * R): UsageSeries => ({
     aiMicros: 1_500_000,
     ttsMicros: 500_000,
     otherMicros: 0,
+    whatsappMicros: 0,
     totalMicros: total,
   },
 });

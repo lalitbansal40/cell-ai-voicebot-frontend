@@ -1,4 +1,4 @@
-import type { components } from './schema.gen';
+import type { components, paths } from './schema.gen';
 
 type Schemas = components['schemas'];
 
@@ -228,3 +228,53 @@ export type InboxConfig = Schemas['InboxConfig'];
 export type InboxSummary = Schemas['InboxSummary'];
 export type InboxContactPanel = Schemas['InboxContactPanel'];
 export type WhatsAppBusinessProfile = Schemas['WhatsAppBusinessProfile'];
+
+/** WhatsApp templates + message charges (Phase 11). */
+export type WhatsAppTemplateListItem = Schemas['WhatsAppTemplateListItem'];
+export type WhatsAppTemplate = Schemas['WhatsAppTemplate'];
+export type WhatsAppTemplateCreate = Schemas['WhatsAppTemplateCreate'];
+export type WhatsAppTemplateEdit = Schemas['WhatsAppTemplateEdit'];
+export type WhatsAppTemplateSyncResult = Schemas['WhatsAppTemplateSyncResult'];
+export type WhatsAppTemplateStatus = WhatsAppTemplateListItem['status'];
+export type WhatsAppTemplateCategory = WhatsAppTemplateListItem['category'];
+export type WhatsAppTemplateQuality = NonNullable<WhatsAppTemplateListItem['quality']>;
+export type WhatsAppTemplatePurpose = WhatsAppTemplateListItem['purpose'];
+export type WhatsAppParameterFormat = WhatsAppTemplateListItem['parameterFormat'];
+export type WhatsAppTemplateComponent = WhatsAppTemplate['components'][number];
+export type WhatsAppTemplateVariable = WhatsAppTemplate['variables'][number];
+export type WhatsAppVariableSourceKind = WhatsAppTemplateVariable['defaultSource']['kind'];
+export type WhatsAppVariableSourceInput =
+  Schemas['WhatsAppTemplateVariableSources']['sources'][number];
+export type WhatsAppPricePreview = Schemas['WhatsAppPricePreview'];
+export type WhatsAppPricePreviewBody = Schemas['WhatsAppPricePreviewBody'];
+export type WhatsAppPriceNote = WhatsAppPricePreview['note'];
+export type WhatsAppRateCardSave = Schemas['WhatsAppRateCardSave'];
+export type WhatsAppRateCardMarket = WhatsAppRateCardSave['markets'][number];
+export type WhatsAppBillingSettingsPatch = Schemas['WhatsAppBillingSettingsPatch'];
+export type WhatsAppBillingInput = Schemas['WhatsAppBillingInput'];
+export type InboxMessageTemplate = NonNullable<InboxMessage['template']>;
+export type InboxMessageBilling = NonNullable<InboxMessage['billing']>;
+export type InboxTemplateSend = Extract<InboxSendMessage, { type: 'template' }>;
+export type WalletWhatsAppPrices = RateCardView['whatsapp'];
+
+type Ok<P extends keyof paths, M extends keyof paths[P]> = paths[P][M] extends {
+  responses: { 200: { content: { 'application/json': { data: infer D } } } };
+}
+  ? D
+  : never;
+
+/** Superadmin WhatsApp billing (inline response shapes of the spec). */
+export type WhatsAppRateCards = Ok<'/api/v1/admin/whatsapp-rates', 'get'>;
+export type WhatsAppRateCard = NonNullable<WhatsAppRateCards['current']>;
+export type WhatsAppRateImport = Ok<'/api/v1/admin/whatsapp-rates/import', 'post'>;
+export type WhatsAppRateDiff = NonNullable<WhatsAppRateImport['diff']>;
+export type WhatsAppBillingSettingsView = Ok<'/api/v1/admin/whatsapp-billing', 'get'>;
+export type WhatsAppMarginRow = Ok<'/api/v1/admin/reports/whatsapp-margin', 'get'>[number];
+export type WhatsAppReconcileRow = Ok<
+  '/api/v1/admin/reports/whatsapp-reconciliation',
+  'get'
+>[number];
+export type AccountWhatsAppBillingView = Ok<
+  '/api/v1/admin/accounts/{id}/whatsapp-billing',
+  'patch'
+>;

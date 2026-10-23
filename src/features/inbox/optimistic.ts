@@ -176,6 +176,8 @@ export const buildOptimistic = (
     clientId: body.clientId,
     sentBy: sender,
     retryOf: null,
+    template: null,
+    billing: null,
     at,
     createdAt: at,
   };

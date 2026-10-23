@@ -51,12 +51,13 @@ const WALLET = (overrides: Partial<Wallet> = {}): Wallet => ({
   creditLimitMicros: 0,
   status: 'ok',
   lowBalanceThresholdMicros: 500 * R,
-  budgets: { monthlyCallMicros: 1000 * R, monthlyAiMicros: 0 },
+  budgets: { monthlyCallMicros: 1000 * R, monthlyAiMicros: 0, monthlyWhatsappMicros: 0 },
   monthSpend: {
     month: '2026-10',
     callMicros: 850 * R,
     aiMicros: 12 * R,
     ttsMicros: 3 * R,
+    whatsappMicros: 0,
     totalMicros: 865 * R,
   },
   updatedAt: '2026-10-09T00:00:00Z',
@@ -73,6 +74,7 @@ const RATES: RateCardView = {
   billUnansweredAttempts: false,
   source: 'default',
   effectiveFrom: '2026-10-01T00:00:00Z',
+  whatsapp: { payer: 'platform', effectiveFrom: '2026-10-01T00:00:00Z', markets: [] },
 };
 const PROFILE: BillingProfile = {
   legalName: 'Demo Finance Pvt Ltd',
@@ -176,7 +178,7 @@ describe('wallet overview', () => {
         creditLimitMicros: 200 * R,
         status: 'low',
         lowBalanceThresholdMicros: 0,
-        budgets: { monthlyCallMicros: 500 * R, monthlyAiMicros: 10 * R },
+        budgets: { monthlyCallMicros: 500 * R, monthlyAiMicros: 10 * R, monthlyWhatsappMicros: 0 },
       }),
     );
     wallet.rates.mockResolvedValue({ ...RATES, commissionBps: 0, billUnansweredAttempts: true });

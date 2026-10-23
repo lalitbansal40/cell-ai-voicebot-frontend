@@ -12,6 +12,7 @@ export const LEDGER_TYPE_LABELS: Record<LedgerType, string> = {
   refund: 'Refund',
   subscription: 'Subscription',
   recording_charge: 'Recording storage',
+  whatsapp_charge: 'WhatsApp message',
 };
 
 export const LEDGER_STATUS_LABELS: Record<LedgerEntry['status'], string> = {

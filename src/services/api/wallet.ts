@@ -15,7 +15,12 @@ import type {
 
 export interface WalletSettingsInput {
   lowBalanceThresholdMicros?: number;
-  budgets?: { monthlyCallMicros?: number; monthlyAiMicros?: number };
+  /** `monthlyWhatsappMicros` 0 = no WhatsApp budget (Phase 11). */
+  budgets?: {
+    monthlyCallMicros?: number;
+    monthlyAiMicros?: number;
+    monthlyWhatsappMicros?: number;
+  };
 }
 
 export type LedgerType = LedgerEntry['type'];
@@ -27,6 +32,8 @@ export interface LedgerQuery {
   /** Several types → comma-separated on the wire. */
   type?: LedgerType[];
   status?: LedgerStatus;
+  /** e.g. `whatsapp_message` (Phase 11). */
+  refType?: LedgerEntry['ref']['type'];
   /** ISO date-times (account timezone handled by the caller). */
   from?: string;
   to?: string;

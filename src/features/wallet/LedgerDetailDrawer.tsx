@@ -28,6 +28,7 @@ const REF_LABELS: Record<LedgerEntry['ref']['type'], string> = {
   simulator: 'Simulated call',
   usage: 'Usage',
   seed: 'Demo data',
+  whatsapp_message: 'WhatsApp message',
 };
 
 function Row({ label, value }: { label: string; value: ReactNode }) {
@@ -44,7 +45,7 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
 }
 
 const USAGE_KIND_LABELS: Record<
-  'playground' | 'kb_ingest' | 'call' | 'flow_simulator' | 'flow_intent',
+  NonNullable<NonNullable<LedgerEntry['breakdown']>['kind']>,
   string
 > = {
   playground: 'AI playground turn',
@@ -52,6 +53,7 @@ const USAGE_KIND_LABELS: Record<
   flow_simulator: 'Flow simulator',
   flow_intent: 'Flow intent check',
   call: 'Call',
+  whatsapp: 'WhatsApp message',
 };
 
 /** One ledger row in full: amounts, call breakdown (billable seconds, pulse, parts), refs. */

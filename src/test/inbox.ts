@@ -90,6 +90,8 @@ const base = (type: InboxMessageType): InboxMessage => ({
   clientId: null,
   sentBy: null,
   retryOf: null,
+  template: null,
+  billing: null,
   at: AT,
   createdAt: AT,
 });
@@ -167,6 +169,25 @@ const CONTENT: Record<InboxMessageType, Partial<InboxMessage>> = {
   system: { system: { kind: 'customer_changed_number', newWaIdLast4: '7001' } },
   unsupported: {},
   note: { direction: 'out', origin: 'agent', text: 'Called the customer back', status: 'sent' },
+  template: {
+    direction: 'out',
+    origin: 'agent',
+    status: 'delivered',
+    text: 'Namaste Asha, your EMI of ₹12,500.00 is due on 05 Nov 2026.',
+    template: {
+      templateId: 'tpl1',
+      name: 'emi_reminder',
+      language: 'en',
+      category: 'UTILITY',
+    },
+    billing: {
+      payer: 'platform',
+      category: 'utility',
+      market: 'IN',
+      priceMicros: 140_000,
+      status: 'held',
+    },
+  },
 };
 
 /** One message of `type` (override direction / origin / status / content as needed). */

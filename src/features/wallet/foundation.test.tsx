@@ -38,8 +38,15 @@ export const walletFixture = (overrides: Partial<Wallet> = {}): Wallet => ({
   creditLimitMicros: 0,
   status: 'ok',
   lowBalanceThresholdMicros: 500 * R,
-  budgets: { monthlyCallMicros: 0, monthlyAiMicros: 0 },
-  monthSpend: { month: '2026-10', callMicros: 0, aiMicros: 0, ttsMicros: 0, totalMicros: 0 },
+  budgets: { monthlyCallMicros: 0, monthlyAiMicros: 0, monthlyWhatsappMicros: 0 },
+  monthSpend: {
+    month: '2026-10',
+    callMicros: 0,
+    aiMicros: 0,
+    ttsMicros: 0,
+    whatsappMicros: 0,
+    totalMicros: 0,
+  },
   updatedAt: '2026-10-09T00:00:00Z',
   ...overrides,
 });
