@@ -42,6 +42,9 @@ import { formatPhone } from '@/utils/phone';
 const ContactChatButton = lazy(async () => ({
   default: (await import('@/features/inbox/ContactChatButton')).ContactChatButton,
 }));
+const ContactTemplateButton = lazy(async () => ({
+  default: (await import('@/features/templates/send/ContactTemplateButton')).ContactTemplateButton,
+}));
 const CallNowDialog = lazy(async () => ({
   default: (await import('@/features/calls/CallNowDialog')).CallNowDialog,
 }));
@@ -231,6 +234,9 @@ export function ContactDetailPage() {
           <>
             <Suspense fallback={null}>
               <ContactChatButton contactId={c.id} phoneE164={c.phoneE164} />
+            </Suspense>
+            <Suspense fallback={null}>
+              <ContactTemplateButton contact={c} />
             </Suspense>
             {(writable || can('dnd.manage') || canCall) && (
               <>

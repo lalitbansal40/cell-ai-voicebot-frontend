@@ -9,6 +9,7 @@ import type {
   InboxSendMessage,
   InboxSettings,
   InboxSummary,
+  InboxTemplateSend,
   InboxUpload,
   InboxUploadKind,
   ListEnvelope,
@@ -153,8 +154,11 @@ export const inboxApi = {
   reopen: (id: string) => post(conv(id, '/reopen')),
   block: (id: string) => post(conv(id, '/block')),
   unblock: (id: string) => post(conv(id, '/unblock')),
-  /** Existing conversation of the contact on that number, or a new one (`created`). */
-  start: (body: { channelId: string; contactId: string }) =>
+  /**
+   * Existing conversation of the contact on that number, or a new one (`created`);
+   * with `template` the template is sent too (Phase 11 — the window can be closed).
+   */
+  start: (body: { channelId: string; contactId: string; template?: InboxTemplateSend }) =>
     unwrap(
       apiClient.post<SuccessEnvelope<InboxConversationDetail>>('/inbox/conversations/start', body),
     ),

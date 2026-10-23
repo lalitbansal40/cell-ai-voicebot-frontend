@@ -6,6 +6,7 @@ import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 
+import { TemplateButtons } from '@/features/templates/send/TemplateBubble';
 import type { InboxMessage } from '@/services/api/types';
 
 import { timeLabel } from '../format';
@@ -85,6 +86,16 @@ function Content({
       );
     case 'order':
       return m.order ? <OrderCard order={m.order} text={m.text} /> : <Caption>Order</Caption>;
+    case 'template':
+      return (
+        <Stack spacing={0.5}>
+          <Caption>Template · {m.template?.name ?? 'WhatsApp template'}</Caption>
+          {m.media && <MediaContent message={m} canRetry={canAssign} />}
+          {m.location && <LocationCard location={m.location} />}
+          {m.text && <MessageText text={m.text} />}
+          {m.template && <TemplateButtons templateId={m.template.templateId} />}
+        </Stack>
+      );
     default:
       return m.text ? <MessageText text={m.text} /> : null;
   }

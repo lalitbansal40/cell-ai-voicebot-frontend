@@ -176,12 +176,9 @@ describe('who can write, and when', () => {
     vi.restoreAllMocks();
   });
 
-  it('Templates are disabled until Phase 11', async () => {
+  it('Templates is enabled (Phase 11 — the dialog is tested in templates/send)', () => {
     show();
-    const templates = screen.getByRole('button', { name: 'Templates' });
-    expect(templates).toBeDisabled();
-    await userEvent.hover(templates.parentElement as HTMLElement);
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('Templates arrive in Phase 11');
+    expect(screen.getByRole('button', { name: 'Templates' })).toBeEnabled();
   });
 });
 

@@ -37,6 +37,9 @@ import {
 } from 'react';
 import { Link as RouterLink } from 'react-router';
 
+import { usePermission } from '@/features/auth/hooks';
+import { usePricePreview } from '@/features/templates/queries';
+import type { SendContact } from '@/features/templates/send/resolve';
 import { toApiError } from '@/services/api/errors';
 import type {
   InboxConversationDetail,
@@ -44,19 +47,16 @@ import type {
   InboxSendMessage,
   InboxUploadKind,
 } from '@/services/api/types';
+import { formatCurrencyMicros } from '@/utils/format';
 
 import { formatBytes, windowState } from '../format';
 import { useNow, useOnline } from '../hooks';
-import {
-  inboxErrorMessage,
-  READ_ONLY_TEXT,
-  TEMPLATES_SOON_TEXT,
-  WINDOW_CLOSED_TEXT,
-} from '../labels';
+import { inboxErrorMessage, READ_ONLY_TEXT, WINDOW_CLOSED_TEXT } from '../labels';
 import { checkUpload, UPLOAD_ACCEPT } from '../limits';
 import { channelCanReply } from '../permissions';
 import {
   useCanReply,
+  useContactPanel,
   useInboxLimits,
   useSendMessage,
   useTypingPing,
@@ -90,6 +90,11 @@ const ContactCardDialog = lazy(() =>
 const InteractiveBuilder = lazy(() =>
   import('./InteractiveBuilder').then((m) => ({ default: m.InteractiveBuilder })),
 );
+const SendTemplateDialog = lazy(() =>
+  import('@/features/templates/send/SendTemplateDialog').then((m) => ({
+    default: m.SendTemplateDialog,
+  })),
+);
 
 interface Attachment {
   file: File;
@@ -99,7 +104,7 @@ interface Attachment {
   caption: string;
 }
 
-type DialogName = 'location' | 'contacts' | 'interactive';
+type DialogName = 'location' | 'contacts' | 'interactive' | 'template';
 
 const Banner = ({
   children,
@@ -147,6 +152,15 @@ export function Composer({
   const [choice, setChoice] = useState<AttachChoice>('media');
   const fileInput = useRef<HTMLInputElement>(null);
   const textBox = useRef<HTMLTextAreaElement>(null);
+  const canTemplates = usePermission('templates.read');
+  const panel = useContactPanel(c.id);
+  const windowIsOpen = windowState(c.windowExpiresAt, now).open;
+  // what a service reply may cost (platform payers; free inside the monthly free tier)
+  const replyPrice = usePricePreview(
+    allowed && c.channel && windowIsOpen
+      ? { channelId: c.channel.id, contactId: c.contact.id, category: 'service' }
+      : null,
+  );
 
   // object URLs of previews are freed when replaced / sent / unmounted
   const preview = attachment?.previewUrl ?? null;
@@ -181,16 +195,47 @@ export function Composer({
       </Banner>
     );
   }
-  const windowOpen = windowState(c.windowExpiresAt, now).open;
+  const contact: SendContact = panel.data?.contact ?? {
+    id: c.contact.id,
+    name: c.contact.name,
+    phoneE164: c.contact.phoneE164,
+    email: null,
+    variables: {},
+    dnd: false,
+    optedOutAt: null,
+  };
+  const templateDialog = dialog === 'template' && c.channel && (
+    <Suspense fallback={null}>
+      <SendTemplateDialog
+        open
+        channelId={c.channel.id}
+        contact={contact}
+        target={{ kind: 'conversation', conversationId: c.id }}
+        onClose={() => setDialog(null)}
+      />
+    </Suspense>
+  );
+  const windowOpen = windowIsOpen;
   if (!windowOpen && !note) {
     return (
       <Box sx={{ borderTop: 1, borderColor: 'divider' }}>
         <Banner>{WINDOW_CLOSED_TEXT}</Banner>
-        <Box sx={{ px: 2, py: 1 }}>
+        <Stack direction="row" spacing={1} sx={{ px: 2, py: 1, flexWrap: 'wrap' }}>
+          {canTemplates && (
+            <Button
+              size="small"
+              variant="contained"
+              startIcon={<ViewQuiltOutlined />}
+              onClick={() => setDialog('template')}
+            >
+              Send a template
+            </Button>
+          )}
           <Button size="small" startIcon={<StickyNote2Outlined />} onClick={() => setNote(true)}>
             Write an internal note
           </Button>
-        </Box>
+        </Stack>
+        {templateDialog}
       </Box>
     );
   }
@@ -426,13 +471,11 @@ export function Composer({
                 >
                   <SmartButtonOutlined />
                 </IconButton>
-                <Tooltip title={TEMPLATES_SOON_TEXT}>
-                  <span>
-                    <IconButton aria-label="Templates" disabled>
-                      <ViewQuiltOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
+                {canTemplates && (
+                  <IconButton aria-label="Templates" onClick={() => setDialog('template')}>
+                    <ViewQuiltOutlined />
+                  </IconButton>
+                )}
               </>
             )}
             <Box sx={{ flex: 1 }} />
@@ -486,6 +529,16 @@ export function Composer({
             )}
           </Stack>
         </Box>
+      )}
+      {!note && replyPrice.data?.payer === 'platform' && replyPrice.data.priceMicros > 0 && (
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ px: 2, pb: 0.5, display: 'block' }}
+        >
+          Replies may cost {formatCurrencyMicros(replyPrice.data.priceMicros)} after the free 1,000
+          each month
+        </Typography>
       )}
       {(showCounter(text.length, limits.textMax) || !online) && (
         <Typography
@@ -565,6 +618,7 @@ export function Composer({
             }}
           />
         )}
+        {templateDialog}
         {dialog === 'interactive' && (
           <InteractiveBuilder
             limits={limits}
