@@ -8,4 +8,5 @@ export const usageDataset = (series: UsageSeries['series']) =>
     call: d.callMicros,
     ai: d.aiMicros,
     tts: d.ttsMicros,
+    whatsapp: d.whatsappMicros,
   }));

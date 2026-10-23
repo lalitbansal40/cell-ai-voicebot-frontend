@@ -22286,10 +22286,18 @@ export interface components {
         id: string;
         name: string;
       }[];
-      /** @description Who pays Meta for WhatsApp numbers connected from now on (Phase 9) */
+      /** @description Who pays Meta for WhatsApp numbers connected from now on (Phase 9) and the account price override — null = the global settings (Phase 11) */
       whatsappBilling: {
         /** @enum {string} */
         metaPayer: 'platform' | 'customer';
+        markupBps: number | null;
+        fixedPrices: {
+          marketing?: number;
+          utility?: number;
+          authentication?: number;
+          service?: number;
+        } | null;
+        platformFeeMicros: number | null;
       };
       whatsappChannels: {
         id: string;
@@ -24105,6 +24113,16 @@ export interface components {
         model?: string;
         /** @enum {string} */
         kind?: 'playground' | 'kb_ingest' | 'call' | 'flow_simulator' | 'flow_intent' | 'whatsapp';
+        waCategory?: string;
+        waMarket?: string;
+        waPricingType?: string;
+        waConversationId?: string;
+        /** @description Superadmin views only */
+        metaCostMicros?: number;
+        /** @description Superadmin views only */
+        markupMicros?: number;
+        /** @description Superadmin views only */
+        platformFeeMicros?: number;
       } | null;
       ref: {
         /** @enum {string} */

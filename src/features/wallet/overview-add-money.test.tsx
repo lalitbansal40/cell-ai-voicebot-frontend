@@ -239,7 +239,11 @@ describe('wallet overview', () => {
     await waitFor(() =>
       expect(wallet.updateSettings).toHaveBeenCalledWith({
         lowBalanceThresholdMicros: 750 * R,
-        budgets: { monthlyCallMicros: 0, monthlyAiMicros: 2000 * R + 250_000 },
+        budgets: {
+          monthlyCallMicros: 0,
+          monthlyAiMicros: 2000 * R + 250_000,
+          monthlyWhatsappMicros: 0,
+        },
       }),
     );
     expect(await screen.findByText('Wallet settings saved')).toBeInTheDocument();

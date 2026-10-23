@@ -28,11 +28,13 @@ export function WalletSettingsDialog({ wallet, onClose }: { wallet: Wallet; onCl
   const [threshold, setThreshold] = useState(inputOf(wallet.lowBalanceThresholdMicros));
   const [callBudget, setCallBudget] = useState(inputOf(wallet.budgets.monthlyCallMicros));
   const [aiBudget, setAiBudget] = useState(inputOf(wallet.budgets.monthlyAiMicros));
+  const [waBudget, setWaBudget] = useState(inputOf(wallet.budgets.monthlyWhatsappMicros));
   const [touched, setTouched] = useState(false);
 
   const t = parseRupeesInput(threshold, { allowEmpty: true, maxMicros: THRESHOLD_MAX });
   const c = parseRupeesInput(callBudget, { allowEmpty: true, maxMicros: BUDGET_MAX });
   const a = parseRupeesInput(aiBudget, { allowEmpty: true, maxMicros: BUDGET_MAX });
+  const w = parseRupeesInput(waBudget, { allowEmpty: true, maxMicros: BUDGET_MAX });
 
   const save = useMutation({
     mutationFn: (body: WalletSettingsInput) => walletApi.updateSettings(body),
@@ -46,10 +48,14 @@ export function WalletSettingsDialog({ wallet, onClose }: { wallet: Wallet; onCl
 
   const submit = () => {
     setTouched(true);
-    if (!t.ok || !c.ok || !a.ok) return;
+    if (!t.ok || !c.ok || !a.ok || !w.ok) return;
     save.mutate({
       lowBalanceThresholdMicros: t.micros,
-      budgets: { monthlyCallMicros: c.micros, monthlyAiMicros: a.micros },
+      budgets: {
+        monthlyCallMicros: c.micros,
+        monthlyAiMicros: a.micros,
+        monthlyWhatsappMicros: w.micros,
+      },
     });
   };
   const help = (r: typeof t, text: string) => (touched && !r.ok ? r.message : text);
@@ -88,6 +94,17 @@ export function WalletSettingsDialog({ wallet, onClose }: { wallet: Wallet; onCl
             onChange={(e) => setAiBudget(e.target.value)}
             error={touched && !a.ok}
             helperText={help(a, 'AI and voice (TTS) usage per month. Empty = no limit.')}
+            slotProps={{ htmlInput: { inputMode: 'decimal' } }}
+          />
+          <TextField
+            label="Monthly WhatsApp budget (₹)"
+            value={waBudget}
+            onChange={(e) => setWaBudget(e.target.value)}
+            error={touched && !w.ok}
+            helperText={help(
+              w,
+              'Templates and replies stop when this month’s WhatsApp spend reaches it. Empty = no limit.',
+            )}
             slotProps={{ htmlInput: { inputMode: 'decimal' } }}
           />
         </Stack>

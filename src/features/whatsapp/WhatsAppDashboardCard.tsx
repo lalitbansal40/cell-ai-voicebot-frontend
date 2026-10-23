@@ -6,15 +6,20 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from 'react-router';
 
+import { useHasWallet, useWallet } from '@/features/wallet/queries';
+import { formatCurrencyMicros } from '@/utils/format';
+
 import { useCanManageWhatsApp, useChannels, useWhatsAppConfig } from './queries';
 
 const ATTENTION = new Set(['action_needed', 'needs_reconnect', 'restricted']);
 
-/** Dashboard: "Connect WhatsApp" for managers without a number, else connected / attention counts. */
+/** Dashboard: "Connect WhatsApp" for managers without a number, else connected / attention counts + this month's WhatsApp spend. */
 export function WhatsAppDashboardCard() {
   const config = useWhatsAppConfig();
   const channels = useChannels(Boolean(config.data?.enabled));
   const canManage = useCanManageWhatsApp();
+  const hasWallet = useHasWallet();
+  const wallet = useWallet();
   const items = channels.data?.items ?? [];
   // nothing to show: WhatsApp off on this server, still loading, or nothing a reader could do
   if (!config.data?.enabled || !channels.data || (items.length === 0 && !canManage)) return null;
@@ -49,10 +54,20 @@ export function WhatsAppDashboardCard() {
             </div>
           </Stack>
         ) : (
-          <Typography variant="body2">
-            {connected} connected
-            {attention ? ` · ${String(attention)} need${attention === 1 ? 's' : ''} attention` : ''}
-          </Typography>
+          <Stack spacing={0.5}>
+            <Typography variant="body2">
+              {connected} connected
+              {attention
+                ? ` · ${String(attention)} need${attention === 1 ? 's' : ''} attention`
+                : ''}
+            </Typography>
+            {hasWallet && wallet.data && (
+              <Typography variant="body2" color="text.secondary">
+                This month: {formatCurrencyMicros(wallet.data.monthSpend.whatsappMicros)} on
+                WhatsApp
+              </Typography>
+            )}
+          </Stack>
         )}
       </CardContent>
     </Card>

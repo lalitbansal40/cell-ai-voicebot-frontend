@@ -32,3 +32,39 @@ export const formatSeconds = (seconds: number): string => {
   if (!m) return `${s} s`;
   return s ? `${m} min ${s} s` : `${m} min`;
 };
+
+const WA_CATEGORY: Record<string, string> = {
+  marketing: 'Marketing',
+  utility: 'Utility',
+  authentication: 'Authentication',
+  authentication_international: 'Authentication',
+  service: 'Service',
+};
+const SPECIAL_MARKETS: Record<string, string> = {
+  NORTH_AMERICA: 'North America',
+  OTHER: 'Other countries',
+};
+const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+
+/** Meta's market code → a name (`IN` → India, `NORTH_AMERICA`, `OTHER`). */
+export const marketName = (code: string): string => {
+  const special = SPECIAL_MARKETS[code];
+  if (special) return special;
+  if (!/^[A-Z]{2}$/.test(code)) return code;
+  return regionNames.of(code) ?? code;
+};
+
+/** Row text: "WhatsApp · Utility · India" for WhatsApp charges, else the API's description. */
+export const ledgerDescription = (e: Pick<LedgerEntry, 'type' | 'description' | 'breakdown'>) => {
+  const b = e.breakdown;
+  if (e.type !== 'whatsapp_charge' || !b?.waCategory) return e.description;
+  const category = WA_CATEGORY[b.waCategory] ?? b.waCategory;
+  return ['WhatsApp', category, ...(b.waMarket ? [marketName(b.waMarket)] : [])].join(' · ');
+};
+
+const PRICING_TYPES: Record<string, string> = {
+  regular: 'Charged message',
+  free_customer_service: 'Free (customer service window)',
+  free_entry_point: 'Free (entry point)',
+};
+export const pricingTypeLabel = (type: string): string => PRICING_TYPES[type] ?? type;

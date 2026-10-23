@@ -326,8 +326,15 @@ describe('usage', () => {
       ['call', 'total'],
       ['ai', 'total'],
       ['tts', 'total'],
+      ['whatsapp', 'total'],
     ]);
-    expect(props.dataset[0]).toEqual({ label: '05 Oct', call: 2 * R, ai: R, tts: 500_000 });
+    expect(props.dataset[0]).toEqual({
+      label: '05 Oct',
+      call: 2 * R,
+      ai: R,
+      tts: 500_000,
+      whatsapp: 0,
+    });
     await userEvent.click(screen.getByRole('button', { name: 'Last 7 days' }));
     await waitFor(() =>
       expect(wallet.usage).toHaveBeenLastCalledWith({ from: '2026-10-03', to: '2026-10-09' }),

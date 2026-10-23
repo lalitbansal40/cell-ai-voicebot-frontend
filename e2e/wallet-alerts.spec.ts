@@ -34,7 +34,11 @@ test('low balance and exhausted: banner, bell and email; no new calls at ₹0; a
   await startSimulatedCall(admin, owner.businessName);
   await endSimulatedCall(admin, { answered: true, durationSec: 90 });
   await page.reload();
-  await expect(page.getByText('Low wallet balance: ₹998.00 available.')).toBeVisible();
+  await expect(
+    page.getByText(
+      'Low wallet balance: ₹998.00 available. Calls and WhatsApp messages stop when it runs out.',
+    ),
+  ).toBeVisible();
   await bellHas(page, 'Wallet balance is low');
   await waitForEmail(owner.email, /wallet balance is low/);
 
@@ -52,7 +56,9 @@ test('low balance and exhausted: banner, bell and email; no new calls at ₹0; a
 
   await page.reload();
   await expect(
-    page.getByText('No money available in the wallet — calls cannot start until money is added.'),
+    page.getByText(
+      'No money available in the wallet — calls and WhatsApp messages cannot start until money is added.',
+    ),
   ).toBeVisible();
   await bellHas(page, 'Wallet balance used up');
   await waitForEmail(owner.email, /wallet balance used up/);

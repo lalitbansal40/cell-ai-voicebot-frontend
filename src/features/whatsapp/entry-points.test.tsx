@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { WhatsAppCard } from '@/features/admin/WhatsAppCard';
 import { NotificationsBell } from '@/features/notifications/NotificationsBell';
+import { AccountWhatsAppBillingCard } from '@/features/whatsapp-billing/AccountWhatsAppBillingCard';
 import { adminWhatsappApi } from '@/services/api/admin-whatsapp';
 import { ApiError } from '@/services/api/errors';
 import { notificationsApi } from '@/services/api/notifications';
@@ -57,7 +58,12 @@ const detail = (over: Partial<AdminAccountDetail> = {}): AdminAccountDetail => (
   limits: { maxConcurrentCalls: 10, dialsPerMinute: 60 },
   activeCampaigns: 0,
   adminPausedCampaigns: [],
-  whatsappBilling: { metaPayer: 'platform' },
+  whatsappBilling: {
+    metaPayer: 'platform',
+    markupBps: null,
+    fixedPrices: null,
+    platformFeeMicros: null,
+  },
   whatsappChannels: [
     {
       id: 'wa1',
@@ -200,7 +206,8 @@ describe('superadmin WhatsApp card', () => {
         httpError(409, 'CONFLICT_INVALID_STATE', 'The platform account cannot be managed here.'),
       )
       .mockResolvedValueOnce({ metaPayer: 'customer' });
-    renderWithProviders({ routes: routes(<WhatsAppCard detail={detail()} />) });
+    // Phase 11: the control lives in the account's WhatsApp billing region
+    renderWithProviders({ routes: routes(<AccountWhatsAppBillingCard detail={detail()} />) });
     const save = await screen.findByRole('button', { name: 'Save Meta billing' });
     expect(save).toBeDisabled();
     await userEvent.click(screen.getByRole('radio', { name: 'Customer pays Meta' }));

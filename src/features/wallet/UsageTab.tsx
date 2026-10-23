@@ -116,9 +116,10 @@ export function UsageTab() {
             ['Calls', totals?.callMicros],
             ['AI', totals?.aiMicros],
             ['Voice (TTS)', totals?.ttsMicros],
+            ['WhatsApp', totals?.whatsappMicros],
           ] as const
         ).map(([label, value]) => (
-          <Grid key={label} size={{ xs: 6, md: 3 }}>
+          <Grid key={label} size={{ xs: 6, md: 'grow' }}>
             <Card variant="outlined">
               <CardContent>
                 <Typography variant="body2" color="text.secondary">

@@ -7,9 +7,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -17,7 +14,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
 import { useState } from 'react';
 
-import { useConfirm } from '@/components/confirm-context';
 import { DataTable } from '@/components/DataTable';
 import {
   CHANNEL_STATUS_LABELS,
@@ -35,7 +31,6 @@ import type {
 } from '@/services/api/types';
 
 import { adminKeys } from './keys';
-import { BILLING_CONFIRM } from './whatsapp-texts';
 
 const PAYER_LABELS: Record<WhatsAppMetaPayer, string> = {
   platform: 'Platform credit line',
@@ -172,34 +167,13 @@ function ManualConnectDialog({
   );
 }
 
-/** Superadmin account detail: WhatsApp numbers, force disconnect, manual connect, Meta billing. */
+/** Superadmin account detail: WhatsApp numbers, force disconnect, manual connect (Meta billing: WhatsApp billing card). */
 export function WhatsAppCard({ detail }: { detail: AdminAccountDetail }) {
   const id = detail.account.id;
   const queryClient = useQueryClient();
-  const confirm = useConfirm();
-  const current = detail.whatsappBilling.metaPayer;
-  const [payer, setPayer] = useState<WhatsAppMetaPayer>(current);
   const [force, setForce] = useState<AdminWhatsAppChannelRow | null>(null);
   const [manual, setManual] = useState(false);
   const refresh = () => void queryClient.invalidateQueries({ queryKey: adminKeys.account(id) });
-  const billing = useMutation({
-    mutationFn: () => adminWhatsappApi.setBilling(id, payer),
-    meta: { silent: true },
-    onSuccess: () => {
-      enqueueSnackbar('Meta billing saved', { variant: 'success' });
-      refresh();
-    },
-  });
-
-  const saveBilling = async () => {
-    const ok = await confirm({
-      title: `Switch to "${PAYER_LABELS[payer]}"?`,
-      message: BILLING_CONFIRM,
-      confirmText: 'Save',
-    });
-    if (ok) billing.mutate();
-  };
-
   return (
     <Card variant="outlined" component="section" aria-label="WhatsApp">
       <CardContent>
@@ -259,33 +233,6 @@ export function WhatsAppCard({ detail }: { detail: AdminAccountDetail }) {
           getRowId={(r) => r.id}
           emptyTitle="No WhatsApp numbers"
         />
-        <Typography variant="subtitle2" sx={{ mt: 2 }}>
-          Meta billing
-        </Typography>
-        {billing.error && (
-          <Alert severity="error">{whatsappErrorMessage(toApiError(billing.error))}</Alert>
-        )}
-        <RadioGroup
-          row
-          aria-label="Meta billing"
-          value={payer}
-          onChange={(e) => setPayer(e.target.value as WhatsAppMetaPayer)}
-        >
-          {(Object.keys(PAYER_LABELS) as WhatsAppMetaPayer[]).map((p) => (
-            <FormControlLabel key={p} value={p} control={<Radio />} label={PAYER_LABELS[p]} />
-          ))}
-        </RadioGroup>
-        <Typography variant="body2" color="text.secondary">
-          {BILLING_CONFIRM}
-        </Typography>
-        <Button
-          sx={{ mt: 1 }}
-          variant="outlined"
-          disabled={payer === current || billing.isPending}
-          onClick={() => void saveBilling()}
-        >
-          Save Meta billing
-        </Button>
       </CardContent>
       {force && (
         <DisconnectDialog

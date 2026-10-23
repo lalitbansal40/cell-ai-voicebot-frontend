@@ -34,6 +34,10 @@ const LimitsCard = lazy(async () => ({
   default: (await import('@/features/admin/LimitsCard')).LimitsCard,
 }));
 
+const AccountWhatsAppBillingCard = lazy(async () => ({
+  default: (await import('@/features/whatsapp-billing/AccountWhatsAppBillingCard'))
+    .AccountWhatsAppBillingCard,
+}));
 const WhatsAppCard = lazy(async () => ({
   default: (await import('@/features/admin/WhatsAppCard')).WhatsAppCard,
 }));
@@ -95,7 +99,10 @@ function Overview({ detail }: { detail: AdminAccountDetail }) {
         />
       </Suspense>
       <Suspense fallback={<Skeleton variant="rounded" height={160} />}>
-        <WhatsAppCard key={detail.whatsappBilling.metaPayer} detail={detail} />
+        <WhatsAppCard detail={detail} />
+      </Suspense>
+      <Suspense fallback={<Skeleton variant="rounded" height={160} />}>
+        <AccountWhatsAppBillingCard key={JSON.stringify(detail.whatsappBilling)} detail={detail} />
       </Suspense>
       <div>
         <Typography variant="subtitle1" component="h2" sx={{ mb: 1 }}>

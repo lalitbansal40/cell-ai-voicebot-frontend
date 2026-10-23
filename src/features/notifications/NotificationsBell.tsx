@@ -1,4 +1,6 @@
+import AccountBalanceWalletOutlined from '@mui/icons-material/AccountBalanceWalletOutlined';
 import BlockOutlined from '@mui/icons-material/BlockOutlined';
+import CategoryOutlined from '@mui/icons-material/CategoryOutlined';
 import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import EventBusyOutlined from '@mui/icons-material/EventBusyOutlined';
 import ForumOutlined from '@mui/icons-material/ForumOutlined';
@@ -34,7 +36,7 @@ import { useWsEvent } from '@/services/realtime';
 
 const LATEST = 20;
 
-/** Campaign, WhatsApp and inbox notifications get an icon (the text and link come from the server). */
+/** Campaign, WhatsApp, inbox and template notifications get an icon (the text and link come from the server). */
 const TYPE_ICONS: Partial<
   Record<
     Notification['type'],
@@ -83,6 +85,29 @@ const TYPE_ICONS: Partial<
     icon: LinkOffOutlined,
     color: 'warning',
     label: 'WhatsApp disconnected',
+  },
+  'template.approved': { icon: VerifiedOutlined, color: 'success', label: 'Template approved' },
+  'template.rejected': {
+    icon: ReportProblemOutlined,
+    color: 'warning',
+    label: 'Template rejected',
+  },
+  'template.paused': { icon: PauseCircleOutlined, color: 'warning', label: 'Template paused' },
+  'template.disabled': { icon: BlockOutlined, color: 'warning', label: 'Template disabled' },
+  'template.category_changed': {
+    icon: CategoryOutlined,
+    color: 'info',
+    label: 'Template category changed',
+  },
+  'template.quality_low': {
+    icon: ReportProblemOutlined,
+    color: 'warning',
+    label: 'Template quality low',
+  },
+  'wallet.whatsapp_late_charge': {
+    icon: AccountBalanceWalletOutlined,
+    color: 'warning',
+    label: 'WhatsApp charge after a release',
   },
 };
 

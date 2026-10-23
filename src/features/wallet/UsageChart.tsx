@@ -7,7 +7,7 @@ import { usageDataset } from './usage-format';
 
 const money = (v: number | null) => (v === null ? '' : formatCurrencyMicros(v));
 
-/** Daily stacked bars: calls / AI / voice (lazy-loaded — keeps charts out of the main bundle). */
+/** Daily stacked bars: calls / AI / voice / WhatsApp (lazy-loaded — keeps charts out of the main bundle). */
 export default function UsageChart({ series }: { series: UsageSeries['series'] }) {
   return (
     <BarChart
@@ -19,6 +19,7 @@ export default function UsageChart({ series }: { series: UsageSeries['series'] }
         { dataKey: 'call', label: 'Calls', stack: 'total', valueFormatter: money },
         { dataKey: 'ai', label: 'AI', stack: 'total', valueFormatter: money },
         { dataKey: 'tts', label: 'Voice (TTS)', stack: 'total', valueFormatter: money },
+        { dataKey: 'whatsapp', label: 'WhatsApp', stack: 'total', valueFormatter: money },
       ]}
     />
   );

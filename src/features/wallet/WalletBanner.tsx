@@ -27,8 +27,8 @@ export function WalletBanner() {
       }
     >
       {exhausted
-        ? 'No money available in the wallet — calls cannot start until money is added.'
-        : `Low wallet balance: ${formatCurrencyMicros(wallet.data.availableMicros)} available.`}
+        ? 'No money available in the wallet — calls and WhatsApp messages cannot start until money is added.'
+        : `Low wallet balance: ${formatCurrencyMicros(wallet.data.availableMicros)} available. Calls and WhatsApp messages stop when it runs out.`}
     </Alert>
   );
 }

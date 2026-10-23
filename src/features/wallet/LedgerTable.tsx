@@ -10,7 +10,12 @@ import type { LedgerEntry } from '@/services/api/types';
 import { formatInAccountTz } from '@/utils/datetime';
 import { formatCurrencyMicros } from '@/utils/format';
 
-import { LEDGER_STATUS_LABELS, LEDGER_TYPE_LABELS, signedAmount } from './ledger-format';
+import {
+  ledgerDescription,
+  LEDGER_STATUS_LABELS,
+  LEDGER_TYPE_LABELS,
+  signedAmount,
+} from './ledger-format';
 
 const STATUS_COLOR = { held: 'warning', captured: 'success', released: 'default' } as const;
 
@@ -45,7 +50,7 @@ export function LedgerTable({
       render: (e) => formatInAccountTz(e.createdAt, timezone),
       width: 170,
     },
-    { key: 'description', header: 'Description', render: (e) => e.description },
+    { key: 'description', header: 'Description', render: (e) => ledgerDescription(e) },
     { key: 'type', header: 'Type', render: (e) => LEDGER_TYPE_LABELS[e.type] },
     {
       key: 'status',
@@ -97,7 +102,7 @@ export function LedgerTable({
         <Tooltip title="Details">
           <IconButton
             size="small"
-            aria-label={`Details of ${e.description}`}
+            aria-label={`Details of ${ledgerDescription(e)}`}
             onClick={() => onOpen(e)}
           >
             <InfoOutlined fontSize="small" />

@@ -48,7 +48,12 @@ const detail = (overrides: Partial<AdminAccountDetail['account']> = {}): AdminAc
   limits: { maxConcurrentCalls: 10, dialsPerMinute: 60 },
   activeCampaigns: 1,
   adminPausedCampaigns: [],
-  whatsappBilling: { metaPayer: 'platform' },
+  whatsappBilling: {
+    metaPayer: 'platform',
+    markupBps: null,
+    fixedPrices: null,
+    platformFeeMicros: null,
+  },
   whatsappChannels: [],
   recentAudit: [
     {
@@ -142,6 +147,8 @@ describe('Admin account detail', () => {
     expect(screen.getByText('Asha Verma · asha@example.com')).toBeInTheDocument();
     expect(screen.getByText('3 total · 2 active · 1 invited · 0 disabled')).toBeInTheDocument();
     expect(screen.getByText('Hinglish')).toBeInTheDocument();
+    // Phase 11: the account's WhatsApp billing region (payer + price override)
+    expect(await screen.findByRole('region', { name: 'WhatsApp billing' })).toBeInTheDocument();
     expect(screen.getByText('email: new@example.com')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Rates' }));
     // Rates / Wallet content is covered in features/admin-billing tests

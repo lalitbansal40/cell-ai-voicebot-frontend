@@ -152,7 +152,11 @@ describe('wallet banner', () => {
     signInAs('owner');
     wallet.get.mockResolvedValue(walletFixture({ status: 'low', availableMicros: 200 * R }));
     renderWithProviders({ route: '/' });
-    expect(await screen.findByText('Low wallet balance: ₹200.00 available.')).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        'Low wallet balance: ₹200.00 available. Calls and WhatsApp messages stop when it runs out.',
+      ),
+    ).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Add money' }));
     // lands on /wallet?add=1 with the Add money dialog open
     expect(await screen.findByRole('dialog', { name: 'Add money' })).toBeInTheDocument();
@@ -188,7 +192,9 @@ describe('live wallet updates', () => {
     wallet.get.mockResolvedValue(walletFixture({ status: 'low', availableMicros: 200 * R }));
     const rt = fakeRealtime();
     renderWithProviders({ route: '/', realtime: rt.client });
-    await screen.findByText('Low wallet balance: ₹200.00 available.');
+    await screen.findByText(
+      'Low wallet balance: ₹200.00 available. Calls and WhatsApp messages stop when it runs out.',
+    );
     rt.emit('wallet.updated', {
       balanceMicros: 0,
       holdMicros: 0,

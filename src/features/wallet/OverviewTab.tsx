@@ -26,6 +26,7 @@ import { formatBps } from '@/utils/money';
 import { AddMoneyDialog } from './AddMoneyDialog';
 import { useCanTopUp, useRates, useWallet } from './queries';
 import { WalletSettingsDialog } from './WalletSettingsDialog';
+import { WhatsAppPrices } from './WhatsAppPrices';
 
 const STATUS: Record<WalletStatus, { label: string; color: 'success' | 'warning' | 'error' }> = {
   ok: { label: 'OK', color: 'success' },
@@ -126,7 +127,7 @@ function Cards({ wallet }: { wallet: Wallet }) {
         <Stat
           label="On hold"
           value={formatCurrencyMicros(wallet.holdMicros)}
-          note="Reserved for calls in progress"
+          note="Reserved for calls in progress and WhatsApp messages not delivered yet"
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
@@ -146,7 +147,7 @@ function Cards({ wallet }: { wallet: Wallet }) {
         <Stat
           label="Spent this month"
           value={formatCurrencyMicros(spend.totalMicros)}
-          note={`Calls ${formatCurrencyMicros(spend.callMicros)} · AI ${formatCurrencyMicros(spend.aiMicros)} · Voice ${formatCurrencyMicros(spend.ttsMicros)}`}
+          note={`Calls ${formatCurrencyMicros(spend.callMicros)} · AI ${formatCurrencyMicros(spend.aiMicros)} · Voice ${formatCurrencyMicros(spend.ttsMicros)} · WhatsApp ${formatCurrencyMicros(spend.whatsappMicros)}`}
         />
       </Grid>
     </Grid>
@@ -233,6 +234,11 @@ export function OverviewTab() {
                   spent={w.monthSpend.aiMicros + w.monthSpend.ttsMicros}
                   budget={w.budgets.monthlyAiMicros}
                 />
+                <Budget
+                  label="WhatsApp"
+                  spent={w.monthSpend.whatsappMicros}
+                  budget={w.budgets.monthlyWhatsappMicros}
+                />
                 <Typography variant="caption" color="text.secondary">
                   Low-balance alert:{' '}
                   {w.lowBalanceThresholdMicros
@@ -255,6 +261,18 @@ export function OverviewTab() {
             </CardContent>
           </Card>
         </Grid>
+        {rates.data && rates.data.whatsapp.markets.length > 0 && (
+          <Grid size={12}>
+            <Card variant="outlined">
+              <CardContent>
+                <Typography variant="subtitle1" gutterBottom>
+                  WhatsApp prices
+                </Typography>
+                <WhatsAppPrices prices={rates.data.whatsapp} />
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
       </Grid>
       {settingsOpen && <WalletSettingsDialog wallet={w} onClose={() => setSettingsOpen(false)} />}
       <AddMoneyDialog open={addOpen} onClose={() => setAddOpen(false)} />

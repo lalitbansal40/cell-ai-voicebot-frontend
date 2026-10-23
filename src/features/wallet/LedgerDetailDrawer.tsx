@@ -15,7 +15,9 @@ import { formatCurrencyMicros, formatNumber } from '@/utils/format';
 
 import {
   formatSeconds,
+  ledgerDescription,
   LEDGER_STATUS_LABELS,
+  pricingTypeLabel,
   LEDGER_TYPE_LABELS,
   signedAmount,
 } from './ledger-format';
@@ -79,7 +81,7 @@ export function LedgerDetailDrawer({
           aria-label="Transaction details"
         >
           <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6">{entry.description}</Typography>
+            <Typography variant="h6">{ledgerDescription(entry)}</Typography>
             <IconButton aria-label="Close details" onClick={onClose}>
               <CloseIcon />
             </IconButton>
@@ -145,6 +147,24 @@ export function LedgerDetailDrawer({
                   />
                 )}
                 {b.kind && <Row label="Used for" value={USAGE_KIND_LABELS[b.kind]} />}
+                {b.waCategory && (
+                  <Row
+                    label="Price category"
+                    value={ledgerDescription(entry).replace(/^WhatsApp · /, '')}
+                  />
+                )}
+                {b.waPricingType && (
+                  <Row label="WhatsApp billed it as" value={pricingTypeLabel(b.waPricingType)} />
+                )}
+                {b.metaCostMicros !== undefined && (
+                  <Row
+                    label="Meta cost (superadmin)"
+                    value={formatCurrencyMicros(b.metaCostMicros)}
+                  />
+                )}
+                {b.markupMicros !== undefined && (
+                  <Row label="Markup (superadmin)" value={formatCurrencyMicros(b.markupMicros)} />
+                )}
                 {b.model && <Row label="AI model" value={b.model} />}
                 {(b.inputTokens !== undefined || b.outputTokens !== undefined) && (
                   <Row
@@ -172,6 +192,10 @@ export function LedgerDetailDrawer({
                 entry.ref.type === 'call' ? (
                   <Link component={RouterLink} to={`/calls/${entry.ref.id}`}>
                     Call · {entry.ref.id}
+                  </Link>
+                ) : b?.waConversationId ? (
+                  <Link component={RouterLink} to={`/inbox/${b.waConversationId}`}>
+                    Open the chat
                   </Link>
                 ) : (
                   `${REF_LABELS[entry.ref.type]} · ${entry.ref.id}`
