@@ -128,6 +128,9 @@ export const systemText = (system: InboxMessage['system']): string => {
 /** Banner when the 24-hour window is closed (plan §1p, literal). */
 export const WINDOW_CLOSED_TEXT =
   'The 24-hour window is closed. You can reply when the customer writes again, or send a template (Phase 11).';
+/** Block confirmation (Meta only lets a business block someone who wrote in the last 24 hours). */
+export const BLOCK_TEXT =
+  "They can't message this number until you unblock them. WhatsApp only allows blocking a customer who wrote in the last 24 hours.";
 export const READ_ONLY_TEXT = 'You can read this conversation but not reply';
 export const TEMPLATES_SOON_TEXT = 'Templates arrive in Phase 11';
 export const CALLING_SOON_TEXT = 'Calling arrives in Phase 12';

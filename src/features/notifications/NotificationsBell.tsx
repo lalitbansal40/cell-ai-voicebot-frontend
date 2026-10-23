@@ -1,6 +1,8 @@
 import BlockOutlined from '@mui/icons-material/BlockOutlined';
 import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import EventBusyOutlined from '@mui/icons-material/EventBusyOutlined';
+import ForumOutlined from '@mui/icons-material/ForumOutlined';
+import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import LinkOffOutlined from '@mui/icons-material/LinkOffOutlined';
 import NotificationsNoneOutlined from '@mui/icons-material/NotificationsNoneOutlined';
 import PauseCircleOutlined from '@mui/icons-material/PauseCircleOutlined';
@@ -32,7 +34,7 @@ import { useWsEvent } from '@/services/realtime';
 
 const LATEST = 20;
 
-/** Campaign and WhatsApp notifications get an icon (the text and link come from the server). */
+/** Campaign, WhatsApp and inbox notifications get an icon (the text and link come from the server). */
 const TYPE_ICONS: Partial<
   Record<
     Notification['type'],
@@ -42,6 +44,16 @@ const TYPE_ICONS: Partial<
   'campaign.completed': { icon: CheckCircleOutlined, color: 'success', label: 'Campaign finished' },
   'campaign.paused': { icon: PauseCircleOutlined, color: 'warning', label: 'Campaign paused' },
   'campaign.run_skipped': { icon: EventBusyOutlined, color: 'info', label: 'Run skipped' },
+  'inbox.message_received': {
+    icon: ForumOutlined,
+    color: 'success',
+    label: 'New WhatsApp message',
+  },
+  'inbox.conversation_assigned': {
+    icon: GroupOutlined,
+    color: 'info',
+    label: 'Conversation assigned to you',
+  },
   'whatsapp.channel_needs_reconnect': {
     icon: LinkOffOutlined,
     color: 'warning',

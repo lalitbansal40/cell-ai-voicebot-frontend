@@ -38,6 +38,10 @@ import { formatFieldValue } from '@/utils/format';
 import { formatPhone } from '@/utils/phone';
 
 // calling widgets pull campaign code (labels, time zones) → their own chunks
+// the inbox hooks stay out of the main bundle
+const ContactChatButton = lazy(async () => ({
+  default: (await import('@/features/inbox/ContactChatButton')).ContactChatButton,
+}));
 const CallNowDialog = lazy(async () => ({
   default: (await import('@/features/calls/CallNowDialog')).CallNowDialog,
 }));
@@ -224,49 +228,54 @@ export function ContactDetailPage() {
           </Stack>
         }
         actions={
-          writable || can('dnd.manage') || canCall ? (
-            <>
-              {canCall && (
-                <>
-                  <Button
-                    variant="contained"
-                    startIcon={<PhoneInTalkOutlined />}
-                    // the server's dial guard refuses DND / opted-out contacts with the reason
-                    onClick={() => setCalling(true)}
-                  >
-                    Call now
-                  </Button>
-                  <Button component={RouterLink} to={`/calls/test?contactId=${c.id}`}>
-                    Test in browser
-                  </Button>
-                </>
-              )}
-              {writable && (
-                <Button variant="outlined" onClick={() => setEditing(true)}>
-                  Edit
-                </Button>
-              )}
-              {(writable || can('dnd.manage')) && (
-                <Button onClick={(e) => setMenu(e.currentTarget)}>More</Button>
-              )}
-              <Menu anchorEl={menu} open={Boolean(menu)} onClose={() => setMenu(null)}>
-                {writable && !c.optedOutAt && (
-                  <MenuItem onClick={() => void act('optOut')}>Opt out</MenuItem>
-                )}
-                {can('dnd.manage') && c.optedOutAt && (
-                  <MenuItem onClick={() => void act('undo')}>Undo opt-out</MenuItem>
-                )}
-                {writable && !c.dnd && (
-                  <MenuItem onClick={() => void act('dnd')}>Add to do-not-call</MenuItem>
+          <>
+            <Suspense fallback={null}>
+              <ContactChatButton contactId={c.id} phoneE164={c.phoneE164} />
+            </Suspense>
+            {(writable || can('dnd.manage') || canCall) && (
+              <>
+                {canCall && (
+                  <>
+                    <Button
+                      variant="contained"
+                      startIcon={<PhoneInTalkOutlined />}
+                      // the server's dial guard refuses DND / opted-out contacts with the reason
+                      onClick={() => setCalling(true)}
+                    >
+                      Call now
+                    </Button>
+                    <Button component={RouterLink} to={`/calls/test?contactId=${c.id}`}>
+                      Test in browser
+                    </Button>
+                  </>
                 )}
                 {writable && (
-                  <MenuItem onClick={() => void act('delete')} sx={{ color: 'error.main' }}>
-                    Delete
-                  </MenuItem>
+                  <Button variant="outlined" onClick={() => setEditing(true)}>
+                    Edit
+                  </Button>
                 )}
-              </Menu>
-            </>
-          ) : null
+                {(writable || can('dnd.manage')) && (
+                  <Button onClick={(e) => setMenu(e.currentTarget)}>More</Button>
+                )}
+                <Menu anchorEl={menu} open={Boolean(menu)} onClose={() => setMenu(null)}>
+                  {writable && !c.optedOutAt && (
+                    <MenuItem onClick={() => void act('optOut')}>Opt out</MenuItem>
+                  )}
+                  {can('dnd.manage') && c.optedOutAt && (
+                    <MenuItem onClick={() => void act('undo')}>Undo opt-out</MenuItem>
+                  )}
+                  {writable && !c.dnd && (
+                    <MenuItem onClick={() => void act('dnd')}>Add to do-not-call</MenuItem>
+                  )}
+                  {writable && (
+                    <MenuItem onClick={() => void act('delete')} sx={{ color: 'error.main' }}>
+                      Delete
+                    </MenuItem>
+                  )}
+                </Menu>
+              </>
+            )}
+          </>
         }
       />
       <Grid container spacing={2}>
@@ -295,6 +304,19 @@ export function ContactDetailPage() {
                 <Fact label="Last changed">{formatInAccountTz(c.updatedAt, timezone)}</Fact>
                 {c.optedOutAt && (
                   <Fact label="Opted out">{formatInAccountTz(c.optedOutAt, timezone)}</Fact>
+                )}
+                {c.whatsapp && (
+                  <Fact label="WhatsApp">
+                    {[
+                      c.whatsapp.profileName ? `~${c.whatsapp.profileName}` : null,
+                      c.whatsapp.lastInboundAt
+                        ? `last message ${formatInAccountTz(c.whatsapp.lastInboundAt, timezone)}`
+                        : null,
+                      c.whatsapp.blocked ? 'blocked' : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ') || 'On WhatsApp'}
+                  </Fact>
                 )}
               </Stack>
             </CardContent>

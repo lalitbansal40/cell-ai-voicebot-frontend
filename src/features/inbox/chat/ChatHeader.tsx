@@ -29,8 +29,8 @@ export function ChatHeader({
   onBack?: (() => void) | undefined;
   /** Medium screens: open the contact panel drawer. */
   onShowDetails?: (() => void) | undefined;
-  /** "Assigned to" control (T10.10); a read-only chip by default. */
-  assignee?: ReactNode;
+  /** "Assigned to" control. */
+  assignee: ReactNode;
   actions?: ReactNode;
 }) {
   const now = useNow();
@@ -93,13 +93,7 @@ export function ChatHeader({
           />
         </Tooltip>
         {c.status === 'closed' && <Chip size="small" label="Closed" variant="outlined" />}
-        {assignee ?? (
-          <Chip
-            size="small"
-            variant="outlined"
-            label={c.assignedTo ? `Assigned to ${c.assignedTo.name}` : 'Unassigned'}
-          />
-        )}
+        {assignee}
         {onShowDetails && (
           <IconButton aria-label="Contact details" onClick={onShowDetails}>
             <ContactPageOutlined />

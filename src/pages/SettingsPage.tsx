@@ -20,11 +20,17 @@ const CallsTab = lazy(async () => ({
   default: (await import('@/features/settings/CallsTab')).CallsTab,
 }));
 
+// the inbox tab needs the inbox hooks → its own chunk
+const InboxSettingsTab = lazy(async () => ({
+  default: (await import('@/features/settings/InboxSettingsTab')).InboxSettingsTab,
+}));
+
 const TABS = [
   { key: 'profile', label: 'Profile', Component: ProfileTab },
   { key: 'security', label: 'Security', Component: SecurityTab },
   { key: 'account', label: 'Account', Component: AccountTab, permission: 'account.read' },
   { key: 'calls', label: 'Calls', Component: CallsTab, permission: 'account.read' },
+  { key: 'inbox', label: 'Inbox', Component: InboxSettingsTab, permission: 'account.read' },
   { key: 'billing', label: 'Billing details', Component: BillingTab, permission: 'wallet.read' },
   { key: 'api-keys', label: 'API keys', Component: ApiKeysTab, permission: 'apikeys.read' },
   { key: 'audit', label: 'Audit log', Component: AuditTab, permission: 'audit.read' },

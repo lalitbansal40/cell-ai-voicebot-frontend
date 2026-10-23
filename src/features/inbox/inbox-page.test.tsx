@@ -387,7 +387,7 @@ describe('chat', () => {
     ).toBeInTheDocument();
     expect(within(chat).getByLabelText('Window Open · 3 h 12 m left')).toBeInTheDocument();
     expect(within(chat).getByText('Closed')).toBeInTheDocument();
-    expect(within(chat).getByText('Assigned to Ravi')).toBeInTheDocument();
+    expect(within(chat).getByRole('combobox', { name: 'Assigned to' })).toHaveTextContent('Ravi');
     expect(api.read).not.toHaveBeenCalled();
   });
 
@@ -404,7 +404,9 @@ describe('chat', () => {
     const chat = await screen.findByRole('region', { name: 'Chat with +91 90000 77001' });
     expect(within(chat).getByText('Number removed')).toBeInTheDocument();
     expect(within(chat).getByLabelText('Window Closed')).toBeInTheDocument();
-    expect(within(chat).getByText('Unassigned')).toBeInTheDocument();
+    expect(within(chat).getByRole('combobox', { name: 'Assigned to' })).toHaveTextContent(
+      'Unassigned',
+    );
   });
 
   it('not found / other errors with Retry', async () => {

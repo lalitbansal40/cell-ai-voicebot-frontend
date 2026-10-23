@@ -252,7 +252,7 @@ describe('SettingsPage', () => {
     const tabs = within(await screen.findByRole('tablist', { name: 'Settings sections' }))
       .getAllByRole('tab')
       .map((t) => t.textContent);
-    expect(tabs).toEqual(['Profile', 'Security', 'Account', 'Calls', 'Billing details']);
+    expect(tabs).toEqual(['Profile', 'Security', 'Account', 'Calls', 'Inbox', 'Billing details']);
   });
 
   it('hides Billing details from agents (no wallet.read)', async () => {
@@ -261,7 +261,7 @@ describe('SettingsPage', () => {
     const tabs = within(await screen.findByRole('tablist', { name: 'Settings sections' }))
       .getAllByRole('tab')
       .map((t) => t.textContent);
-    expect(tabs).toEqual(['Profile', 'Security', 'Account', 'Calls']);
+    expect(tabs).toEqual(['Profile', 'Security', 'Account', 'Calls', 'Inbox']);
   });
 
   it('sends unknown tabs to profile and forbidden ones to 403', async () => {

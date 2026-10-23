@@ -115,7 +115,6 @@ describe('keys', () => {
     expect(inboxKeys.conversation('c1')).toEqual(['inbox', 'conversation', 'c1']);
     expect(inboxKeys.contact('c1')).toEqual(['inbox', 'contact', 'c1']);
     expect(inboxKeys.mediaLink('m1')).toEqual(['inbox', 'media', 'm1']);
-    expect(inboxKeys.profile('w1')).toEqual(['whatsapp', 'profile', 'w1']);
   });
 });
 

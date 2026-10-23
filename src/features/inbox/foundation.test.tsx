@@ -4,6 +4,11 @@ import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAuthStore } from '@/features/auth/store';
+import {
+  useBusinessProfile,
+  useUpdateBusinessProfile,
+  useUploadProfilePhoto,
+} from '@/features/whatsapp/profile';
 import { ApiError } from '@/services/api/errors';
 import type * as InboxModule from '@/services/api/inbox';
 import { inboxApi, type ConversationPage, type MessagePage } from '@/services/api/inbox';
@@ -40,7 +45,6 @@ import {
   TYPING_VISIBLE_MS,
   useAssignConversation,
   useBlockConversation,
-  useBusinessProfile,
   useCanAssign,
   useCanReply,
   useCloseConversation,
@@ -65,10 +69,8 @@ import {
   useStartConversation,
   useTypingPing,
   useUnblockConversation,
-  useUpdateBusinessProfile,
   useUpdateInboxSettings,
   useUploadMedia,
-  useUploadProfilePhoto,
 } from './queries';
 
 vi.mock('@/services/api/inbox', async (importOriginal) => ({

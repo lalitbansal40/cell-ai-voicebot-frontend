@@ -24,7 +24,6 @@ import type {
   InboxMessage,
   InboxSendMessage,
 } from '@/services/api/types';
-import { whatsappApi, type BusinessProfilePatch } from '@/services/api/whatsapp';
 import { useWsEvent, useWsTopic } from '@/services/realtime';
 
 import { inboxKeys } from './keys';
@@ -434,34 +433,6 @@ export const useUpdateInboxSettings = () => {
     mutationFn: (patch: InboxSettingsPatch) => inboxApi.updateSettings(patch),
     onSuccess: (settings) => {
       client.setQueryData(inboxKeys.settings, settings);
-    },
-  });
-};
-
-export const useBusinessProfile = (channelId: string | null) =>
-  useQuery({
-    queryKey: inboxKeys.profile(channelId ?? ''),
-    queryFn: channelId ? () => whatsappApi.profile(channelId) : skipToken,
-    meta: { silent: true },
-  });
-
-export const useUpdateBusinessProfile = (channelId: string) => {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: (patch: BusinessProfilePatch) => whatsappApi.updateProfile(channelId, patch),
-    onSuccess: (profile) => {
-      client.setQueryData(inboxKeys.profile(channelId), profile);
-    },
-  });
-};
-
-export const useUploadProfilePhoto = (channelId: string) => {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: (file: File) => whatsappApi.uploadProfilePhoto(channelId, file),
-    meta: { silent: true },
-    onSuccess: (profile) => {
-      client.setQueryData(inboxKeys.profile(channelId), profile);
     },
   });
 };

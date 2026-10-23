@@ -17,5 +17,4 @@ export const inboxKeys = {
     ['inbox', 'messages', id, around ?? 'latest'] as const,
   contact: (id: string) => ['inbox', 'contact', id] as const,
   mediaLink: (messageId: string) => ['inbox', 'media', messageId] as const,
-  profile: (channelId: string) => ['whatsapp', 'profile', channelId] as const,
 };

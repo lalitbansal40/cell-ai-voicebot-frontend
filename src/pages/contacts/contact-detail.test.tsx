@@ -177,6 +177,26 @@ describe('contact detail', () => {
     expect(screen.getAllByText('08 Oct 2026, 12:00', { selector: 'div' })).toHaveLength(2); // added + last changed
   });
 
+  it('WhatsApp line: profile name, last message, blocked — or just "On WhatsApp"', async () => {
+    vi.mocked(contactsApi.get).mockResolvedValueOnce({
+      ...CONTACT,
+      whatsapp: { profileName: 'Asha', lastInboundAt: '2026-10-08T06:30:00Z', blocked: true },
+    });
+    await open();
+    expect(
+      screen.getByText('~Asha · last message 08 Oct 2026, 12:00 · blocked'),
+    ).toBeInTheDocument();
+  });
+
+  it('WhatsApp line without details', async () => {
+    vi.mocked(contactsApi.get).mockResolvedValueOnce({
+      ...CONTACT,
+      whatsapp: { profileName: null, lastInboundAt: null, blocked: false },
+    });
+    await open();
+    expect(screen.getByText('On WhatsApp')).toBeInTheDocument();
+  });
+
   it('edits tags and lists inline (optimistic) and rolls back on error', async () => {
     vi.mocked(contactsApi.update)
       .mockResolvedValueOnce({ ...CONTACT, tags: ['vip', 'new'] })

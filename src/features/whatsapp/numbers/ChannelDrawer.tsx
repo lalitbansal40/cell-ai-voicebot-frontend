@@ -24,6 +24,7 @@ import { SIMULATOR_KINDS } from '@/services/api/whatsapp';
 import { CHANNEL_STATUS_LABELS, whatsappErrorMessage } from '../labels';
 import { useChannel, useSimulateEvent } from '../queries';
 
+import { BusinessProfileSection } from './BusinessProfileSection';
 import { KIND_LABELS, showSimulator } from './texts';
 
 function Row({ label, value, copy }: { label: string; value: ReactNode; copy?: string | null }) {
@@ -120,6 +121,12 @@ export function ChannelDrawer({
             <Row label="Currency" value={c.wabaCurrency} />
             <Row label="Throughput" value={c.throughputLevel} />
             <Row label="Token checked" value={<RelativeTime value={c.tokenCheckedAt} />} />
+            {(c.status === 'connected' || c.status === 'restricted') && (
+              <>
+                <Divider />
+                <BusinessProfileSection channelId={c.id} />
+              </>
+            )}
             <Divider />
             <Typography variant="subtitle2">Webhook health</Typography>
             <Row label="Last event" value={<RelativeTime value={c.webhook.lastEventAt} />} />

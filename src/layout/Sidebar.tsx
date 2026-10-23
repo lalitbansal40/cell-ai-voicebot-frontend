@@ -1,20 +1,17 @@
-import Badge from '@mui/material/Badge';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { NavLink, useLocation } from 'react-router';
+import { lazy, Suspense } from 'react';
+import { useLocation } from 'react-router';
 
 import { useCan, useIsPlatformAdmin } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/store';
-import { useInboxSummary } from '@/features/inbox/summary';
 
 import { visibleNavItems, type NavItem } from './nav-config';
+import { NavEntry } from './NavEntry';
 
 export const DRAWER_WIDTH = 240;
 
@@ -23,48 +20,10 @@ const isActive = (item: NavItem, pathname: string) =>
     ? pathname === '/'
     : pathname.startsWith(item.path.replace(/\/[^/]+$/, '') || item.path);
 
-interface NavEntryProps {
-  item: NavItem;
-  selected: boolean;
-  onNavigate?: (() => void) | undefined;
-  /** Count badge on the icon (hidden at 0, "99+" above 99). */
-  count?: number;
-}
-
-function NavEntry({ item, selected, onNavigate, count }: NavEntryProps) {
-  return (
-    <ListItemButton
-      component={NavLink}
-      to={item.path}
-      selected={selected}
-      onClick={onNavigate}
-      aria-label={count ? `${item.label}, ${String(count)} unread` : undefined}
-    >
-      <ListItemIcon>
-        {count === undefined ? (
-          <item.icon />
-        ) : (
-          <Badge
-            color="success"
-            badgeContent={count}
-            max={99}
-            invisible={count === 0}
-            slotProps={{ badge: { 'aria-hidden': true } }}
-          >
-            <item.icon />
-          </Badge>
-        )}
-      </ListItemIcon>
-      <ListItemText primary={item.label} />
-    </ListItemButton>
-  );
-}
-
-/** The Inbox item with its unread-conversations badge (live). */
-function InboxNavEntry(props: Omit<NavEntryProps, 'count'>) {
-  const count = useInboxSummary().data?.unreadConversations ?? 0;
-  return <NavEntry {...props} count={count} />;
-}
+// the badge needs the inbox client → its own chunk (the plain item shows meanwhile)
+const InboxNavEntry = lazy(async () => ({
+  default: (await import('@/features/inbox/InboxNavEntry')).InboxNavEntry,
+}));
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const can = useCan();
@@ -79,14 +38,13 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const main = items.filter((i) => !i.platformOnly);
   const admin = items.filter((i) => i.platformOnly);
   const render = (item: NavItem) => {
-    const Entry = item.badge === 'inbox-unread' ? InboxNavEntry : NavEntry;
-    return (
-      <Entry
-        key={item.key}
-        item={item}
-        selected={isActive(item, pathname)}
-        onNavigate={onNavigate}
-      />
+    const props = { item, selected: isActive(item, pathname), onNavigate };
+    return item.badge === 'inbox-unread' ? (
+      <Suspense key={item.key} fallback={<NavEntry {...props} />}>
+        <InboxNavEntry {...props} />
+      </Suspense>
+    ) : (
+      <NavEntry key={item.key} {...props} />
     );
   };
   return (

@@ -3,13 +3,13 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 
 import { usePermission } from '@/features/auth/hooks';
 import { ContactFormDialog } from '@/features/contacts/ContactFormDialog';
 import { useCustomFields } from '@/features/contacts/queries';
 import { getErrorMessage, toApiError } from '@/services/api/errors';
-import type { InboxConversationDetail, InboxMessage } from '@/services/api/types';
+import type { InboxMessage } from '@/services/api/types';
 
 import { BubbleActions } from '../composer/BubbleActions';
 import { Composer } from '../composer/Composer';
@@ -27,17 +27,13 @@ import {
 } from '../queries';
 
 import { ChatHeader } from './ChatHeader';
+import { AssignSelect, ConversationActions } from './ConversationActions';
 import type { SharedContact } from './MessageCards';
 import { MessageList } from './MessageList';
 
 /** Messages one can reply / react to (not notes, system lines, deleted or unsent ones). */
 const actionable = (m: InboxMessage) =>
   m.type !== 'note' && m.type !== 'system' && m.status !== 'deleted' && !isOptimistic(m);
-
-export interface ChatSlots {
-  assignee?: (c: InboxConversationDetail) => ReactNode;
-  actions?: (c: InboxConversationDetail) => ReactNode;
-}
 
 /**
  * Middle pane (region "Chat with <name>"): live topic, read marker on open,
@@ -47,12 +43,10 @@ export function ChatView({
   conversationId,
   onBack,
   onShowDetails,
-  slots = {},
 }: {
   conversationId: string;
   onBack?: (() => void) | undefined;
   onShowDetails?: (() => void) | undefined;
-  slots?: ChatSlots;
 }) {
   const detail = useConversation(conversationId);
   const { typingName } = useConversationTopic(conversationId);
@@ -120,8 +114,8 @@ export function ChatView({
         conversation={c}
         onBack={onBack}
         onShowDetails={onShowDetails}
-        assignee={slots.assignee?.(c)}
-        actions={slots.actions?.(c)}
+        assignee={<AssignSelect conversation={c} />}
+        actions={<ConversationActions conversation={c} />}
       />
       {retry.isError && (
         <Alert severity="error" onClose={() => retry.reset()} sx={{ borderRadius: 0 }}>
