@@ -18,8 +18,8 @@ import { useInboxConfig, useInboxLiveUpdates } from '@/features/inbox/queries';
 import { useChannels } from '@/features/whatsapp/queries';
 import { toApiError } from '@/services/api/errors';
 
-const LIST_WIDTH = 340;
-const PANEL_WIDTH = 320;
+const LIST_WIDTH = 300;
+const PANEL_WIDTH = 280;
 
 /**
  * `/inbox`, `/inbox/:conversationId` (lazy chunk). Three panes from 1200 px

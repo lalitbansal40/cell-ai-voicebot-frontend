@@ -404,80 +404,88 @@ export function Composer({
           </Suspense>
         </Box>
       ) : (
-        <Stack direction="row" spacing={0.5} sx={{ px: 1, py: 1, alignItems: 'flex-end' }}>
-          <IconButton aria-label="Emoji" onClick={(e) => setEmojiAnchor(e.currentTarget)}>
-            <EmojiEmotionsOutlined />
-          </IconButton>
-          {tools && (
-            <>
-              <IconButton aria-label="Attach" onClick={(e) => setAttachAnchor(e.currentTarget)}>
-                <AttachFileOutlined />
-              </IconButton>
-              <IconButton aria-label="Location" onClick={() => setDialog('location')}>
-                <PlaceOutlined />
-              </IconButton>
-              <IconButton aria-label="Contact card" onClick={() => setDialog('contacts')}>
-                <ContactPhoneOutlined />
-              </IconButton>
-              <IconButton aria-label="Interactive message" onClick={() => setDialog('interactive')}>
-                <SmartButtonOutlined />
-              </IconButton>
-              <Tooltip title={TEMPLATES_SOON_TEXT}>
-                <span>
-                  <IconButton aria-label="Templates" disabled>
-                    <ViewQuiltOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            </>
-          )}
-          <InputBase
-            inputRef={textBox}
-            multiline
-            maxRows={6}
-            placeholder={note ? 'Internal note — only your team sees this' : 'Type a message'}
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              saveDraft(c.id, e.target.value);
-              if (!note && e.target.value) ping();
-            }}
-            onKeyDown={onKeyDown}
-            onPaste={onPaste}
-            inputProps={{ 'aria-label': 'Message', maxLength: limits.textMax }}
-            sx={{ flex: 1, px: 1.5, py: 1, borderRadius: 2, bgcolor: 'action.hover' }}
-          />
-          <Tooltip title={note ? 'Back to a WhatsApp reply' : 'Write an internal note'}>
-            <ToggleButton
-              value="note"
-              size="small"
-              selected={note}
-              aria-label="Internal note"
-              onChange={() => setNote(!note)}
-              sx={{ border: 0 }}
-            >
-              <StickyNote2Outlined />
-            </ToggleButton>
-          </Tooltip>
-          {!text.trim() && tools ? (
-            <IconButton
-              aria-label="Record voice note"
-              disabled={!online}
-              onClick={() => setRecording(true)}
-            >
-              <MicOutlined />
+        <Box sx={{ px: 1, py: 1 }}>
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+            <IconButton aria-label="Emoji" onClick={(e) => setEmojiAnchor(e.currentTarget)}>
+              <EmojiEmotionsOutlined />
             </IconButton>
-          ) : (
-            <IconButton
-              aria-label="Send"
-              color="success"
-              disabled={!text.trim() || !online}
-              onClick={sendText}
-            >
-              <SendOutlined />
-            </IconButton>
-          )}
-        </Stack>
+            {tools && (
+              <>
+                <IconButton aria-label="Attach" onClick={(e) => setAttachAnchor(e.currentTarget)}>
+                  <AttachFileOutlined />
+                </IconButton>
+                <IconButton aria-label="Location" onClick={() => setDialog('location')}>
+                  <PlaceOutlined />
+                </IconButton>
+                <IconButton aria-label="Contact card" onClick={() => setDialog('contacts')}>
+                  <ContactPhoneOutlined />
+                </IconButton>
+                <IconButton
+                  aria-label="Interactive message"
+                  onClick={() => setDialog('interactive')}
+                >
+                  <SmartButtonOutlined />
+                </IconButton>
+                <Tooltip title={TEMPLATES_SOON_TEXT}>
+                  <span>
+                    <IconButton aria-label="Templates" disabled>
+                      <ViewQuiltOutlined />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              </>
+            )}
+            <Box sx={{ flex: 1 }} />
+            <Tooltip title={note ? 'Back to a WhatsApp reply' : 'Write an internal note'}>
+              <ToggleButton
+                value="note"
+                size="small"
+                selected={note}
+                aria-label="Internal note"
+                onChange={() => setNote(!note)}
+                sx={{ border: 0 }}
+              >
+                <StickyNote2Outlined />
+              </ToggleButton>
+            </Tooltip>
+          </Stack>
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'flex-end', mt: 0.5 }}>
+            <InputBase
+              inputRef={textBox}
+              multiline
+              maxRows={6}
+              placeholder={note ? 'Internal note — only your team sees this' : 'Type a message'}
+              value={text}
+              onChange={(e) => {
+                setText(e.target.value);
+                saveDraft(c.id, e.target.value);
+                if (!note && e.target.value) ping();
+              }}
+              onKeyDown={onKeyDown}
+              onPaste={onPaste}
+              inputProps={{ 'aria-label': 'Message', maxLength: limits.textMax }}
+              sx={{ flex: 1, px: 1.5, py: 1, borderRadius: 2, bgcolor: 'action.hover' }}
+            />
+            {!text.trim() && tools ? (
+              <IconButton
+                aria-label="Record voice note"
+                disabled={!online}
+                onClick={() => setRecording(true)}
+              >
+                <MicOutlined />
+              </IconButton>
+            ) : (
+              <IconButton
+                aria-label="Send"
+                color="success"
+                disabled={!text.trim() || !online}
+                onClick={sendText}
+              >
+                <SendOutlined />
+              </IconButton>
+            )}
+          </Stack>
+        </Box>
       )}
       {(showCounter(text.length, limits.textMax) || !online) && (
         <Typography

@@ -40,9 +40,11 @@ export function ChatHeader({
     <Stack
       direction="row"
       spacing={1.5}
+      useFlexGap
       sx={{
         px: 2,
         py: 1,
+        flexWrap: 'wrap',
         alignItems: 'center',
         borderBottom: 1,
         borderColor: 'divider',
@@ -55,7 +57,8 @@ export function ChatHeader({
         </IconButton>
       )}
       <Avatar aria-hidden>{initials(c.label)}</Avatar>
-      <Box sx={{ minWidth: 0, flex: 1 }}>
+      {/* the name keeps 160 px: the controls wrap below on narrow chats */}
+      <Box sx={{ minWidth: 0, flex: '1 1 160px' }}>
         <Typography
           variant="subtitle1"
           component="h2"

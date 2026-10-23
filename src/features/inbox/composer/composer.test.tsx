@@ -185,6 +185,16 @@ describe('who can write, and when', () => {
   });
 });
 
+describe('layout', () => {
+  it('the text box has its own row (tools never squeeze it on a narrow chat)', () => {
+    show();
+    const row = box().closest('.MuiStack-root') as HTMLElement;
+    expect(within(row).queryByRole('button', { name: 'Attach' })).toBeNull();
+    expect(within(row).queryByRole('button', { name: 'Emoji' })).toBeNull();
+    expect(within(row).getByRole('button', { name: 'Record voice note' })).toBeInTheDocument();
+  });
+});
+
 describe('text', () => {
   it('Enter sends, Shift+Enter is a new line, IME composition does not send', async () => {
     show();
