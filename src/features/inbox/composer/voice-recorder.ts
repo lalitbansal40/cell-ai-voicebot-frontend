@@ -61,8 +61,12 @@ export const useVoiceRecorder = ({ maxSeconds, minMs }: { maxSeconds: number; mi
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const startedAt = useRef(0);
   const discard = useRef(false);
-  /** False after cancel / unmount: a late microphone grant is released at once. */
-  const active = useRef(false);
+  /**
+   * Counts starts, cancels and unmounts (never resets). A microphone granted to an
+   * older attempt (cancelled, unmounted, or started twice by React strict mode) is
+   * released at once.
+   */
+  const attempt = useRef(0);
   const url = useRef<string | null>(null);
 
   const stopTracks = useCallback(() => {
@@ -87,12 +91,13 @@ export const useVoiceRecorder = ({ maxSeconds, minMs }: { maxSeconds: number; mi
       return;
     }
     setState({ phase: 'requesting' });
-    active.current = true;
+    attempt.current += 1;
+    const mine = attempt.current;
     try {
       const media = await navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
       });
-      if (!active.current) {
+      if (attempt.current !== mine) {
         for (const track of media.getTracks()) track.stop();
         return;
       }
@@ -138,7 +143,7 @@ export const useVoiceRecorder = ({ maxSeconds, minMs }: { maxSeconds: number; mi
 
   /** Throw the recording away (Esc / trash) — nothing is kept. */
   const cancel = useCallback(() => {
-    active.current = false;
+    attempt.current += 1;
     discard.current = true;
     if (recorder.current?.state === 'recording') recorder.current.stop();
     else {
@@ -150,7 +155,7 @@ export const useVoiceRecorder = ({ maxSeconds, minMs }: { maxSeconds: number; mi
 
   useEffect(
     () => () => {
-      active.current = false;
+      attempt.current += 1;
       discard.current = true;
       if (recorder.current?.state === 'recording') recorder.current.stop();
       stopTracks();

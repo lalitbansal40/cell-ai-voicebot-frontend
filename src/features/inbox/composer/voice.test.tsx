@@ -1,5 +1,6 @@
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/services/api/errors';
@@ -338,6 +339,44 @@ describe('recording a voice note', () => {
     await user.click(screen.getByRole('button', { name: 'Stop recording' }));
     again.unmount();
     expect(revokeUrl).toHaveBeenCalledWith('blob:voice');
+  });
+
+  it('two starts racing (React strict mode) keep one recording; the stale microphone is released', async () => {
+    let grantFirst!: (s: typeof stream) => void;
+    const firstStop = vi.fn();
+    getUserMedia
+      .mockReturnValueOnce(new Promise((r) => (grantFirst = r)))
+      .mockResolvedValueOnce(stream);
+    renderWithProviders({
+      routes: [
+        {
+          path: '/',
+          element: (
+            <StrictMode>
+              <Composer
+                conversation={fakeConversationDetail({
+                  windowExpiresAt: new Date(Date.now() + 3_600_000).toISOString(),
+                })}
+                replyTo={null}
+                onClearReply={() => undefined}
+              />
+            </StrictMode>
+          ),
+        },
+      ],
+    });
+    await user.click(screen.getByRole('button', { name: 'Record voice note' }));
+    await screen.findByRole('timer', { name: 'Recording time' });
+    await act(async () => {
+      grantFirst({ getTracks: () => [{ stop: firstStop }] });
+      await Promise.resolve();
+    });
+    expect(firstStop).toHaveBeenCalled();
+    await advance(1_500);
+    await user.click(screen.getByRole('button', { name: 'Stop recording' }));
+    expect(screen.getByLabelText('Voice note preview')).toBeInTheDocument();
+    await advance(1_000);
+    expect(screen.queryByRole('timer')).toBeNull();
   });
 
   it('upload progress while sending', async () => {
