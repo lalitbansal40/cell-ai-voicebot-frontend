@@ -1,3 +1,4 @@
+import { getErrorMessage, type ApiError } from '@/services/api/errors';
 import type {
   WhatsAppPriceNote,
   WhatsAppTemplateCategory,
@@ -145,3 +146,7 @@ export const PRICE_NOTE_TEXT: Record<WhatsAppPriceNote, string> = {
     'Free for the first 1,000 replies each month and when the customer is in a free entry window.',
   customer_pays_meta: 'Billed by Meta to your WhatsApp account.',
 };
+
+/** A template / send error in plain words (the code's text, else the usual message). */
+export const templateErrorMessage = (err: ApiError): string =>
+  TEMPLATE_ERROR_TEXT[err.code] ?? getErrorMessage(err);
