@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { useAuthStore } from '@/features/auth/store';
 
@@ -15,3 +15,16 @@ export const useNow = (intervalMs = 60_000): number => {
   }, [intervalMs]);
   return now;
 };
+
+const subscribeOnline = (notify: () => void) => {
+  window.addEventListener('online', notify);
+  window.addEventListener('offline', notify);
+  return () => {
+    window.removeEventListener('online', notify);
+    window.removeEventListener('offline', notify);
+  };
+};
+
+/** `navigator.onLine`, live (sending is disabled while offline). */
+export const useOnline = (): boolean =>
+  useSyncExternalStore(subscribeOnline, () => navigator.onLine);

@@ -676,6 +676,77 @@ describe('chat', () => {
     expect(api.read).not.toHaveBeenCalled();
   });
 
+  it('Reply and React (toggle) on messages; none on notes / system lines', async () => {
+    api.messages.mockResolvedValue(
+      msgs([
+        fakeMessage('text', { id: 'm1', at: iso(-60_000) }),
+        fakeMessage('note', { id: 'n1', at: iso(-50_000) }),
+        fakeMessage('system', { id: 's1', at: iso(-40_000) }),
+      ]),
+    );
+    api.send.mockImplementation((_id, body) =>
+      Promise.resolve(
+        body.type === 'reaction'
+          ? fakeMessage('reaction', {
+              id: `rx-${body.clientId}`,
+              direction: 'out',
+              origin: 'agent',
+            })
+          : fakeOutgoing('accepted', { id: `srv-${body.clientId}`, clientId: body.clientId }),
+      ),
+    );
+    open();
+    await screen.findByText(/EMI ki date/);
+    expect(screen.getAllByRole('button', { name: 'Reply' })).toHaveLength(1);
+    await userEvent.click(screen.getByRole('button', { name: 'Reply' }));
+    expect(screen.getByLabelText('Replying to')).toBeInTheDocument();
+    await userEvent.type(screen.getByRole('textbox', { name: 'Message' }), 'On it{Enter}');
+    await waitFor(() =>
+      expect(api.send).toHaveBeenCalledWith(
+        'cv1',
+        expect.objectContaining({ type: 'text', text: 'On it', replyToMessageId: 'm1' }),
+      ),
+    );
+    expect(screen.queryByLabelText('Replying to')).toBeNull();
+    await userEvent.click(screen.getAllByRole('button', { name: 'React' })[0] as HTMLElement);
+    await userEvent.click(await screen.findByRole('button', { name: 'React 👍' }));
+    await waitFor(() =>
+      expect(api.send).toHaveBeenCalledWith(
+        'cv1',
+        expect.objectContaining({ type: 'reaction', messageId: 'm1', emoji: '👍' }),
+      ),
+    );
+    expect(within(screen.getByLabelText('Reactions')).getByTitle('You reacted')).toHaveTextContent(
+      '👍',
+    );
+    await userEvent.click(screen.getAllByRole('button', { name: 'React' })[0] as HTMLElement);
+    await userEvent.click(await screen.findByRole('button', { name: 'Remove 👍' }));
+    await waitFor(() =>
+      expect(api.send).toHaveBeenLastCalledWith(
+        'cv1',
+        expect.objectContaining({ type: 'reaction', messageId: 'm1', emoji: '' }),
+      ),
+    );
+    await waitFor(() => expect(screen.queryByLabelText('Reactions')).toBeNull());
+    // the reaction popover closes on Escape too
+    await userEvent.click(screen.getAllByRole('button', { name: 'React' })[0] as HTMLElement);
+    await screen.findByRole('group', { name: 'Reactions to send' });
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(screen.queryByRole('group', { name: 'Reactions to send' })).toBeNull(),
+    );
+  });
+
+  it('no Reply / React when the window is closed', async () => {
+    api.conversation.mockResolvedValue(
+      fakeConversationDetail({ windowExpiresAt: iso(-HOUR), unreadCount: 0 }),
+    );
+    open();
+    await screen.findByText(/EMI ki date/);
+    expect(screen.queryByRole('button', { name: 'Reply' })).toBeNull();
+    expect(screen.getByText(/The 24-hour window is closed\./)).toBeInTheDocument();
+  });
+
   it('contact panel: loading, deleted contact', async () => {
     api.contact.mockResolvedValue(fakeContactPanel({ contact: null }));
     open();

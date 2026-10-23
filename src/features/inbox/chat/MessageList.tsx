@@ -6,10 +6,10 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Fab from '@mui/material/Fab';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
 import { getErrorMessage } from '@/services/api/errors';
-import type { InboxConversationDetail } from '@/services/api/types';
+import type { InboxConversationDetail, InboxMessage } from '@/services/api/types';
 
 import { useAccountTimezone, useNow } from '../hooks';
 import { flattenMessages } from '../optimistic';
@@ -23,7 +23,13 @@ const BOTTOM_SLACK = 48;
 /** Older messages load when scrolled this close to the top. */
 const TOP_SLACK = 80;
 
-type ListBubbleProps = Omit<BubbleProps, 'message' | 'timezone' | 'highlighted' | 'onJump'>;
+type ListBubbleProps = Omit<
+  BubbleProps,
+  'message' | 'timezone' | 'highlighted' | 'onJump' | 'actions'
+> & {
+  /** Reply / React under a bubble (none for read-only users). */
+  renderActions?: ((m: InboxMessage) => ReactNode) | undefined;
+};
 
 const scrollToMessage = (root: HTMLElement | null, id: string) => {
   // ids are ObjectIds / `tmp_<uuid>` — safe inside the selector
@@ -40,6 +46,7 @@ const scrollToMessage = (root: HTMLElement | null, id: string) => {
  */
 export function MessageList({
   conversation,
+  renderActions,
   ...bubble
 }: { conversation: InboxConversationDetail } & ListBubbleProps) {
   const timezone = useAccountTimezone();
@@ -194,6 +201,7 @@ export function MessageList({
                   timezone={timezone}
                   highlighted={highlight === item.message.id}
                   onJump={onJump}
+                  actions={renderActions?.(item.message)}
                   {...bubble}
                 />
               ),

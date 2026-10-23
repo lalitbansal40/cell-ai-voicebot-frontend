@@ -238,7 +238,21 @@ export const useSendMessage = (conversationId: string) => {
     meta: { silent: true },
     onMutate: (body) => {
       rememberBody(body);
-      if (body.type === 'reaction') return;
+      if (body.type === 'reaction') {
+        // our reaction shows on the target at once (one per sender; '' removes it)
+        forEachMessages(client, conversationId, (data) =>
+          replaceMessage(data, body.messageId, (m) => ({
+            ...m,
+            reactions: [
+              ...m.reactions.filter((r) => r.by !== 'agent'),
+              ...(body.emoji
+                ? [{ emoji: body.emoji, by: 'agent' as const, at: new Date().toISOString() }]
+                : []),
+            ],
+          })),
+        );
+        return;
+      }
       const bubble = buildOptimistic(
         conversationId,
         body,

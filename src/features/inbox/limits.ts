@@ -19,6 +19,9 @@ export const DEFAULT_INBOX_LIMITS = {
   footerMax: 60,
   bodyMax: 1024,
   ctaTextMax: 20,
+  /** Not in `/inbox/config` (fixed by Meta). */
+  listButtonMax: 20,
+  sectionTitleMax: 24,
   contactsMax: 10,
   voiceNoteMaxSeconds: 600,
   voiceNoteMinMs: 1000,
