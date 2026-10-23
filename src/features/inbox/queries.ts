@@ -116,8 +116,10 @@ export const useInboxLiveUpdates = (): void => {
       (c) => (c ? { ...c, status: event.data.status, unreadCount: event.data.unreadCount } : c),
     );
     void client.invalidateQueries({ queryKey: inboxKeys.lists });
-    // assignee names / window come with the full conversation
+    // assignee names / window come with the full conversation; opt-out, block and
+    // name changes with the contact panel
     void client.invalidateQueries({ queryKey: inboxKeys.conversation(event.data.conversationId) });
+    void client.invalidateQueries({ queryKey: inboxKeys.contact(event.data.conversationId) });
   });
 };
 

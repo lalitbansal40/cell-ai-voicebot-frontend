@@ -267,6 +267,8 @@ describe('config, summary, lists', () => {
     ).toBe(5);
     expect(spy).toHaveBeenCalledWith({ queryKey: inboxKeys.lists });
     expect(spy).toHaveBeenCalledWith({ queryKey: inboxKeys.conversation('b') });
+    // opt-out / block / name changes show in the open contact panel
+    expect(spy).toHaveBeenCalledWith({ queryKey: inboxKeys.contact('b') });
     // a conversation not on screen: only refetches
     spy.mockClear();
     rt.emit('inbox.conversation.updated', {
