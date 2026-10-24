@@ -6,6 +6,15 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 11 · Templates + WhatsApp billing (T11.7–T11.12)** — 2026-10-24
+  - API clients and hooks for `/whatsapp/templates`, the price preview, wallet WhatsApp fields and the superadmin WhatsApp billing routes (regenerated types), the `whatsapp.template.updated` WS event, 14 template simulator kinds (58 in all), routes `/whatsapp/templates` (tabs follow the URL) and `/admin/whatsapp-billing`, nav **WhatsApp billing** (`LIVE_PHASE = 11`); a validator that mirrors the backend (shared case file) and the preview model.
+  - Templates tab, details drawer (preview, reason + Edit and resubmit, usage, variable values, history, delete by language or name) and the builder (every header kind with example upload + progress / cancel, variables + samples, footer, grouped buttons, call permission template, time to live, live preview, field errors).
+  - Send template dialog (sources per variable, resolved values, header media / location, preview, cost line, consent note, opted-out / DND blocks, errors in words) from the composer, the window-closed banner and the contact page (start with a template); template bubbles with their buttons; the reply cost hint.
+  - Wallet: WhatsApp ledger lines with the chat link, WhatsApp prices, budget, usage and spend; superadmin rate card import + diff + edit, settings, margin + CSV, reconciliation; the account WhatsApp billing region (Meta billing moved there + price override); 7 notification icons; dashboard spend line.
+  - Bundle: main 462.0 → 463.7 KB gzip per file (+1.7 KB), JS as one stream 450.1 → 451.9 KB (+1.8 KB); the templates tab, builder, send dialog and the superadmin page are lazy.
+  - E2E: 22 template / billing tests in 4 specs; the 5 inbox specs fund the wallet first; 125 total, green twice.
+  - Tests: 1048 → 1215.
+
 - **Phase 10 · WhatsApp Inbox (T10.7–T10.12)** — 2026-10-23
   - API clients and hooks for `/inbox/*`, inbox settings and the business profile (regenerated types), 5 `inbox.*` WS events and the `conversation:<id>` topic merge (deduped by id and client id, monotonic ticks, updates that arrive before their message), optimistic sends, polling fallbacks, Inbox in the menu with a live unread badge (`LIVE_PHASE = 10`), routes `/inbox`, `/inbox/:conversationId` (lazy).
   - Inbox page: three / two / stacked panes; conversation list (search with snippets, All · Unread · Mine · Unassigned · Closed, number select, live order, Load more); chat (window countdown, date separators, unread divider, older pages keeping the scroll position, New messages, jump to a quoted message, typing line) with bubbles for every type (text with http(s)-only links, photo + lazy lightbox, video, audio, voice note, document + Download, sticker, download states + Retry, location, contact cards + Add contact, interactive previews and replies, form answers, button replies, orders, system, unsupported, deleted, notes, Business app / history / forwarded / ad labels, quotes, reactions, ticks + failed reason + Retry).
