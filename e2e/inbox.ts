@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import {
   expect,
   type APIRequestContext,
@@ -6,7 +8,7 @@ import {
   type PlaywrightWorkerArgs,
 } from '@playwright/test';
 
-import { FRONTEND_URL, PASSWORD } from './env';
+import { FRONTEND_URL, PASSWORD, SUPERADMIN } from './env';
 import { closeWizard, connectFakeNumber, openNumbers, testPhone } from './whatsapp';
 
 let seq = 0;
@@ -68,6 +70,36 @@ export class InboxApi {
     };
   }
 
+  async patch<T>(
+    path: string,
+    data?: unknown,
+  ): Promise<{ status: number; data: T; code?: string }> {
+    const res = await this.api.patch(`/api/v1${path}`, { headers: this.headers(), data });
+    const body = (await res.json().catch(() => null)) as {
+      data: T;
+      error?: { code: string };
+    } | null;
+    return { status: res.status(), data: body?.data as T, code: body?.error?.code };
+  }
+
+  async delete(path: string): Promise<number> {
+    const res = await this.api.delete(`/api/v1${path}`, { headers: this.headers() });
+    return res.status();
+  }
+
+  /** POST with an Idempotency-Key (wallet adjustments). */
+  async postWithKey<T>(path: string, data: unknown) {
+    const res = await this.api.post(`/api/v1${path}`, {
+      headers: { ...this.headers(), 'Idempotency-Key': randomUUID() },
+      data,
+    });
+    const body = (await res.json().catch(() => null)) as {
+      data: T;
+      error?: { code: string };
+    } | null;
+    return { status: res.status(), data: body?.data as T, code: body?.error?.code };
+  }
+
   /** A connected number (by label, else the first). */
   async channelId(label?: string): Promise<string> {
     const list = await this.get<{ items: { id: string; status: string; label: string }[] }>(
@@ -97,6 +129,21 @@ export class InboxApi {
     expect(r.status, `simulate ${kind}`).toBe(200);
   }
 
+  /** Waits until the customer's conversation exists (webhooks are processed async). */
+  async waitConversation(phone: string): Promise<{ id: string; unreadCount: number }> {
+    await expect
+      .poll(
+        async () =>
+          this.conversationOf(phone).then(
+            () => true,
+            () => false,
+          ),
+        { timeout: 20_000 },
+      )
+      .toBe(true);
+    return this.conversationOf(phone);
+  }
+
   async conversationOf(phone: string): Promise<{ id: string; unreadCount: number }> {
     const q = phone.replace(/\D/g, '');
     for (const status of ['open', 'closed']) {
@@ -122,6 +169,28 @@ export class InboxApi {
         readReceipts: { waMessageId: string; typing: boolean }[];
       }>(`/dev/meta/sent?channelId=${channelId}`)
     ).data;
+  }
+
+  /** This user's account id. */
+  async accountId(): Promise<string> {
+    const me = await this.get<{ account: { id: string } }>('/auth/me');
+    expect(me.status).toBe(200);
+    return me.data.account.id;
+  }
+
+  /**
+   * Phase 11: every WhatsApp message except notes is held from the wallet — a
+   * superadmin credit (test money) so the account can reply / send templates.
+   */
+  async fund(playwright: PlaywrightWorkerArgs['playwright'], rupees = 1000) {
+    const accountId = await this.accountId();
+    const admin = await InboxApi.signIn(playwright, SUPERADMIN.email, SUPERADMIN.password);
+    const res = await admin.api.post(`/api/v1/admin/accounts/${accountId}/wallet/adjustments`, {
+      headers: { ...admin.headers(), 'Idempotency-Key': randomUUID() },
+      data: { direction: 'credit', amountMicros: rupees * 1_000_000, reason: 'E2E test money' },
+    });
+    expect(res.status(), 'fund the wallet').toBe(201);
+    await admin.dispose();
   }
 
   async dispose() {

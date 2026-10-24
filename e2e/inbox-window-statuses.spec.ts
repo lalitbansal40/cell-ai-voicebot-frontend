@@ -41,6 +41,8 @@ test.beforeAll(async ({ browser, playwright }) => {
     business: `E2E Win ${Date.now().toString(36)}`,
   });
   api = await InboxApi.signIn(playwright, owner.email);
+  // Phase 11: replies are held from the wallet
+  await api.fund(playwright);
   channelId = await api.channelId();
   for (const c of Object.values(customers)) {
     await api.createContact(c.name, c.phone);

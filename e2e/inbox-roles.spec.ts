@@ -39,6 +39,8 @@ test.beforeAll(async ({ browser, playwright }) => {
     business: `E2E Roles ${Date.now().toString(36)}`,
   });
   api = await InboxApi.signIn(playwright, owner.email);
+  // Phase 11: replies are held from the wallet
+  await api.fund(playwright);
   channelId = await api.channelId();
   await api.createContact(CUSTOMER, phone);
   await api.createContact(OTHER, otherPhone);
@@ -128,10 +130,26 @@ test('close; the customer writes → open again', async () => {
 });
 
 test('an impersonating superadmin reads only and sends no read receipt', async ({ browser }) => {
-  // nobody else has this chat open (an open chat marks new messages read)
+  // nobody else has a chat open (an open chat marks new messages read)
   await manager.getByRole('link', { name: 'Dashboard' }).click();
+  await page.getByRole('link', { name: 'Dashboard' }).click();
   await api.simulate(channelId, 'inbound_text', { from: otherPhone, text: 'Hello again' });
-  const before = (await api.fakeSent(channelId)).readReceipts.length;
+  await expect
+    .poll(async () => (await api.conversationOf(otherPhone)).unreadCount)
+    .toBeGreaterThan(0);
+  // receipts of earlier messages may still be on their way: count once they settle
+  let before = -1;
+  await expect
+    .poll(
+      async () => {
+        const now = (await api.fakeSent(channelId)).readReceipts.length;
+        const settled = now === before;
+        before = now;
+        return settled;
+      },
+      { intervals: [1_000] },
+    )
+    .toBe(true);
   const admin = await impersonate(browser, owner);
   await openInbox(admin);
   await openConversation(admin, OTHER);

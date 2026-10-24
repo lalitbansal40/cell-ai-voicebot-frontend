@@ -37,6 +37,8 @@ test.beforeAll(async ({ browser, playwright }) => {
     business: `E2E Opt ${Date.now().toString(36)}`,
   });
   api = await InboxApi.signIn(playwright, owner.email);
+  // Phase 11: replies are held from the wallet
+  await api.fund(playwright);
   channelId = await api.channelId();
   await api.createContact(CUSTOMER, phone);
   await api.simulate(channelId, 'inbound_text', { from: phone, text: 'Hi, mujhe loan chahiye' });

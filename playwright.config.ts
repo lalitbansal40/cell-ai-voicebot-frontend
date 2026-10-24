@@ -104,6 +104,8 @@ export default defineConfig({
         META_WEBHOOK_VERIFY_TOKEN: META_VERIFY_TOKEN,
         // Phase 10: fast fake sent → delivered → read ticks
         FAKE_META_STATUS_DELAYS_MS: '200,500,800',
+        // Phase 11: the fake reviews templates after 1 s
+        FAKE_META_TEMPLATE_REVIEW_MS: '1000',
         E2E_SUPERADMIN_EMAIL: SUPERADMIN.email,
         E2E_SUPERADMIN_PASSWORD: SUPERADMIN.password,
       },
