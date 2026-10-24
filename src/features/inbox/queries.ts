@@ -120,6 +120,9 @@ export const useInboxLiveUpdates = (): void => {
     // name changes with the contact panel
     void client.invalidateQueries({ queryKey: inboxKeys.conversation(event.data.conversationId) });
     void client.invalidateQueries({ queryKey: inboxKeys.contact(event.data.conversationId) });
+    // messages stored without their own event (coexistence history) show in an open chat;
+    // only a chat on screen refetches (inactive pages are just marked stale)
+    void client.invalidateQueries({ queryKey: inboxKeys.messagesOf(event.data.conversationId) });
   });
 };
 

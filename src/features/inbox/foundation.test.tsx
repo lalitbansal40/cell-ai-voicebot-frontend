@@ -269,6 +269,8 @@ describe('config, summary, lists', () => {
     expect(spy).toHaveBeenCalledWith({ queryKey: inboxKeys.conversation('b') });
     // opt-out / block / name changes show in the open contact panel
     expect(spy).toHaveBeenCalledWith({ queryKey: inboxKeys.contact('b') });
+    // messages that arrive without their own event (imported history) show in the open chat
+    expect(spy).toHaveBeenCalledWith({ queryKey: inboxKeys.messagesOf('b') });
     // a conversation not on screen: only refetches
     spy.mockClear();
     rt.emit('inbox.conversation.updated', {
