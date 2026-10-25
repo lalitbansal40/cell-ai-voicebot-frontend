@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useQueryClient } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { useConfirm } from '@/components/confirm-context';
@@ -21,7 +21,6 @@ import { useSession } from '@/features/auth/hooks';
 import { signOut } from '@/features/auth/session';
 import { useAuthStore } from '@/features/auth/store';
 import { NotificationsBell } from '@/features/notifications/NotificationsBell';
-import { AvailabilityToggle } from '@/features/whatsapp-calling/live/AvailabilityToggle';
 import { authApi } from '@/services/api/auth';
 import { getErrorMessage } from '@/services/api/errors';
 import { useWsStatus } from '@/services/realtime';
@@ -35,6 +34,13 @@ const WS_LABEL: Record<string, { text: string; color: string }> = {
   idle: { text: 'Live updates off', color: 'text.disabled' },
   closed: { text: 'Live updates off', color: 'text.disabled' },
 };
+
+// WhatsApp call availability (calls.answer): loaded after the shell
+const AvailabilityToggle = lazy(() =>
+  import('@/features/whatsapp-calling/live/AvailabilityToggle').then((m) => ({
+    default: m.AvailabilityToggle,
+  })),
+);
 
 export function Header({ onMenu }: { onMenu: () => void }) {
   const session = useSession();
@@ -103,7 +109,9 @@ export function Header({ onMenu }: { onMenu: () => void }) {
             sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: ws.color, mx: 1.5 }}
           />
         </Tooltip>
-        <AvailabilityToggle />
+        <Suspense fallback={null}>
+          <AvailabilityToggle />
+        </Suspense>
         <ThemeToggle />
         <NotificationsBell />
         <IconButton

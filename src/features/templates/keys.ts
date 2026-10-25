@@ -13,6 +13,7 @@ export const templateKeys = {
 export const whatsappBillingKeys = {
   all: ['admin', 'whatsapp-billing'] as const,
   rates: ['admin', 'whatsapp-billing', 'rates'] as const,
+  callingRates: ['admin', 'whatsapp-billing', 'calling-rates'] as const,
   settings: ['admin', 'whatsapp-billing', 'settings'] as const,
   margin: (month: string, accountId?: string) =>
     ['admin', 'whatsapp-billing', 'margin', month, accountId ?? 'all'] as const,

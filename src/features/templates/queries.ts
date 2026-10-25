@@ -194,6 +194,20 @@ export const usePricePreview = (body: WhatsAppPricePreviewBody | null) =>
 export const useWhatsAppRates = () =>
   useQuery({ queryKey: whatsappBillingKeys.rates, queryFn: adminWhatsappBillingApi.rates });
 
+/** Phase 12: the calling card (per minute). */
+export const useWhatsAppCallingRates = () =>
+  useQuery({
+    queryKey: whatsappBillingKeys.callingRates,
+    queryFn: adminWhatsappBillingApi.callingRates,
+  });
+
+export const useImportWhatsAppCallingRates = () =>
+  useMutation({
+    mutationFn: ({ file, fileName }: { file: Blob; fileName?: string }) =>
+      adminWhatsappBillingApi.importCallingRates(file, fileName),
+    meta: { silent: true },
+  });
+
 export const useImportWhatsAppRates = () =>
   useMutation({
     mutationFn: ({ file, fileName }: { file: Blob; fileName?: string }) =>
@@ -207,6 +221,7 @@ export const useSaveWhatsAppRates = () => {
     mutationFn: (body: WhatsAppRateCardSave) => adminWhatsappBillingApi.saveRates(body),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: whatsappBillingKeys.rates });
+      void client.invalidateQueries({ queryKey: whatsappBillingKeys.callingRates });
       void client.invalidateQueries({ queryKey: walletKeys.all });
     },
   });

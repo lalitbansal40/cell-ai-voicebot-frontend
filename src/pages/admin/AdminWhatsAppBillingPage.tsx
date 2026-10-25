@@ -3,12 +3,14 @@ import Tabs from '@mui/material/Tabs';
 import { useSearchParams } from 'react-router';
 
 import { PageHeader } from '@/components/PageHeader';
+import { CallingRatesTab } from '@/features/whatsapp-billing/CallingRatesTab';
 import { RatesTab } from '@/features/whatsapp-billing/RatesTab';
 import { MarginTab, ReconciliationTab } from '@/features/whatsapp-billing/ReportsTabs';
 import { SettingsTab } from '@/features/whatsapp-billing/SettingsTab';
 
 const TABS = [
   { key: 'rates', label: 'Rates', Component: RatesTab },
+  { key: 'calling', label: 'Calling rates', Component: CallingRatesTab },
   { key: 'settings', label: 'Settings', Component: SettingsTab },
   { key: 'margin', label: 'Margin', Component: MarginTab },
   { key: 'reconciliation', label: 'Reconciliation', Component: ReconciliationTab },
@@ -23,7 +25,7 @@ export function AdminWhatsAppBillingPage() {
     <>
       <PageHeader
         title="WhatsApp billing"
-        subtitle="Meta's rate card, the markup and what WhatsApp messages earn."
+        subtitle="Meta's rate cards, the markup and what WhatsApp messages and calls earn."
       />
       <Tabs
         value={tab.key}

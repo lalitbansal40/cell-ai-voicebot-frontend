@@ -504,6 +504,18 @@ describe('queries', () => {
       settings: { markupBps: 1500, platformFeeMicros: 0, holdMaxAgeHours: 72 },
       defaults: { markupBps: 1500, platformFeeMicros: 0, holdMaxAgeHours: 72 },
       nonInrPlatformChannels: [],
+      calling: {
+        markupBps: 1500,
+        platformFeePerMinuteMicros: 0,
+        holdMinutes: 5,
+        holdExtendMinutes: 5,
+      },
+      callingDefaults: {
+        markupBps: 1500,
+        platformFeePerMinuteMicros: 0,
+        holdMinutes: 5,
+        holdExtendMinutes: 5,
+      },
     };
     admin.settings.mockResolvedValue(settingsView);
     admin.updateSettings.mockResolvedValue({
@@ -522,6 +534,11 @@ describe('queries', () => {
     admin.setAccountBilling.mockResolvedValue({
       metaPayer: 'platform',
       whatsappBilling: { markupBps: 2000, fixedPrices: null, platformFeeMicros: null },
+      whatsappCallingBilling: {
+        markupBps: null,
+        fixedPerMinuteMicros: null,
+        platformFeePerMinuteMicros: null,
+      },
     });
     const spy = vi.spyOn(client, 'invalidateQueries');
     const hooks = renderHook(

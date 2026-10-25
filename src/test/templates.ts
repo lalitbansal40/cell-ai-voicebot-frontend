@@ -143,6 +143,7 @@ export const fakeRateCard = (overrides: Partial<WhatsAppRateCard> = {}): WhatsAp
 export const fakeMarginRow = (overrides: Partial<WhatsAppMarginRow> = {}): WhatsAppMarginRow => ({
   accountId: 'a1',
   accountName: 'Demo Finance',
+  kind: 'message',
   category: 'utility',
   messages: 10,
   billedMicros: 1_400_000,

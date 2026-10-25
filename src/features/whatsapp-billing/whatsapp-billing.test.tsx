@@ -63,6 +63,13 @@ const SETTINGS: WhatsAppBillingSettingsView = {
   settings: { markupBps: 1500, platformFeeMicros: 0, holdMaxAgeHours: 72 },
   defaults: { markupBps: 1500, platformFeeMicros: 0, holdMaxAgeHours: 72 },
   nonInrPlatformChannels: [],
+  calling: { markupBps: 1500, platformFeePerMinuteMicros: 0, holdMinutes: 5, holdExtendMinutes: 5 },
+  callingDefaults: {
+    markupBps: 1500,
+    platformFeePerMinuteMicros: 0,
+    holdMinutes: 5,
+    holdExtendMinutes: 5,
+  },
 };
 
 beforeEach(() => {
@@ -590,6 +597,11 @@ describe('account WhatsApp billing region', () => {
         fixedPrices: { utility: 300_000 },
         platformFeeMicros: null,
       },
+      whatsappCallingBilling: {
+        markupBps: null,
+        fixedPerMinuteMicros: null,
+        platformFeePerMinuteMicros: null,
+      },
     });
     renderWithProviders({ routes: route(<AccountWhatsAppBillingCard detail={detail()} />) });
     const region = within(screen.getByRole('region', { name: 'WhatsApp billing' }));
@@ -620,6 +632,11 @@ describe('account WhatsApp billing region', () => {
       .mockResolvedValue({
         metaPayer: 'platform',
         whatsappBilling: { markupBps: null, fixedPrices: null, platformFeeMicros: null },
+        whatsappCallingBilling: {
+          markupBps: null,
+          fixedPerMinuteMicros: null,
+          platformFeePerMinuteMicros: null,
+        },
       });
     renderWithProviders({
       routes: route(

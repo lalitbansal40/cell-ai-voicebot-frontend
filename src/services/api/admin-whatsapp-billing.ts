@@ -33,6 +33,25 @@ export const adminWhatsappBillingApi = {
       }),
     );
   },
+  /** Phase 12: the per-minute calling cards (same shape, `callingMarkets` filled). */
+  callingRates: () =>
+    unwrap(
+      apiClient.get<SuccessEnvelope<WhatsAppRateCards>>('/admin/whatsapp-rates', {
+        params: { kind: 'calling' },
+      }),
+    ),
+  /** Preview Meta's INR calling CSV (`Market, Currency, Per minute` + tiers). */
+  importCallingRates: (file: Blob, fileName?: string) => {
+    const form = new FormData();
+    if (fileName === undefined) form.append('file', file);
+    else form.append('file', file, fileName);
+    return unwrap(
+      apiClient.post<SuccessEnvelope<WhatsAppRateImport>>('/admin/whatsapp-rates/import', form, {
+        timeout: 0,
+        params: { kind: 'calling' },
+      }),
+    );
+  },
   saveRates: (body: WhatsAppRateCardSave) =>
     unwrap(apiClient.post<SuccessEnvelope<WhatsAppRateCard>>('/admin/whatsapp-rates', body)),
   settings: () =>

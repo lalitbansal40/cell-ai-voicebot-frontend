@@ -7,11 +7,13 @@ import { WhatsAppCard } from '@/features/admin/WhatsAppCard';
 import { NotificationsBell } from '@/features/notifications/NotificationsBell';
 import { AccountWhatsAppBillingCard } from '@/features/whatsapp-billing/AccountWhatsAppBillingCard';
 import { adminWhatsappApi } from '@/services/api/admin-whatsapp';
+import { callsApi } from '@/services/api/calls';
 import { ApiError } from '@/services/api/errors';
 import { notificationsApi } from '@/services/api/notifications';
 import type { AdminAccountDetail, WhatsAppChannel } from '@/services/api/types';
 import { whatsappApi } from '@/services/api/whatsapp';
 import { fakeSession, signInAs } from '@/test/auth';
+import { fakeWaCall } from '@/test/calls-wa';
 import { renderWithProviders } from '@/test/render';
 import { fakeAdminWhatsAppStatus, fakeChannel, fakeWhatsAppConfig } from '@/test/whatsapp';
 
@@ -31,6 +33,7 @@ vi.mock('@/services/api/whatsapp', () => ({
   SIMULATOR_KINDS: [],
   whatsappApi: { config: vi.fn(), channels: vi.fn() },
 }));
+vi.mock('@/services/api/calls', () => ({ callsApi: { list: vi.fn() } }));
 vi.mock('@/services/api/notifications', () => ({
   notificationsApi: {
     unreadCount: vi.fn(),
@@ -332,6 +335,32 @@ describe('dashboard card', () => {
     expect(await screen.findByText('1 connected')).toBeInTheDocument();
   });
 
+  it("calling on: today's WhatsApp calls and missed ones (calls.read)", async () => {
+    signInAs('viewer');
+    vi.mocked(callsApi.list).mockResolvedValue({
+      success: true,
+      data: [
+        fakeWaCall('completed', 'human', 'inbound'),
+        fakeWaCall('failed', 'human', 'inbound', {
+          id: 'wc2',
+          timestamps: { queuedAt: 'x', ringingAt: null, answeredAt: null, endedAt: 'x' },
+        }),
+        fakeWaCall('completed', 'ai', 'outbound', { id: 'wc3' }),
+      ],
+      meta: { hasMore: false, nextCursor: null },
+    } as never);
+    wa.channels.mockResolvedValueOnce(
+      list([
+        fakeChannel({ calling: { status: 'enabled', unavailableReason: null, restricted: false } }),
+      ]),
+    );
+    renderWithProviders({ routes: routes(<WhatsAppDashboardCard />) });
+    expect(await screen.findByText('Today: 3 WhatsApp calls · 1 missed')).toBeInTheDocument();
+    expect(callsApi.list).toHaveBeenCalledWith(
+      expect.objectContaining({ provider: 'whatsapp', limit: 100 }),
+    );
+  });
+
   it('hidden for read-only roles without numbers and when WhatsApp is off', async () => {
     signInAs('viewer');
     wa.channels.mockResolvedValueOnce(list([]));
@@ -364,8 +393,14 @@ describe('WhatsApp notifications', () => {
       ['whatsapp.name_approved', 'Display name approved'],
       ['whatsapp.name_rejected', 'Display name rejected'],
       ['whatsapp.channel_disconnected_by_admin', 'WhatsApp disconnected'],
+      // Phase 12
+      ['call.whatsapp_missed', 'Missed WhatsApp call'],
+      ['whatsapp.call_permission_granted', 'Customer allowed calls'],
+      ['whatsapp.call_permission_declined', 'Customer declined calls'],
+      ['whatsapp.call_permission_revoked', 'Call permission revoked'],
+      ['whatsapp.calling_restricted', 'WhatsApp paused calling'],
     ] as const;
-    vi.mocked(notificationsApi.unreadCount).mockResolvedValue(6);
+    vi.mocked(notificationsApi.unreadCount).mockResolvedValue(11);
     vi.mocked(notificationsApi.list).mockResolvedValue({
       success: true,
       data: types.map(([type], i) => ({
@@ -381,9 +416,9 @@ describe('WhatsApp notifications', () => {
     } as never);
     vi.mocked(notificationsApi.markRead).mockResolvedValue(undefined as never);
     renderWithProviders({ routes: routes(<NotificationsBell />) });
-    await user.click(await screen.findByRole('button', { name: 'Notifications, 6 unread' }));
+    await user.click(await screen.findByRole('button', { name: 'Notifications, 11 unread' }));
     const menu = await screen.findByRole('menu');
-    await within(menu).findByText('Title 5');
+    await within(menu).findByText('Title 10');
     for (const [, label] of types) expect(within(menu).getByTitle(label)).toBeInTheDocument();
     await user.click(within(menu).getAllByRole('menuitem')[0] as HTMLElement);
     expect(await screen.findByText('numbers page')).toBeInTheDocument();

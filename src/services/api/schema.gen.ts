@@ -17424,6 +17424,11 @@ export interface paths {
                   } | null;
                   platformFeeMicros: number | null;
                 };
+                whatsappCallingBilling: {
+                  markupBps: number | null;
+                  fixedPerMinuteMicros: number | null;
+                  platformFeePerMinuteMicros: number | null;
+                };
               };
             };
           };
@@ -20888,6 +20893,18 @@ export interface paths {
                   label: string;
                   wabaCurrency: string;
                 }[];
+                calling: {
+                  markupBps: number;
+                  platformFeePerMinuteMicros: number;
+                  holdMinutes: number;
+                  holdExtendMinutes: number;
+                };
+                callingDefaults: {
+                  markupBps: number;
+                  platformFeePerMinuteMicros: number;
+                  holdMinutes: number;
+                  holdExtendMinutes: number;
+                };
               };
             };
           };
@@ -20966,6 +20983,18 @@ export interface paths {
                   label: string;
                   wabaCurrency: string;
                 }[];
+                calling: {
+                  markupBps: number;
+                  platformFeePerMinuteMicros: number;
+                  holdMinutes: number;
+                  holdExtendMinutes: number;
+                };
+                callingDefaults: {
+                  markupBps: number;
+                  platformFeePerMinuteMicros: number;
+                  holdMinutes: number;
+                  holdExtendMinutes: number;
+                };
               };
             };
           };
@@ -21034,6 +21063,8 @@ export interface paths {
               data: {
                 accountId: string;
                 accountName: string;
+                /** @enum {string} */
+                kind: 'message' | 'call';
                 category: string;
                 messages: number;
                 billedMicros: number;

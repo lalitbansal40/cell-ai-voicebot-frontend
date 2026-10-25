@@ -113,7 +113,7 @@ export function MarginTab() {
               <TableRow>
                 <TableCell>Account</TableCell>
                 <TableCell>Category</TableCell>
-                <TableCell align="right">Messages</TableCell>
+                <TableCell align="right">Messages / calls</TableCell>
                 <TableCell align="right">Billed</TableCell>
                 <TableCell align="right">Meta cost</TableCell>
                 <TableCell align="right">Margin</TableCell>
@@ -122,9 +122,9 @@ export function MarginTab() {
             </TableHead>
             <TableBody>
               {rows.map((r) => (
-                <TableRow key={`${r.accountId}-${r.category}`}>
+                <TableRow key={`${r.accountId}-${r.kind}-${r.category}`}>
                   <TableCell>{r.accountName}</TableCell>
-                  <TableCell>{r.category}</TableCell>
+                  <TableCell>{r.kind === 'call' ? 'WhatsApp calls' : r.category}</TableCell>
                   <TableCell align="right">{formatNumber(r.messages)}</TableCell>
                   <TableCell align="right">{formatCurrencyMicros(r.billedMicros)}</TableCell>
                   <TableCell align="right">

@@ -1,14 +1,18 @@
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Outlet } from 'react-router';
 
 import { useWalletLiveUpdates } from '@/features/wallet/useWalletLiveUpdates';
-import { CallMounts } from '@/features/whatsapp-calling/live/CallMounts';
 
 import { Banners } from './Banners';
 import { Header } from './Header';
 import { DRAWER_WIDTH, Sidebar } from './Sidebar';
+
+// WhatsApp call bar / incoming popup listener: loaded right after the shell (not in the start bundle)
+const CallMounts = lazy(() =>
+  import('@/features/whatsapp-calling/live/CallMounts').then((m) => ({ default: m.CallMounts })),
+);
 
 /** Signed-in shell: sidebar, header, banners, page content. */
 export function AppLayout() {
@@ -26,7 +30,9 @@ export function AppLayout() {
         <Banners />
         <Outlet />
       </Box>
-      <CallMounts />
+      <Suspense fallback={null}>
+        <CallMounts />
+      </Suspense>
     </Box>
   );
 }

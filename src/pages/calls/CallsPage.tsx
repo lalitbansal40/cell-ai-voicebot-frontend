@@ -49,6 +49,8 @@ const isProvider = (v: string | null): v is NonNullable<Call['provider']> =>
   v !== null && v in PROVIDER_LABELS;
 
 const sourceText = (c: Call) => {
+  // Phase 12: a WhatsApp call by a team member has no program
+  if (c.source.kind === null) return 'Team member';
   const name = c.source.name ?? (c.source.kind === 'flow' ? 'Deleted flow' : 'Deleted agent');
   if (c.source.kind === 'agent') return `${name} (agent)`;
   const v = c.source.flowVersionRef;
@@ -72,6 +74,9 @@ export function CallsPage() {
   const to = YMD.test(params.get('to') ?? '') ? (params.get('to') ?? '') : '';
   const badRange = Boolean(from && to && from > to);
   const provider = params.get('provider');
+  const direction = params.get('direction');
+  const mode = params.get('mode');
+  const whatsapp = provider === 'whatsapp';
   const campaignId = params.get('campaignId') ?? '';
   const [search, setSearch] = useState(params.get('q') ?? '');
   const q = useDebouncedValue(search.trim(), 300);
@@ -100,6 +105,8 @@ export function CallsPage() {
     ...(params.get('contactId') ? { contactId: params.get('contactId') ?? '' } : {}),
     ...(campaignId ? { campaignId } : {}),
     ...(isProvider(provider) ? { provider } : {}),
+    ...(whatsapp && (direction === 'inbound' || direction === 'outbound') ? { direction } : {}),
+    ...(whatsapp && (mode === 'human' || mode === 'ai') ? { mode } : {}),
     ...(from ? { from: startOfDayIso(from, timezone) } : {}),
     ...(to ? { to: startOfDayIso(shiftYmd(to, 1), timezone) } : {}),
   };
@@ -131,6 +138,9 @@ export function CallsPage() {
           <span>{sourceText(c)}</span>
           {c.isTest && <Chip size="small" variant="outlined" label="Test" />}
           {c.provider === 'dryrun' && <Chip size="small" variant="outlined" label="Simulated" />}
+          {c.provider === 'whatsapp' && (
+            <Chip size="small" color="success" variant="outlined" label="WhatsApp" />
+          )}
           {c.campaign && (
             <Link component={RouterLink} to={`/campaigns/${c.campaign.id}`} variant="body2">
               {c.campaign.name}
@@ -138,6 +148,12 @@ export function CallsPage() {
           )}
         </Stack>
       ),
+    },
+    {
+      key: 'type',
+      header: 'Type',
+      render: (c) =>
+        `${c.direction === 'inbound' ? 'Incoming' : 'Outgoing'} · ${c.mode === 'human' ? 'Team member' : 'AI'}`,
     },
     { key: 'contact', header: 'Contact', render: (c) => c.contact?.name || 'Typed values' },
     {
@@ -267,6 +283,36 @@ export function CallsPage() {
               </MenuItem>
             ))}
           </TextField>
+          {whatsapp && (
+            <>
+              <TextField
+                select
+                label="Direction"
+                size="small"
+                sx={{ minWidth: 140 }}
+                value={direction === 'inbound' || direction === 'outbound' ? direction : ''}
+                onChange={(e) => set('direction', e.target.value)}
+                slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+              >
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="inbound">Incoming</MenuItem>
+                <MenuItem value="outbound">Outgoing</MenuItem>
+              </TextField>
+              <TextField
+                select
+                label="Answered by"
+                size="small"
+                sx={{ minWidth: 150 }}
+                value={mode === 'human' || mode === 'ai' ? mode : ''}
+                onChange={(e) => set('mode', e.target.value)}
+                slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+              >
+                <MenuItem value="">Anyone</MenuItem>
+                <MenuItem value="human">Team member</MenuItem>
+                <MenuItem value="ai">AI</MenuItem>
+              </TextField>
+            </>
+          )}
           {canCampaigns && (
             <TextField
               select

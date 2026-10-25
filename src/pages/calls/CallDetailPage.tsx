@@ -38,6 +38,7 @@ import {
   useCanListenCalls,
   useCanTriggerCalls,
 } from '@/features/calls/queries';
+import { CallWhatsAppDetails } from '@/features/whatsapp-calling/CallWhatsAppDetails';
 import { callsApi } from '@/services/api/calls';
 import { getErrorMessage } from '@/services/api/errors';
 import type { Call } from '@/services/api/types';
@@ -168,10 +169,13 @@ export function CallDetailPage() {
       <Link component={RouterLink} to={`/agents/${c.source.agentId}`}>
         {c.source.name ?? 'Deleted agent'} (agent)
       </Link>
+    ) : c.source.kind === null ? (
+      'Team member'
     ) : (
       '—'
     );
   const m = c.metrics;
+  const whatsapp = c.provider === 'whatsapp';
   return (
     <>
       <PageHeader
@@ -202,6 +206,9 @@ export function CallDetailPage() {
                     color={statusColor(c.status)}
                     label={STATUS_LABELS[c.status]}
                   />
+                  {whatsapp && (
+                    <Chip size="small" color="success" variant="outlined" label="WhatsApp" />
+                  )}
                   {c.provider === 'dryrun' ? (
                     <Chip size="small" variant="outlined" label="Simulated call" />
                   ) : (
@@ -314,17 +321,20 @@ export function CallDetailPage() {
         </Grid>
         <Grid size={{ xs: 12, md: 5 }}>
           <Stack spacing={2}>
+            {whatsapp && <CallWhatsAppDetails call={c} timezone={timezone} />}
             <Paper variant="outlined" sx={{ p: 2 }} component="section" aria-label="Cost">
               <Typography variant="subtitle1" component="h2" gutterBottom>
                 Cost {formatCurrencyMicros(c.cost.totalMicros)}
               </Typography>
               <Stack spacing={0.5}>
                 <Row
-                  label="Phone line"
+                  label={whatsapp ? 'WhatsApp call' : 'Phone line'}
                   value={
-                    c.isTest && c.cost.telephonyMicros === 0
-                      ? 'None (web test call)'
-                      : formatCurrencyMicros(c.cost.telephonyMicros)
+                    whatsapp && c.direction === 'inbound' && c.cost.telephonyMicros === 0
+                      ? 'Free (the customer called)'
+                      : c.isTest && c.cost.telephonyMicros === 0
+                        ? 'None (web test call)'
+                        : formatCurrencyMicros(c.cost.telephonyMicros)
                   }
                 />
                 <Row label="AI conversation" value={formatCurrencyMicros(c.cost.aiMicros)} />

@@ -58,6 +58,17 @@ export const marketName = (code: string): string => {
 /** Row text: "WhatsApp · Utility · India" for WhatsApp charges, else the API's description. */
 export const ledgerDescription = (e: Pick<LedgerEntry, 'type' | 'description' | 'breakdown'>) => {
   const b = e.breakdown;
+  // Phase 12: "WhatsApp call · India · 2:14" (the talk time charged)
+  if (e.type === 'whatsapp_call_charge') {
+    const sec = b?.durationSec;
+    return [
+      'WhatsApp call',
+      ...(b?.waMarket ? [marketName(b.waMarket)] : []),
+      ...(typeof sec === 'number'
+        ? [`${String(Math.floor(sec / 60))}:${String(sec % 60).padStart(2, '0')}`]
+        : []),
+    ].join(' · ');
+  }
   if (e.type !== 'whatsapp_charge' || !b?.waCategory) return e.description;
   const category = WA_CATEGORY[b.waCategory] ?? b.waCategory;
   return ['WhatsApp', category, ...(b.waMarket ? [marketName(b.waMarket)] : [])].join(' · ');

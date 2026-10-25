@@ -26,6 +26,7 @@ import { formatBps } from '@/utils/money';
 import { AddMoneyDialog } from './AddMoneyDialog';
 import { useCanTopUp, useRates, useWallet } from './queries';
 import { WalletSettingsDialog } from './WalletSettingsDialog';
+import { WhatsAppCallPrices } from './WhatsAppCallPrices';
 import { WhatsAppPrices } from './WhatsAppPrices';
 
 const STATUS: Record<WalletStatus, { label: string; color: 'success' | 'warning' | 'error' }> = {
@@ -269,6 +270,18 @@ export function OverviewTab() {
                   WhatsApp prices
                 </Typography>
                 <WhatsAppPrices prices={rates.data.whatsapp} />
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+        {rates.data && rates.data.whatsappCalling.markets.length > 0 && (
+          <Grid size={12}>
+            <Card variant="outlined">
+              <CardContent>
+                <Typography variant="subtitle1" gutterBottom>
+                  WhatsApp call prices
+                </Typography>
+                <WhatsAppCallPrices prices={rates.data.whatsappCalling} />
               </CardContent>
             </Card>
           </Grid>

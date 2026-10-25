@@ -8,6 +8,9 @@ import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import LinkOffOutlined from '@mui/icons-material/LinkOffOutlined';
 import NotificationsNoneOutlined from '@mui/icons-material/NotificationsNoneOutlined';
 import PauseCircleOutlined from '@mui/icons-material/PauseCircleOutlined';
+import PhoneDisabledOutlined from '@mui/icons-material/PhoneDisabledOutlined';
+import PhoneEnabledOutlined from '@mui/icons-material/PhoneEnabledOutlined';
+import PhoneMissedOutlined from '@mui/icons-material/PhoneMissedOutlined';
 import ReportProblemOutlined from '@mui/icons-material/ReportProblemOutlined';
 import VerifiedOutlined from '@mui/icons-material/VerifiedOutlined';
 import Alert from '@mui/material/Alert';
@@ -108,6 +111,32 @@ const TYPE_ICONS: Partial<
     icon: AccountBalanceWalletOutlined,
     color: 'warning',
     label: 'WhatsApp charge after a release',
+  },
+  // Phase 12 — WhatsApp calling
+  'call.whatsapp_missed': {
+    icon: PhoneMissedOutlined,
+    color: 'warning',
+    label: 'Missed WhatsApp call',
+  },
+  'whatsapp.call_permission_granted': {
+    icon: PhoneEnabledOutlined,
+    color: 'success',
+    label: 'Customer allowed calls',
+  },
+  'whatsapp.call_permission_declined': {
+    icon: PhoneDisabledOutlined,
+    color: 'info',
+    label: 'Customer declined calls',
+  },
+  'whatsapp.call_permission_revoked': {
+    icon: PhoneDisabledOutlined,
+    color: 'warning',
+    label: 'Call permission revoked',
+  },
+  'whatsapp.calling_restricted': {
+    icon: ReportProblemOutlined,
+    color: 'warning',
+    label: 'WhatsApp paused calling',
   },
 };
 
