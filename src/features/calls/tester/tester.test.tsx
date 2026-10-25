@@ -160,6 +160,8 @@ describe('Web call tester', () => {
     server(new ArrayBuffer(960));
     expect(audio.played).toHaveLength(1);
     server({ type: 'audio.clear' });
+    server({ type: 'call.hold', on: true });
+    server({ type: 'wallet.empty_warning', endsInSec: 30 });
     expect(audio.calls.clear).toBe(1);
 
     // transcript: partial → final, interrupted mark, latency chip, timeline

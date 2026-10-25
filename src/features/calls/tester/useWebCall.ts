@@ -143,6 +143,8 @@ const onMessage = (s: WebCallState, m: MediaServerMessage, now: number): WebCall
             ? 'Typed input is switched off on this server — speak instead.'
             : 'The server did not understand the last message.',
       };
+    case 'wallet.empty_warning':
+    case 'call.hold':
     case 'audio.clear':
       return s;
   }

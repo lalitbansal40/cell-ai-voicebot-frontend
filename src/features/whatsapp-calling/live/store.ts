@@ -24,6 +24,7 @@ export interface ActiveWaCall {
   network: 'good' | 'poor' | 'lost';
   recording: boolean;
   failure: string | null;
+  walletEndsInSec: number | null;
   ended: { reason: string; durationSec: number } | null;
 }
 
@@ -87,6 +88,7 @@ export const newActiveCall = (input: {
   network: 'good',
   recording: false,
   failure: null,
+  walletEndsInSec: null,
   ended: null,
 });
 

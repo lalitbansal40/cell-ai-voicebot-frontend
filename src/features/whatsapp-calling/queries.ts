@@ -81,7 +81,7 @@ export const useRequestCallPermission = () => {
       void client.invalidateQueries({
         queryKey: callingKeys.permission(input.channelId, input.contactId),
       });
-      void client.invalidateQueries({ queryKey: inboxKeys.contact(input.contactId) });
+      void client.invalidateQueries({ queryKey: inboxKeys.contacts });
     },
   });
 };
@@ -100,7 +100,8 @@ export const useCallingLiveUpdates = (): void => {
   useWsEvent('whatsapp.call_permission.updated', (event) => {
     const { channelId, contactId } = event.data;
     void client.invalidateQueries({ queryKey: callingKeys.permission(channelId, contactId) });
-    void client.invalidateQueries({ queryKey: inboxKeys.contact(contactId) });
+    // Panels are keyed by conversation id; this event carries only the contact id.
+    void client.invalidateQueries({ queryKey: inboxKeys.contacts });
   });
   useWsEvent('whatsapp.channel.updated', (event) => {
     void client.invalidateQueries({ queryKey: callingKeys.settings(event.data.channelId) });

@@ -358,6 +358,8 @@ describe('call bubbles and labels', () => {
   it('labels', () => {
     expect(formatCallDuration(134)).toBe('2:14');
     expect(formatCallDuration(5)).toBe('0:05');
+    expect(formatCallDuration(undefined)).toBe('0:00');
+    expect(formatCallDuration(Number.NaN)).toBe('0:00');
     expect(
       callBubbleText({
         callId: 'c',

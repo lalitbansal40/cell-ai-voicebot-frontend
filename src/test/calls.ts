@@ -159,6 +159,7 @@ export const fakeAudioEngine = () => {
       calls.clear += 1;
     },
     setMuted: (m: boolean) => calls.muted.push(m),
+    setInputDevice: () => Promise.resolve(),
     close: () => {
       calls.closed += 1;
       return Promise.resolve();

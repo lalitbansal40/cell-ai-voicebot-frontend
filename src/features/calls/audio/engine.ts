@@ -40,10 +40,21 @@ export const MIC_CONSTRAINTS: MediaStreamConstraints = {
 
 export const requestMicrophone = async (
   media: Pick<MediaDevices, 'getUserMedia'> | undefined = globalThis.navigator?.mediaDevices,
+  deviceId?: string,
 ): Promise<MediaStream> => {
   if (!media?.getUserMedia) throw new MicError('unsupported');
   try {
-    return await media.getUserMedia(MIC_CONSTRAINTS);
+    return await media.getUserMedia(
+      deviceId
+        ? {
+            ...MIC_CONSTRAINTS,
+            audio: {
+              ...(MIC_CONSTRAINTS.audio as MediaTrackConstraints),
+              deviceId: { exact: deviceId },
+            },
+          }
+        : MIC_CONSTRAINTS,
+    );
   } catch (err) {
     const name = err instanceof Error ? err.name : '';
     if (name === 'NotAllowedError' || name === 'SecurityError') throw new MicError('mic_denied');
@@ -111,17 +122,21 @@ export interface AudioEngine {
   /** Barge-in: drop everything queued now. */
   clear(): void;
   setMuted(muted: boolean): void;
+  /** Switch input without interrupting the media socket or the customer's call. */
+  setInputDevice(deviceId: string): Promise<void>;
   close(): Promise<void>;
 }
 
-export const createAudioEngine = async (
+const buildAudioEngine = async (
   stream: MediaStream,
-  platform: AudioPlatform = browserAudioPlatform,
+  platform: AudioPlatform,
+  media: Pick<MediaDevices, 'getUserMedia'> | undefined,
+  context: AudioContextLike,
 ): Promise<AudioEngine> => {
-  const context = platform.createContext();
   await context.audioWorklet.addModule(captureUrl);
   await context.audioWorklet.addModule(playbackUrl);
-  const source = context.createMediaStreamSource(stream);
+  let currentStream = stream;
+  let source = context.createMediaStreamSource(currentStream);
   const capture = platform.createNode(context, 'cav-capture', {
     numberOfInputs: 1,
     numberOfOutputs: 1,
@@ -155,6 +170,7 @@ export const createAudioEngine = async (
     if (event.data.type === 'stats') underruns = event.data.underruns ?? underruns;
   };
   let closed = false;
+  let inputChange = 0;
   return {
     sampleRate: context.sampleRate,
     get underruns() {
@@ -169,6 +185,26 @@ export const createAudioEngine = async (
       if (!closed) playback.port.postMessage({ type: 'clear' });
     },
     setMuted: (muted) => capture.port.postMessage({ type: 'mute', muted }),
+    setInputDevice: async (deviceId) => {
+      if (closed) return;
+      const change = ++inputChange;
+      const next = await requestMicrophone(media, deviceId);
+      if (closed || change !== inputChange) {
+        for (const track of next.getTracks()) track.stop();
+        return;
+      }
+      try {
+        const replacement = context.createMediaStreamSource(next);
+        replacement.connect(capture);
+        source.disconnect();
+        for (const track of currentStream.getTracks()) track.stop();
+        source = replacement;
+        currentStream = next;
+      } catch (err) {
+        for (const track of next.getTracks()) track.stop();
+        throw err;
+      }
+    },
     close: async () => {
       if (closed) return;
       closed = true;
@@ -176,8 +212,23 @@ export const createAudioEngine = async (
       capture.disconnect();
       playback.disconnect();
       sink.disconnect();
-      for (const track of stream.getTracks()) track.stop();
+      for (const track of currentStream.getTracks()) track.stop();
       await context.close().catch(() => undefined);
     },
   };
+};
+
+export const createAudioEngine = async (
+  stream: MediaStream,
+  platform: AudioPlatform = browserAudioPlatform,
+  media: Pick<MediaDevices, 'getUserMedia'> | undefined = globalThis.navigator?.mediaDevices,
+): Promise<AudioEngine> => {
+  const context = platform.createContext();
+  try {
+    return await buildAudioEngine(stream, platform, media, context);
+  } catch (err) {
+    for (const track of stream.getTracks()) track.stop();
+    await context.close().catch(() => undefined);
+    throw err;
+  }
 };

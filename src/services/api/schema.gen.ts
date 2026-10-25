@@ -26160,6 +26160,14 @@ export interface components {
       disposition: string | null;
       languageDetected: string | null;
       metrics: {
+        whatsapp?: {
+          setupMs: number | null;
+          packetsIn: number;
+          packetsOut: number;
+          lossPct: number;
+          jitterMs: number;
+          rttMs: number | null;
+        };
         latency: {
           p50Ms: number | null;
           p95Ms: number | null;

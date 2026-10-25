@@ -36,6 +36,8 @@ export interface LiveCallDeps {
     'start' | 'answer' | 'hold' | 'transfer' | 'decline' | 'mediaTicket'
   > & {
     hangup: (callId: string) => Promise<unknown>;
+    /** The call's current status (an answered transfer is already in progress). */
+    status: (callId: string) => Promise<string>;
   };
 }
 
@@ -52,6 +54,7 @@ export const browserLiveCallDeps: LiveCallDeps = {
     decline: (id) => whatsappCallingApi.decline(id),
     mediaTicket: (id) => whatsappCallingApi.mediaTicket(id),
     hangup: (id) => callsApi.hangup(id),
+    status: async (id) => (await callsApi.get(id)).status,
   },
 };
 
@@ -64,6 +67,8 @@ export const setLiveCallDeps = (next: LiveCallDeps | null): void => {
 let socket: MediaSocket | null = null;
 let engine: AudioEngine | null = null;
 let endedByServer = false;
+/** Invalidates asynchronous microphone / API work when the call is canceled or replaced. */
+let attempt = 0;
 
 const store = () => useLiveCallStore.getState();
 const patch = (p: Partial<ActiveWaCall>) => store().patchActive(p);
@@ -83,24 +88,37 @@ const release = () => {
   void e?.close();
 };
 
-const micStream = async (): Promise<MediaStream | null> => {
+const micStream = async (generation: number): Promise<MediaStream | null> => {
   try {
-    return await deps.requestMic();
+    const stream = await deps.requestMic();
+    if (generation !== attempt) {
+      for (const track of stream.getTracks()) track.stop();
+      return null;
+    }
+    return stream;
   } catch (err) {
     const code = err instanceof MicError ? err.code : 'mic_failed';
-    patch({ phase: 'failed', failure: MIC_ERROR_TEXT[code] });
+    if (generation === attempt) patch({ phase: 'failed', failure: MIC_ERROR_TEXT[code] });
     return null;
   }
 };
 
 /** Opens the agent's media socket for the call (after the API gave the ticket). */
-const connectLeg = async (stream: MediaStream, ticket: WhatsAppCallMediaTicket) => {
+const connectLeg = async (
+  stream: MediaStream,
+  ticket: WhatsAppCallMediaTicket,
+  generation: number,
+) => {
   let audio: AudioEngine;
   try {
     audio = await deps.createEngine(stream);
   } catch {
     for (const track of stream.getTracks()) track.stop();
-    patch({ phase: 'failed', failure: MIC_ERROR_TEXT.mic_failed });
+    if (generation === attempt) patch({ phase: 'failed', failure: MIC_ERROR_TEXT.mic_failed });
+    return;
+  }
+  if (generation !== attempt) {
+    await audio.close();
     return;
   }
   engine = audio;
@@ -110,7 +128,10 @@ const connectLeg = async (stream: MediaStream, ticket: WhatsAppCallMediaTicket) 
     deps.mediaUrl(ticket.mediaTicket, ticket.wsPath),
     {
       onMessage: (m) => {
+        if (generation !== attempt) return;
         if (m.type === 'audio.clear') audio.clear();
+        if (m.type === 'wallet.empty_warning') patch({ walletEndsInSec: m.endsInSec });
+        if (m.type === 'call.hold') patch({ held: m.on });
         if (m.type === 'call.event' && m.event.type === 'status') {
           const status = m.event.data.status;
           if (status === 'ringing') patch({ phase: 'ringing' });
@@ -121,8 +142,11 @@ const connectLeg = async (stream: MediaStream, ticket: WhatsAppCallMediaTicket) 
           patch({ phase: 'ending', ended: { reason: m.reason, durationSec: m.durationSec } });
         }
       },
-      onAudio: (frame) => audio.play(frame),
+      onAudio: (frame) => {
+        if (generation === attempt) audio.play(frame);
+      },
       onClose: (reason) => {
+        if (generation !== attempt) return;
         socket = null;
         engine = null;
         void audio.close();
@@ -138,7 +162,10 @@ const connectLeg = async (stream: MediaStream, ticket: WhatsAppCallMediaTicket) 
   );
   socket = media;
   audio.onFrame((frame) => media.sendFrame(frame));
-  audio.onLevel((level) => patch({ level: Math.round(level * 20) / 20 }));
+  audio.onLevel((level) => {
+    if (generation === attempt)
+      patch({ level: Math.round(level * 20) / 20, network: audio.underruns > 0 ? 'poor' : 'good' });
+  });
   try {
     await media.opened();
   } catch {
@@ -162,6 +189,7 @@ export interface PlaceCallInput {
 /** "Call yourself" (microphone first) or "Call with AI" (no media in the browser). */
 export const placeCall = async (input: PlaceCallInput): Promise<void> => {
   if (isBusy()) return;
+  const generation = ++attempt;
   release();
   store().setActive({
     ...newActiveCall({
@@ -172,7 +200,7 @@ export const placeCall = async (input: PlaceCallInput): Promise<void> => {
     }),
     recording: input.recording,
   });
-  const stream = input.mode === 'human' ? await micStream() : null;
+  const stream = input.mode === 'human' ? await micStream(generation) : null;
   if (input.mode === 'human' && !stream) return;
   try {
     const started = await deps.api.start(
@@ -184,19 +212,28 @@ export const placeCall = async (input: PlaceCallInput): Promise<void> => {
       },
       input.idempotencyKey,
     );
+    if (generation !== attempt) {
+      for (const track of stream?.getTracks() ?? []) track.stop();
+      await deps.api.hangup(started.callId).catch(() => undefined);
+      return;
+    }
     if (!stream || !started.mediaTicket || !started.wsPath || !started.expiresAt) {
       patch({ callId: started.callId, phase: 'ringing' });
       return;
     }
-    await connectLeg(stream, {
-      callId: started.callId,
-      mediaTicket: started.mediaTicket,
-      expiresAt: started.expiresAt,
-      wsPath: started.wsPath,
-    });
+    await connectLeg(
+      stream,
+      {
+        callId: started.callId,
+        mediaTicket: started.mediaTicket,
+        expiresAt: started.expiresAt,
+        wsPath: started.wsPath,
+      },
+      generation,
+    );
   } catch (err) {
     for (const track of stream?.getTracks() ?? []) track.stop();
-    patch({ phase: 'failed', failure: callErrorText(err) });
+    if (generation === attempt) patch({ phase: 'failed', failure: callErrorText(err) });
   }
 };
 
@@ -208,6 +245,7 @@ export const answerCall = async (input: {
   recording: boolean;
 }): Promise<boolean> => {
   if (isBusy()) return false;
+  const generation = ++attempt;
   release();
   store().setActive({
     ...newActiveCall({
@@ -219,15 +257,23 @@ export const answerCall = async (input: {
     }),
     recording: input.recording,
   });
-  const stream = await micStream();
+  const stream = await micStream(generation);
   if (!stream) return false;
   try {
     const ticket = await deps.api.answer(input.callId);
-    await connectLeg(stream, ticket);
+    if (generation !== attempt) {
+      for (const track of stream.getTracks()) track.stop();
+      await deps.api.hangup(input.callId).catch(() => undefined);
+      return false;
+    }
+    await connectLeg(stream, ticket, generation);
+    // taking over an AI call joins a call that is already talking (no new status event)
+    const now = await deps.api.status(input.callId).catch(() => null);
+    if (now && generation === attempt) onCallStatus(input.callId, now);
     return true;
   } catch (err) {
     for (const track of stream.getTracks()) track.stop();
-    patch({ phase: 'failed', failure: callErrorText(err) });
+    if (generation === attempt) patch({ phase: 'failed', failure: callErrorText(err) });
     return false;
   }
 };
@@ -236,16 +282,18 @@ export const answerCall = async (input: {
 export const reconnectCall = async (): Promise<void> => {
   const call = store().active;
   if (!call?.callId || call.mode !== 'human' || call.network !== 'lost') return;
+  const generation = ++attempt;
   patch({ phase: 'connecting', failure: null, network: 'good' });
-  const stream = await micStream();
+  const stream = await micStream(generation);
   if (!stream) return;
   try {
     const ticket = await deps.api.mediaTicket(call.callId);
-    await connectLeg(stream, ticket);
-    if (call.answeredAt) patch({ phase: 'in_call', answeredAt: call.answeredAt });
+    await connectLeg(stream, ticket, generation);
+    if (call.answeredAt && generation === attempt)
+      patch({ phase: 'in_call', answeredAt: call.answeredAt });
   } catch (err) {
     for (const track of stream.getTracks()) track.stop();
-    patch({ phase: 'failed', failure: callErrorText(err) });
+    if (generation === attempt) patch({ phase: 'failed', failure: callErrorText(err) });
   }
 };
 
@@ -277,6 +325,10 @@ export const takeOver = async (userId: string): Promise<void> => {
 export const hangupCall = async (): Promise<void> => {
   const call = store().active;
   if (!call) return;
+  if (!call.callId) {
+    clearCall();
+    return;
+  }
   patch({ phase: 'ending' });
   if (socket) {
     socket.hangup();
@@ -304,11 +356,20 @@ export const setHeld = async (held: boolean): Promise<void> => {
 
 export const pressKey = (digit: string): void => socket?.dtmf(digit);
 
-/** The account's WS events for the active call (AI calls have no media socket). */
+export const changeMicrophone = async (deviceId: string): Promise<void> => {
+  await engine?.setInputDevice(deviceId);
+};
+
+/**
+ * The account's WS events for the active call: AI calls have no media socket, and the
+ * agent's socket of a WhatsApp call is the bridge leg (the session reports the
+ * customer's call status on the account events, not on that socket).
+ */
 export const onCallStatus = (callId: string, status: string): void => {
   const call = store().active;
-  if (call?.callId !== callId || socket) return;
-  if (status === 'ringing') patch({ phase: 'ringing' });
+  if (call?.callId !== callId || call.phase === 'ended' || call.phase === 'failed') return;
+  if (status === 'ringing' && call.phase !== 'in_call' && call.phase !== 'ending')
+    patch({ phase: 'ringing' });
   if (status === 'in_progress' && call.phase !== 'in_call')
     patch({ phase: 'in_call', answeredAt: deps.now() });
 };
@@ -318,15 +379,17 @@ export const onCallEnded = (
   ended: { endReason: string | null; durationSec: number },
 ): void => {
   const call = store().active;
-  if (call?.callId !== callId || socket) return;
-  patch({
-    phase: 'ended',
-    ended: { reason: ended.endReason ?? 'ended', durationSec: ended.durationSec },
-  });
+  if (call?.callId !== callId) return;
+  const summary = { reason: ended.endReason ?? 'ended', durationSec: ended.durationSec };
+  attempt += 1;
+  endedByServer = true;
+  release();
+  patch({ phase: 'ended', ended: summary });
 };
 
 /** Closes the bar after the call ended. */
 export const clearCall = (): void => {
+  attempt += 1;
   release();
   store().setActive(null);
 };

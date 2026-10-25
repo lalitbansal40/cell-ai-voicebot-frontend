@@ -135,7 +135,8 @@ export function MessageBubble(props: BubbleProps) {
 
   const note = m.type === 'note';
   const deleted = m.status === 'deleted';
-  const origin = originLabel(m.origin);
+  // a call bubble is the call itself, not an automatic reply
+  const origin = m.type === 'call' ? null : originLabel(m.origin);
   const forwarded = m.context?.forwarded || m.context?.frequentlyForwarded;
   const failed = out && m.status === 'failed';
 

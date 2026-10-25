@@ -34,6 +34,7 @@ import {
   setMuted,
   takeOver,
 } from './controller';
+import { MicrophonePicker } from './MicrophonePicker';
 import { useLiveCallStore, type ActiveWaCall } from './store';
 
 const stateText = (c: ActiveWaCall, seconds: number): string => {
@@ -75,7 +76,8 @@ export default function CallBar() {
       sx={{
         position: 'fixed',
         left: { xs: 8, md: 'auto' },
-        right: 8,
+        // clear of the bottom-right corner (chat widgets / dev tools sit there)
+        right: { xs: 8, md: 88 },
         bottom: 8,
         zIndex: (t) => t.zIndex.snackbar - 1,
         p: 1.5,
@@ -131,6 +133,12 @@ export default function CallBar() {
           </Stack>
         )}
         {call.failure && <Alert severity="error">{call.failure}</Alert>}
+        {!done && call.walletEndsInSec !== null && (
+          <Alert severity="warning">
+            Wallet balance is low. Add money to keep talking; this call will end in{' '}
+            {call.walletEndsInSec} seconds.
+          </Alert>
+        )}
         {call.phase === 'ended' && reason && END_REASON_LABELS[reason] && (
           <Typography variant="caption" color="text.secondary">
             {END_REASON_LABELS[reason]}
@@ -143,6 +151,7 @@ export default function CallBar() {
         >
           {agent && !done && (
             <>
+              {running && <MicrophonePicker />}
               <IconButton
                 aria-label={call.muted ? 'Unmute' : 'Mute'}
                 aria-pressed={call.muted}

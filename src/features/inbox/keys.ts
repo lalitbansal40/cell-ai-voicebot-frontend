@@ -15,6 +15,7 @@ export const inboxKeys = {
   /** `around` = jumped to a quoted message; `null` = the latest page. */
   messages: (id: string, around: string | null = null) =>
     ['inbox', 'messages', id, around ?? 'latest'] as const,
+  contacts: ['inbox', 'contact'] as const,
   contact: (id: string) => ['inbox', 'contact', id] as const,
   mediaLink: (messageId: string) => ['inbox', 'media', messageId] as const,
 };

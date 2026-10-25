@@ -1,11 +1,12 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 
 import { useWsEvent } from '@/services/realtime';
 
-import { useCanAnswer } from '../queries';
+import { useCallingLiveUpdates, useCanAnswer } from '../queries';
 
-import { onCallEnded, onCallStatus } from './controller';
-import { useLiveCallStore } from './store';
+import { clearCall, hangupCall, onCallEnded, onCallStatus } from './controller';
+import { useLiveCallStatus } from './queries';
+import { isLive, useLiveCallStore } from './store';
 
 const CallBar = lazy(() => import('./CallBar'));
 const IncomingPopup = lazy(() => import('./IncomingPopup'));
@@ -15,6 +16,16 @@ const IncomingPopup = lazy(() => import('./IncomingPopup'));
  * call and loads the call bar / incoming popup only while there is something to show.
  */
 export function CallMounts() {
+  useCallingLiveUpdates();
+  useLiveCallStatus();
+  useEffect(
+    () => () => {
+      if (isLive(useLiveCallStore.getState().active)) void hangupCall();
+      clearCall();
+      useLiveCallStore.setState({ incoming: [] });
+    },
+    [],
+  );
   const active = useLiveCallStore((s) => s.active);
   const ringing = useLiveCallStore((s) => s.incoming.length > 0);
   const canAnswer = useCanAnswer();

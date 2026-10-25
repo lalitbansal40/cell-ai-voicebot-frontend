@@ -79,6 +79,53 @@ const send = (node: WorkletNodeLike, data: unknown) =>
   node.port.onmessage?.(new MessageEvent('message', { data }));
 
 describe('createAudioEngine', () => {
+  it('switches the microphone without rebuilding the socket and stops both streams at their end', async () => {
+    const f = fakePlatform();
+    const stop = vi.fn();
+    const nextStop = vi.fn();
+    const stream = { getTracks: () => [{ stop }] } as unknown as MediaStream;
+    const next = { getTracks: () => [{ stop: nextStop }] } as unknown as MediaStream;
+    const getUserMedia = vi.fn().mockResolvedValue(next);
+    const engine = await createAudioEngine(stream, f.platform, { getUserMedia });
+    await engine.setInputDevice('headset');
+    expect(getUserMedia).toHaveBeenCalledWith({
+      ...MIC_CONSTRAINTS,
+      audio: {
+        ...(MIC_CONSTRAINTS.audio as MediaTrackConstraints),
+        deviceId: { exact: 'headset' },
+      },
+    });
+    expect(stop).toHaveBeenCalledOnce();
+    expect(nextStop).not.toHaveBeenCalled();
+    await engine.close();
+    expect(nextStop).toHaveBeenCalledOnce();
+    await engine.setInputDevice('ignored');
+    expect(getUserMedia).toHaveBeenCalledOnce();
+  });
+
+  it('releases a microphone selected after the call closed; failed worklet startup also cleans up', async () => {
+    const f = fakePlatform();
+    const stop = vi.fn();
+    const stream = { getTracks: () => [{ stop }] } as unknown as MediaStream;
+    let resolve!: (value: MediaStream) => void;
+    const getUserMedia = vi.fn(
+      () =>
+        new Promise<MediaStream>((r) => {
+          resolve = r;
+        }),
+    );
+    const engine = await createAudioEngine(stream, f.platform, { getUserMedia });
+    const change = engine.setInputDevice('headset');
+    await engine.close();
+    const nextStop = vi.fn();
+    resolve({ getTracks: () => [{ stop: nextStop }] } as unknown as MediaStream);
+    await change;
+    expect(nextStop).toHaveBeenCalledOnce();
+    f.context.audioWorklet.addModule = () => Promise.reject(new Error('worklet failed'));
+    await expect(createAudioEngine(stream, f.platform)).rejects.toThrow('worklet failed');
+    expect(f.context.close).toHaveBeenCalledTimes(2);
+  });
+
   it('loads both worklets, wires mic → capture → muted sink and playback → speakers, resumes', async () => {
     const f = fakePlatform();
     const stop = vi.fn();

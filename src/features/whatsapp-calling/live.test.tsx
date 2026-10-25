@@ -22,7 +22,7 @@ import { fakeConversationDetail } from '@/test/inbox';
 import { fakeRealtime } from '@/test/realtime';
 import { renderWithProviders } from '@/test/render';
 
-import { MicError } from '../calls/audio/engine';
+import { MIC_ERROR_TEXT, MicError } from '../calls/audio/engine';
 
 import { AvailabilityToggle } from './live/AvailabilityToggle';
 import { CallButton } from './live/CallButton';
@@ -42,8 +42,9 @@ import {
   type LiveCallDeps,
 } from './live/controller';
 import { aiCallMinuteMicros } from './live/cost';
+import { MicrophonePicker } from './live/MicrophonePicker';
 import { isRingMuted, setRingMuted, startRing } from './live/ringer';
-import { useLiveCallStore } from './live/store';
+import { newActiveCall, useLiveCallStore } from './live/store';
 
 vi.mock('@/services/api/whatsapp-calling', () => ({
   whatsappCallingApi: {
@@ -83,6 +84,7 @@ const TICKET = {
   wsPath: '/ws/media',
 };
 
+const callStatus = vi.fn(() => Promise.resolve('ringing'));
 const make = (overrides: Partial<LiveCallDeps> = {}) => {
   const audio = fakeAudioEngine();
   const stop = vi.fn();
@@ -103,6 +105,7 @@ const make = (overrides: Partial<LiveCallDeps> = {}) => {
       transfer: api.transfer,
       mediaTicket: api.mediaTicket,
       hangup,
+      status: callStatus,
     },
     ...overrides,
   };
@@ -164,6 +167,91 @@ afterEach(() => {
 });
 
 describe('live call controller', () => {
+  it('canceling while microphone permission is pending stops the stream and never dials', async () => {
+    let resolve!: (stream: MediaStream) => void;
+    const { stop } = make({
+      requestMic: () =>
+        new Promise((r) => {
+          resolve = r;
+        }),
+    });
+    api.start.mockRejectedValue(http('CALL_CAPACITY'));
+    const work = place();
+    clearCall();
+    resolve({ getTracks: () => [{ stop }] } as unknown as MediaStream);
+    await work;
+    expect(stop).toHaveBeenCalledOnce();
+    expect(api.start).not.toHaveBeenCalled();
+    expect(active()).toBeNull();
+  });
+
+  it('a canceled dial response hangs up that call without replacing a newer call', async () => {
+    let resolve!: (value: Awaited<ReturnType<typeof api.start>>) => void;
+    const { hangup } = make();
+    api.start.mockImplementationOnce(
+      () =>
+        new Promise((r) => {
+          resolve = r;
+        }),
+    );
+    const work = place('ai');
+    clearCall();
+    useLiveCallStore.getState().setActive(
+      newActiveCall({
+        mode: 'ai',
+        direction: 'outbound',
+        label: 'New call',
+        conversationId: null,
+        callId: 'wc2',
+      }),
+    );
+    resolve({ callId: 'wc1', call: fakeWaCall('ringing', 'ai') });
+    await work;
+    expect(hangup).toHaveBeenCalledWith('wc1');
+    expect(active()?.callId).toBe('wc2');
+    expect(FakeMediaWs.instances).toHaveLength(0);
+  });
+
+  it('a delayed audio engine is released after canceling instead of opening a media socket', async () => {
+    const audio = fakeAudioEngine();
+    let resolve!: (value: typeof audio.engine) => void;
+    const createEngine = vi.fn(
+      () =>
+        new Promise<typeof audio.engine>((r) => {
+          resolve = r;
+        }),
+    );
+    make({ createEngine });
+    const work = place();
+    await waitFor(() => expect(createEngine).toHaveBeenCalled());
+    clearCall();
+    resolve(audio.engine);
+    await work;
+    expect(audio.calls.closed).toBe(1);
+    expect(FakeMediaWs.instances).toHaveLength(0);
+  });
+
+  it('a stale socket message cannot change a newer call', async () => {
+    make();
+    const work = place();
+    await waitFor(() => expect(FakeMediaWs.instances).toHaveLength(1));
+    const old = FakeMediaWs.last();
+    old.serverOpen();
+    await work;
+    clearCall();
+    useLiveCallStore.getState().setActive(
+      newActiveCall({
+        mode: 'ai',
+        direction: 'outbound',
+        label: 'New call',
+        conversationId: null,
+        callId: 'wc2',
+      }),
+    );
+    old.serverSend({ type: 'call.ended', reason: 'customer_hangup', durationSec: 4 });
+    expect(active()).toMatchObject({ callId: 'wc2', phase: 'starting', ended: null });
+  });
+
   it('Call yourself: mic → start (Idempotency-Key) → media socket → ringing → in call → ended', async () => {
     const { deps } = make();
     const p = place();
@@ -191,6 +279,38 @@ describe('live call controller', () => {
       phase: 'ended',
       ended: { reason: 'customer_hangup', durationSec: 12 },
     });
+  });
+
+  it('agent call: the account events (not the bridge socket) report answered / ended', async () => {
+    make();
+    const p = place();
+    await waitFor(() => expect(FakeMediaWs.instances).toHaveLength(1));
+    act(() => FakeMediaWs.last().serverOpen());
+    await p;
+    act(() => onCallStatus('wc1', 'in_progress'));
+    expect(active()).toMatchObject({ phase: 'in_call', answeredAt: 1_000 });
+    act(() => onCallEnded('wc1', { endReason: 'customer_hangup', durationSec: 7 }));
+    expect(active()).toMatchObject({ phase: 'ended', ended: { durationSec: 7 } });
+    act(() => FakeMediaWs.last().serverClose(4012));
+    expect(active()?.phase).toBe('ended');
+  });
+
+  it('shows the low-wallet grace warning and accepts server hold changes', async () => {
+    make();
+    button();
+    const placing = place();
+    await waitFor(() => expect(FakeMediaWs.instances).toHaveLength(1));
+    act(() => FakeMediaWs.last().serverOpen());
+    await placing;
+    status('in_progress');
+    server({ type: 'wallet.empty_warning', endsInSec: 30 });
+    expect(await screen.findByText(/Wallet balance is low/)).toHaveTextContent('30 seconds');
+    server({ type: 'call.hold', on: true });
+    expect(active()?.held).toBe(true);
+    server({ type: 'call.hold', on: false });
+    expect(active()?.held).toBe(false);
+    act(() => onCallEnded('wc1', { endReason: 'wallet_empty', durationSec: 30 }));
+    expect(screen.queryByText(/Wallet balance is low/)).not.toBeInTheDocument();
   });
 
   it('mute / hold / keys / hang up go to the socket and the API', async () => {
@@ -426,6 +546,16 @@ describe('call bar', () => {
     await waitFor(() => expect(api.transfer).toHaveBeenCalledWith('wc1', 'u1'));
     await waitFor(() => expect(api.answer).toHaveBeenCalledWith('wc1'));
   });
+
+  it('taking over joins a call already in progress: the bar shows it as talking', async () => {
+    make();
+    callStatus.mockResolvedValueOnce('in_progress');
+    const p = answerCall({ callId: 'wc1', label: 'Asha', conversationId: null, recording: false });
+    await waitFor(() => expect(FakeMediaWs.instances).toHaveLength(1));
+    act(() => FakeMediaWs.last().serverOpen());
+    expect(await p).toBe(true);
+    expect(active()).toMatchObject({ phase: 'in_call', answeredAt: 1_000 });
+  });
 });
 
 describe('incoming calls', () => {
@@ -517,6 +647,53 @@ describe('incoming calls', () => {
     expect(started).toHaveLength(6);
     expect(close).toHaveBeenCalled();
     vi.useRealTimers();
+  });
+});
+
+describe('microphone selection', () => {
+  it('switches input on the existing call and reports a denied microphone', async () => {
+    const { audio } = make();
+    const change = vi.spyOn(audio.engine, 'setInputDevice');
+    const work = place();
+    await waitFor(() => expect(FakeMediaWs.instances).toHaveLength(1));
+    FakeMediaWs.last().serverOpen();
+    await work;
+    const media = {
+      enumerateDevices: vi.fn().mockResolvedValue([
+        { kind: 'audioinput', deviceId: 'headset', label: 'USB headset' },
+        { kind: 'audioinput', deviceId: 'second', label: '' },
+        { kind: 'audiooutput', deviceId: 'speaker', label: 'Speaker' },
+      ]),
+    };
+    renderWithProviders({ routes: [{ path: '/', element: <MicrophonePicker media={media} /> }] });
+    const picker = await screen.findByRole('combobox', { name: 'Microphone' });
+    await userEvent.click(picker);
+    await userEvent.click(screen.getByRole('option', { name: 'USB headset' }));
+    await waitFor(() => expect(change).toHaveBeenCalledWith('headset'));
+    expect(FakeMediaWs.instances).toHaveLength(1);
+    change.mockRejectedValueOnce(new MicError('mic_denied'));
+    await userEvent.click(picker);
+    await userEvent.click(screen.getByRole('option', { name: 'Microphone 2' }));
+    expect(await screen.findByText(MIC_ERROR_TEXT.mic_denied)).toBeInTheDocument();
+  });
+
+  it('hides unsupported devices and ignores enumeration that finishes after unmount', async () => {
+    let resolve!: (devices: MediaDeviceInfo[]) => void;
+    const media = {
+      enumerateDevices: () =>
+        new Promise<MediaDeviceInfo[]>((r) => {
+          resolve = r;
+        }),
+    };
+    const view = renderWithProviders({
+      routes: [{ path: '/', element: <MicrophonePicker media={media} /> }],
+    });
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    view.unmount();
+    await act(async () => {
+      resolve([]);
+      await Promise.resolve();
+    });
   });
 });
 

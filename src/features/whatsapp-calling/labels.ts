@@ -110,8 +110,10 @@ export const CALL_OUTCOME_LABELS: Record<CallBubble['outcome'], string> = {
 };
 
 /** `2:14` (minutes:seconds). */
-export const formatCallDuration = (sec: number): string =>
-  `${String(Math.floor(sec / 60))}:${String(Math.max(0, sec % 60)).padStart(2, '0')}`;
+export const formatCallDuration = (sec: number | null | undefined): string => {
+  const s = typeof sec === 'number' && Number.isFinite(sec) ? Math.max(0, Math.round(sec)) : 0;
+  return `${String(Math.floor(s / 60))}:${String(s % 60).padStart(2, '0')}`;
+};
 
 /** "Call · 2:14" / "Missed call" / "AI call · 0:45". */
 export const callBubbleText = (c: CallBubble): string => {

@@ -17,6 +17,8 @@ export type MediaServerMessage =
   | { type: 'call.event'; event: { type: string; data: Record<string, unknown>; seq: number } }
   | { type: 'call.transfer'; phoneLast4: string }
   | { type: 'audio.clear' }
+  | { type: 'wallet.empty_warning'; endsInSec: number }
+  | { type: 'call.hold'; on: boolean }
   | { type: 'call.ended'; reason: string; durationSec: number; costMicros: number }
   | { type: 'error'; code: string };
 
