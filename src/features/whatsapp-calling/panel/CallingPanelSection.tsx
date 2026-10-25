@@ -97,7 +97,8 @@ export function CallingPanelSection({
         </Typography>
       )}
       {actions}
-      {p.canRequest && canRequest && (
+      {/* the call button asks for permission itself when it is there */}
+      {!actions && p.canRequest && canRequest && (
         <Button
           size="small"
           variant="outlined"

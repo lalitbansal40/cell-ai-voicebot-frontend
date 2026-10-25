@@ -21,6 +21,7 @@ import { useSession } from '@/features/auth/hooks';
 import { signOut } from '@/features/auth/session';
 import { useAuthStore } from '@/features/auth/store';
 import { NotificationsBell } from '@/features/notifications/NotificationsBell';
+import { AvailabilityToggle } from '@/features/whatsapp-calling/live/AvailabilityToggle';
 import { authApi } from '@/services/api/auth';
 import { getErrorMessage } from '@/services/api/errors';
 import { useWsStatus } from '@/services/realtime';
@@ -102,6 +103,7 @@ export function Header({ onMenu }: { onMenu: () => void }) {
             sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: ws.color, mx: 1.5 }}
           />
         </Tooltip>
+        <AvailabilityToggle />
         <ThemeToggle />
         <NotificationsBell />
         <IconButton

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router';
 
 import { useWalletLiveUpdates } from '@/features/wallet/useWalletLiveUpdates';
+import { CallMounts } from '@/features/whatsapp-calling/live/CallMounts';
 
 import { Banners } from './Banners';
 import { Header } from './Header';
@@ -25,6 +26,7 @@ export function AppLayout() {
         <Banners />
         <Outlet />
       </Box>
+      <CallMounts />
     </Box>
   );
 }

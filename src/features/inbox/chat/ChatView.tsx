@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { usePermission } from '@/features/auth/hooks';
 import { ContactFormDialog } from '@/features/contacts/ContactFormDialog';
 import { useCustomFields } from '@/features/contacts/queries';
+import { CallButton } from '@/features/whatsapp-calling/live/CallButton';
 import { getErrorMessage, toApiError } from '@/services/api/errors';
 import type { InboxMessage } from '@/services/api/types';
 
@@ -115,7 +116,21 @@ export function ChatView({
         onBack={onBack}
         onShowDetails={onShowDetails}
         assignee={<AssignSelect conversation={c} />}
-        actions={<ConversationActions conversation={c} />}
+        actions={
+          <>
+            {c.channel && !c.contact.deleted && (
+              <CallButton
+                channelId={c.channelId}
+                contactId={c.contact.id}
+                phoneE164={c.phoneE164}
+                label={c.label}
+                conversationId={c.id}
+                windowExpiresAt={c.windowExpiresAt}
+              />
+            )}
+            <ConversationActions conversation={c} />
+          </>
+        }
       />
       {retry.isError && (
         <Alert severity="error" onClose={() => retry.reset()} sx={{ borderRadius: 0 }}>

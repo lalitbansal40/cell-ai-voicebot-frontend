@@ -23547,6 +23547,8 @@ export interface components {
       lastLoginAt: string | null;
       /** @enum {string|null} */
       platformRole: 'superadmin' | null;
+      /** @enum {string} */
+      callAvailability: 'available' | 'busy' | 'offline';
       createdAt: string;
     };
     PublicAccount: {

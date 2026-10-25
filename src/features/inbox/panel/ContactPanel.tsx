@@ -13,7 +13,9 @@ import { Link as RouterLink } from 'react-router';
 import { CopyButton } from '@/components/CopyButton';
 import { RelativeTime } from '@/components/RelativeTime';
 import { useCustomFields } from '@/features/contacts/queries';
+import { CallButton } from '@/features/whatsapp-calling/live/CallButton';
 import { CallingPanelSection } from '@/features/whatsapp-calling/panel/CallingPanelSection';
+import { useCanCall } from '@/features/whatsapp-calling/queries';
 import { formatFieldValue } from '@/utils/format';
 import { formatPhone } from '@/utils/phone';
 
@@ -47,6 +49,7 @@ export function ContactPanel({
   const contact = panel.data?.contact;
   const conv = detail.data;
   const labelOf = new Map((fields.data ?? []).map((f) => [f.key, f]));
+  const canCallHere = useCanCall();
 
   return (
     <Box
@@ -166,6 +169,18 @@ export function ContactPanel({
                 contactId={contact.id}
                 windowExpiresAt={conv.windowExpiresAt}
                 initial={panel.data.callPermission}
+                actions={
+                  canCallHere ? (
+                    <CallButton
+                      channelId={conv.channel.id}
+                      contactId={contact.id}
+                      phoneE164={contact.phoneE164}
+                      label={conv.label}
+                      conversationId={conv.id}
+                      windowExpiresAt={conv.windowExpiresAt}
+                    />
+                  ) : undefined
+                }
               />
             </Section>
           )}
