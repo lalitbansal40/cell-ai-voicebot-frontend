@@ -58,6 +58,11 @@ test.beforeAll(async ({ browser, playwright }) => {
   expect(agentId).not.toBe('');
   // the owner is not ringing in these tests (busy); the agent and the manager are online
   await wa.setAvailability('busy');
+  // their app shell has loaded the call listener (lazy) before the first customer calls
+  for (const p of [agent, manager])
+    await expect(p.getByRole('button', { name: /^Call availability/ })).toBeVisible({
+      timeout: 20_000,
+    });
 });
 test.afterAll(async () => {
   await wa.dispose();
