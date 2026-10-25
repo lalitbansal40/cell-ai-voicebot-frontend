@@ -272,6 +272,7 @@ describe('wallet overview + settings', () => {
           },
         ],
       },
+      whatsappCalling: { payer: 'platform', pulseSec: 6, markets: [] },
     });
     const update = vi.spyOn(walletApi, 'updateSettings').mockImplementation(() => walletApi.get());
     renderWithProviders({ route: '/wallet' });
@@ -342,6 +343,7 @@ describe('superadmin WhatsApp billing page', () => {
 
   it('Rates: import a CSV → errors with rows + diff → effective date + note → save', async () => {
     admin.importRates.mockResolvedValue({
+      callingMarkets: [],
       markets: [
         fakeRateMarket({ utilityMicros: 120_000 }),
         fakeRateMarket({ market: 'AE', label: 'UAE', callingCodes: ['971'] }),
@@ -398,7 +400,12 @@ describe('superadmin WhatsApp billing page', () => {
           kind: 'http',
         }),
       )
-      .mockResolvedValueOnce({ markets: [fakeRateMarket()], errors: [], diff: null });
+      .mockResolvedValueOnce({
+        markets: [fakeRateMarket()],
+        callingMarkets: [],
+        errors: [],
+        diff: null,
+      });
     await open();
     expect(await screen.findByText(/No rate card yet/)).toBeInTheDocument();
     const input = screen.getByLabelText('Rate card CSV');
@@ -429,8 +436,8 @@ describe('superadmin WhatsApp billing page', () => {
     await waitFor(() => expect(admin.saveRates).toHaveBeenCalled());
     const body = admin.saveRates.mock.calls[0]?.[0];
     expect(body).toMatchObject({ source: 'manual', note: 'Edited India' });
-    expect(body?.markets.find((m) => m.market === 'IN')?.utilityMicros).toBe(123_400);
-    expect(body?.markets.find((m) => m.market === 'OTHER')?.utilityMicros).toBe(115_000);
+    expect(body?.markets?.find((m) => m.market === 'IN')?.utilityMicros).toBe(123_400);
+    expect(body?.markets?.find((m) => m.market === 'OTHER')?.utilityMicros).toBe(115_000);
   });
 
   it('Rates: a load error', async () => {

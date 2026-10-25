@@ -43,6 +43,7 @@ const PROVIDER_LABELS: Record<NonNullable<Call['provider']>, string> = {
   dryrun: 'Simulated',
   sip: 'Phone line',
   notifynow: 'NotifyNow',
+  whatsapp: 'WhatsApp',
 };
 const isProvider = (v: string | null): v is NonNullable<Call['provider']> =>
   v !== null && v in PROVIDER_LABELS;

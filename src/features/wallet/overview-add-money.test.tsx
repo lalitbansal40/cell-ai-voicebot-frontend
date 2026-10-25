@@ -75,6 +75,7 @@ const RATES: RateCardView = {
   source: 'default',
   effectiveFrom: '2026-10-01T00:00:00Z',
   whatsapp: { payer: 'platform', effectiveFrom: '2026-10-01T00:00:00Z', markets: [] },
+  whatsappCalling: { payer: 'platform', pulseSec: 6, markets: [] },
 };
 const PROFILE: BillingProfile = {
   legalName: 'Demo Finance Pvt Ltd',

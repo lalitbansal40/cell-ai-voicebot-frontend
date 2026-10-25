@@ -40,6 +40,14 @@ export const END_REASON_LABELS: Record<CallEndReason, string> = {
   busy: 'Busy',
   invalid_number: 'Invalid number',
   campaign_canceled: 'Campaign canceled',
+  // Phase 12 — WhatsApp calls
+  rejected_by_customer: 'Customer declined',
+  not_answered: 'Not answered',
+  meta_failed: 'WhatsApp could not connect the call',
+  permission_missing: 'No call permission',
+  calling_restricted: 'Calling paused by WhatsApp',
+  no_agent_available: 'Nobody answered',
+  outside_call_hours: 'Outside call hours',
 };
 
 /** Disposition key → label (unknown keys shown as they are). */

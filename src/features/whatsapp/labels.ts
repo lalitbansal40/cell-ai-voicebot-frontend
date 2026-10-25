@@ -50,6 +50,7 @@ const TIERS: Record<WhatsAppLimitTier, string> = {
   TIER_50: '50 / day',
   TIER_250: '250 / day',
   TIER_1K: '1K / day',
+  TIER_2K: '2K / day',
   TIER_10K: '10K / day',
   TIER_100K: '100K / day',
   TIER_UNLIMITED: 'Unlimited',

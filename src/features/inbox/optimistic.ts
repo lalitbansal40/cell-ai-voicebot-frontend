@@ -81,6 +81,28 @@ const textHeader = (text: string | null | undefined) =>
 
 /** Outgoing interactive preview (same shape the server stores). */
 const interactiveOf = (body: InboxSendMessage): InboxMessage['interactive'] => {
+  if (body.type === 'voice_call') {
+    // Phase 12: the "Call us" button message
+    return {
+      kind: 'voice_call',
+      header: null,
+      body: body.body,
+      footer: null,
+      buttons: [],
+      listButton: null,
+      sections: [],
+      cta: null,
+      reply: null,
+      nfmResponse: null,
+      nfmTruncated: false,
+      callPermission: null,
+      voiceCall: {
+        displayText: body.displayText?.trim() || 'Call now',
+        ttlMinutes: body.ttlMinutes ?? null,
+      },
+      requestState: null,
+    };
+  }
   if (body.type !== 'buttons' && body.type !== 'list' && body.type !== 'cta_url') return null;
   const header =
     body.type === 'buttons'
@@ -112,6 +134,9 @@ const interactiveOf = (body: InboxSendMessage): InboxMessage['interactive'] => {
     reply: null,
     nfmResponse: null,
     nfmTruncated: false,
+    callPermission: null,
+    voiceCall: null,
+    requestState: null,
   };
 };
 
@@ -127,7 +152,10 @@ export const buildOptimistic = (
   const type: InboxMessage['type'] =
     body.type === 'voice'
       ? 'audio'
-      : body.type === 'buttons' || body.type === 'list' || body.type === 'cta_url'
+      : body.type === 'buttons' ||
+          body.type === 'list' ||
+          body.type === 'cta_url' ||
+          body.type === 'voice_call'
         ? 'interactive'
         : body.type;
   return {
@@ -170,6 +198,7 @@ export const buildOptimistic = (
     order: null,
     button: null,
     system: null,
+    call: null,
     status: note ? 'sent' : 'queued',
     statusHistory: [{ status: note ? 'sent' : 'queued', at }],
     error: null,

@@ -37,6 +37,9 @@ export interface ListCallsQuery {
   contactId?: string;
   campaignId?: string;
   provider?: Call['provider'];
+  /** Phase 12 (WhatsApp calls): who called, agent or AI. */
+  direction?: Call['direction'];
+  mode?: Call['mode'];
   isTest?: boolean;
   from?: string;
   to?: string;

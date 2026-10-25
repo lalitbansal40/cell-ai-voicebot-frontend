@@ -249,7 +249,9 @@ export type WhatsAppPricePreview = Schemas['WhatsAppPricePreview'];
 export type WhatsAppPricePreviewBody = Schemas['WhatsAppPricePreviewBody'];
 export type WhatsAppPriceNote = WhatsAppPricePreview['note'];
 export type WhatsAppRateCardSave = Schemas['WhatsAppRateCardSave'];
-export type WhatsAppRateCardMarket = WhatsAppRateCardSave['markets'][number];
+export type WhatsAppRateCardMarket = NonNullable<WhatsAppRateCardSave['markets']>[number];
+/** Phase 12: one market of a calling card (per-minute rate). */
+export type WhatsAppCallingRateMarket = NonNullable<WhatsAppRateCardSave['callingMarkets']>[number];
 export type WhatsAppBillingSettingsPatch = Schemas['WhatsAppBillingSettingsPatch'];
 export type WhatsAppBillingInput = Schemas['WhatsAppBillingInput'];
 export type InboxMessageTemplate = NonNullable<InboxMessage['template']>;
@@ -278,3 +280,28 @@ export type AccountWhatsAppBillingView = Ok<
   '/api/v1/admin/accounts/{id}/whatsapp-billing',
   'patch'
 >;
+
+type Created<P extends keyof paths, M extends keyof paths[P]> = paths[P][M] extends {
+  responses: { 201: { content: { 'application/json': { data: infer D } } } };
+}
+  ? D
+  : never;
+
+/** WhatsApp calling (Phase 12). */
+export type WhatsAppCallingSettings = Schemas['WhatsAppCallingSettings'];
+export type WhatsAppCallingSettingsPatch = Schemas['WhatsAppCallingSettingsPatch'];
+export type WhatsAppCallHours = WhatsAppCallingSettings['callHours'];
+export type WhatsAppCallHoursEntry = WhatsAppCallHours['weekly'][number];
+export type WhatsAppCallHoliday = WhatsAppCallHours['holidays'][number];
+export type WhatsAppInboundRoute = WhatsAppCallingSettings['inbound']['route'];
+export type WhatsAppCallProgram = NonNullable<WhatsAppCallingSettings['inbound']['aiProgram']>;
+export type WhatsAppCallPermission = Schemas['WhatsAppCallPermission'];
+export type WhatsAppCallPermissionStatus = WhatsAppCallPermission['status'];
+export type WhatsAppCallMediaTicket = Schemas['WhatsAppCallMediaTicket'];
+export type StartedWhatsAppCall = Created<'/api/v1/whatsapp/calls', 'post'>;
+export type CallPermissionRequestResult = Created<
+  '/api/v1/whatsapp/call-permissions/request',
+  'post'
+>;
+export type CallAvailabilityStatus = Schemas['CallAvailability']['status'];
+export type WhatsAppChannelCalling = WhatsAppChannel['calling'];

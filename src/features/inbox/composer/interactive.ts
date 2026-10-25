@@ -176,5 +176,8 @@ export const toPreview = (s: BuilderState): InboxInteractive => {
     reply: null,
     nfmResponse: null,
     nfmTruncated: false,
+    callPermission: null,
+    voiceCall: null,
+    requestState: null,
   };
 };

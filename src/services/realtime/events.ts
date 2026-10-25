@@ -24,7 +24,8 @@ export type CallStatus =
 
 export interface WsEventMap {
   'call.created': { callId: string; isTest: boolean; campaignId?: string };
-  'call.status': { callId: string; status: CallStatus };
+  /** `provider` (Phase 12) tells WhatsApp calls apart (`whatsapp`). */
+  'call.status': { callId: string; status: CallStatus; provider?: string };
   'call.transcript': {
     callId: string;
     seq: number;
@@ -38,6 +39,7 @@ export interface WsEventMap {
     callId: string;
     /** Campaign calls only (Phase 8). */
     campaignId?: string;
+    provider?: string;
     status: CallStatus;
     endReason: string | null;
     durationSec: number;
@@ -79,6 +81,25 @@ export interface WsEventMap {
     status: WhatsAppTemplateStatus;
     quality: WhatsAppTemplateQuality | null;
     category: WhatsAppTemplateCategory;
+  };
+  /** Phase 12 (to each user in the ring): a WhatsApp call rings — ids only. */
+  'whatsapp.call.incoming': {
+    callId: string;
+    conversationId: string | null;
+    contactId: string | null;
+    channelId: string;
+    ringUntil: string;
+  };
+  /** Phase 12: a team member answered (first wins) — the others stop ringing. */
+  'whatsapp.call.taken': { callId: string; byUserId: string };
+  /** Phase 12: the call stopped ringing (hang-up, timeout, declined, answered). */
+  'whatsapp.call.ended_ringing': { callId: string; reason: string };
+  /** Phase 12: a customer's call permission changed (reply, expiry, revoke, request). */
+  'whatsapp.call_permission.updated': {
+    contactId: string;
+    channelId: string;
+    status: string;
+    expiresAt: string | null;
   };
   /** Phase 10, account level — ids + counts only, never message text. */
   'inbox.conversation.updated': {
@@ -146,6 +167,10 @@ export const WS_EVENT_TYPES: readonly WsEventType[] = [
   'campaign.progress',
   'whatsapp.channel.updated',
   'whatsapp.template.updated',
+  'whatsapp.call.incoming',
+  'whatsapp.call.taken',
+  'whatsapp.call.ended_ringing',
+  'whatsapp.call_permission.updated',
   'inbox.conversation.updated',
   'inbox.summary.updated',
   'inbox.message.created',

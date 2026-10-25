@@ -40,6 +40,7 @@ const TYPE_LABELS: Record<InboxMessageType, string> = {
   system: 'System message',
   unsupported: 'Unsupported message',
   note: 'Internal note',
+  call: 'WhatsApp call',
 };
 
 /** Type name; a voice note says so. */
@@ -133,7 +134,6 @@ export const WINDOW_CLOSED_TEXT =
 export const BLOCK_TEXT =
   "They can't message this number until you unblock them. WhatsApp only allows blocking a customer who wrote in the last 24 hours.";
 export const READ_ONLY_TEXT = 'You can read this conversation but not reply';
-export const CALLING_SOON_TEXT = 'Calling arrives in Phase 12';
 
 /** User-facing text for inbox API errors. */
 export const inboxErrorMessage = (err: ApiError): string => {

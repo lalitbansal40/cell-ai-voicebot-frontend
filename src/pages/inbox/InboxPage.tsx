@@ -16,6 +16,7 @@ import { ConversationList } from '@/features/inbox/list/ConversationList';
 import { ContactPanel } from '@/features/inbox/panel/ContactPanel';
 import { useInboxConfig, useInboxLiveUpdates } from '@/features/inbox/queries';
 import { useChannels } from '@/features/whatsapp/queries';
+import { useCallingLiveUpdates } from '@/features/whatsapp-calling/queries';
 import { toApiError } from '@/services/api/errors';
 
 const LIST_WIDTH = 300;
@@ -34,6 +35,7 @@ export function InboxPage() {
   const medium = useMediaQuery(theme.breakpoints.up('md'));
   const [detailsOpen, setDetailsOpen] = useState(false);
   useInboxLiveUpdates();
+  useCallingLiveUpdates();
   const config = useInboxConfig();
   const channels = useChannels();
 

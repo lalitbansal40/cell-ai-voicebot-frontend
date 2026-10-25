@@ -512,7 +512,12 @@ describe('queries', () => {
     });
     admin.margin.mockResolvedValue([fakeMarginRow()]);
     admin.reconciliation.mockResolvedValue([fakeReconcileRow()]);
-    admin.importRates.mockResolvedValue({ markets: [], errors: [], diff: null });
+    admin.importRates.mockResolvedValue({
+      markets: [],
+      callingMarkets: [],
+      errors: [],
+      diff: null,
+    });
     admin.saveRates.mockResolvedValue(fakeRateCard());
     admin.setAccountBilling.mockResolvedValue({
       metaPayer: 'platform',

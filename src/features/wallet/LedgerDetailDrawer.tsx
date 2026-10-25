@@ -56,6 +56,7 @@ const USAGE_KIND_LABELS: Record<
   flow_intent: 'Flow intent check',
   call: 'Call',
   whatsapp: 'WhatsApp message',
+  whatsapp_call: 'WhatsApp call',
 };
 
 /** One ledger row in full: amounts, call breakdown (billable seconds, pulse, parts), refs. */

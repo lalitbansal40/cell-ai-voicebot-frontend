@@ -13,10 +13,10 @@ import { Link as RouterLink } from 'react-router';
 import { CopyButton } from '@/components/CopyButton';
 import { RelativeTime } from '@/components/RelativeTime';
 import { useCustomFields } from '@/features/contacts/queries';
+import { CallingPanelSection } from '@/features/whatsapp-calling/panel/CallingPanelSection';
 import { formatFieldValue } from '@/utils/format';
 import { formatPhone } from '@/utils/phone';
 
-import { CALLING_SOON_TEXT } from '../labels';
 import { useContactPanel, useConversation } from '../queries';
 
 const Section = ({ title, children }: { title: string; children: ReactNode }) => (
@@ -31,7 +31,7 @@ const Section = ({ title, children }: { title: string; children: ReactNode }) =>
 /**
  * Right pane (region "Contact details"): the Phase 3 contact (name, number,
  * WhatsApp name, tags, lists, fields, DND / opt-out), number + assignee,
- * calling placeholder (Phase 12), recent calls and other chats.
+ * WhatsApp calling (Phase 12: permission, request, last calls), recent calls and other chats.
  */
 export function ContactPanel({
   conversationId,
@@ -159,11 +159,16 @@ export function ContactPanel({
             </Section>
           )}
 
-          <Section title="WhatsApp calling">
-            <Typography variant="body2" color="text.secondary">
-              {CALLING_SOON_TEXT}
-            </Typography>
-          </Section>
+          {contact && conv?.channel && (
+            <Section title="WhatsApp calling">
+              <CallingPanelSection
+                channelId={conv.channel.id}
+                contactId={contact.id}
+                windowExpiresAt={conv.windowExpiresAt}
+                initial={panel.data.callPermission}
+              />
+            </Section>
+          )}
 
           <Section title="Recent calls">
             {panel.data.recentCalls.length === 0 ? (

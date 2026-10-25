@@ -84,6 +84,7 @@ const base = (type: InboxMessageType): InboxMessage => ({
   order: null,
   button: null,
   system: null,
+  call: null,
   status: 'received',
   statusHistory: [{ status: 'received', at: AT }],
   error: null,
@@ -125,6 +126,9 @@ const interactive = (
   reply: null,
   nfmResponse: null,
   nfmTruncated: false,
+  callPermission: null,
+  voiceCall: null,
+  requestState: null,
   ...extra,
 });
 
@@ -169,6 +173,12 @@ const CONTENT: Record<InboxMessageType, Partial<InboxMessage>> = {
   system: { system: { kind: 'customer_changed_number', newWaIdLast4: '7001' } },
   unsupported: {},
   note: { direction: 'out', origin: 'agent', text: 'Called the customer back', status: 'sent' },
+  call: {
+    direction: 'out',
+    origin: 'system',
+    status: 'sent',
+    call: { callId: 'c1', direction: 'out', outcome: 'completed', durationSec: 134, mode: 'human' },
+  },
   template: {
     direction: 'out',
     origin: 'agent',

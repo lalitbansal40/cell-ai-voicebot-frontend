@@ -14,6 +14,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 
+import { CallPermissionContent } from '@/features/whatsapp-calling/bubbles';
 import type { InboxInteractive, InboxMessage } from '@/services/api/types';
 
 import { mapsUrl } from '../format';
@@ -128,6 +129,14 @@ const formFields = (json: string | null): [string, string][] => {
 
 /** Outgoing buttons / list / link button previews and the customer's replies to them. */
 export function InteractiveContent({ interactive: i }: { interactive: InboxInteractive }) {
+  // Phase 12: call permission request / reply and the "Call us" button
+  if (
+    i.kind === 'call_permission_request' ||
+    i.kind === 'call_permission_reply' ||
+    i.kind === 'voice_call'
+  ) {
+    return <CallPermissionContent interactive={i} />;
+  }
   if (i.kind === 'button_reply' || i.kind === 'list_reply') {
     return (
       <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>

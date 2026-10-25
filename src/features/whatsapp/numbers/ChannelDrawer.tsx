@@ -17,6 +17,7 @@ import { useState, type ReactNode } from 'react';
 
 import { CopyButton } from '@/components/CopyButton';
 import { RelativeTime } from '@/components/RelativeTime';
+import { CallingSection } from '@/features/whatsapp-calling/settings/CallingSection';
 import { toApiError } from '@/services/api/errors';
 import type { WhatsAppConfig } from '@/services/api/types';
 import { SIMULATOR_KINDS } from '@/services/api/whatsapp';
@@ -125,6 +126,12 @@ export function ChannelDrawer({
               <>
                 <Divider />
                 <BusinessProfileSection channelId={c.id} />
+              </>
+            )}
+            {c.status !== 'disconnected' && (
+              <>
+                <Divider />
+                <CallingSection channelId={c.id} />
               </>
             )}
             <Divider />

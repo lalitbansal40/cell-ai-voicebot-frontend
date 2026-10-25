@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 
 import { EmptyState } from '@/components/EmptyState';
+import { useCallingLiveUpdates } from '@/features/whatsapp-calling/queries';
 import { toApiError } from '@/services/api/errors';
 import type { WhatsAppChannel } from '@/services/api/types';
 
@@ -35,6 +36,7 @@ const REQUIREMENTS = [
 /** The Numbers tab: connect, list, manage (live updates + polling while settling). */
 export function NumbersPanel() {
   useWhatsAppLiveUpdates();
+  useCallingLiveUpdates();
   const config = useWhatsAppConfig();
   const notSetUp =
     config.data?.enabled === false ||

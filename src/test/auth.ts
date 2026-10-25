@@ -42,6 +42,8 @@ const ALL = [
   'inbox.assign',
   'templates.read',
   'templates.manage',
+  'calls.answer',
+  'whatsapp.calling.manage',
 ];
 
 /** Mirrors the backend role matrix (PHASE_2_PLAN §1b) for UI tests. */
@@ -64,6 +66,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'calls.read',
     'calls.trigger',
     'calls.listen',
+    'calls.answer',
     'calls.export',
     'campaigns.read',
     'campaigns.write',
@@ -86,6 +89,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'calls.read',
     'calls.trigger',
     'calls.listen',
+    'calls.answer',
     'campaigns.read',
     'whatsapp.read',
     'inbox.read',

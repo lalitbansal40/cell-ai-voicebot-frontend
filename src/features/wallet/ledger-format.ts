@@ -13,6 +13,7 @@ export const LEDGER_TYPE_LABELS: Record<LedgerType, string> = {
   subscription: 'Subscription',
   recording_charge: 'Recording storage',
   whatsapp_charge: 'WhatsApp message',
+  whatsapp_call_charge: 'WhatsApp call',
 };
 
 export const LEDGER_STATUS_LABELS: Record<LedgerEntry['status'], string> = {

@@ -25,6 +25,7 @@ export const fakeChannel = (overrides: Partial<WhatsAppChannel> = {}): WhatsAppC
   qualityRating: 'GREEN',
   messagingLimitTier: 'TIER_1K',
   isOnBizApp: false,
+  calling: { status: 'disabled', unavailableReason: null, restricted: false },
   billing: { metaPayer: 'platform', creditLine: { status: 'attached' }, paymentMethodOk: null },
   coexistence: null,
   registration: { status: 'registered' },

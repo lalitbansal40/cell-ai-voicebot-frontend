@@ -55,6 +55,23 @@ vi.mock('@/services/api/whatsapp', async (importOriginal) => ({
   whatsappApi: { channels: vi.fn() },
 }));
 vi.mock('@/services/api/team', () => ({ teamApi: { list: vi.fn() } }));
+// Phase 12: the panel's calling section asks for the customer's call permission
+vi.mock('@/services/api/whatsapp-calling', () => ({
+  whatsappCallingApi: {
+    permission: vi.fn(() =>
+      Promise.resolve({
+        status: 'temporary',
+        expiresAt: '2026-10-30T10:00:00.000Z',
+        canCall: true,
+        canRequest: false,
+        nextRequestAt: null,
+        reason: null,
+        history: [],
+      }),
+    ),
+    getSettings: vi.fn(),
+  },
+}));
 vi.mock('@/services/api/custom-fields', () => ({ customFieldsApi: { list: vi.fn() } }));
 
 const api = vi.mocked(inboxApi);
@@ -371,7 +388,7 @@ describe('contact panel', () => {
     expect(within(panel).getByText('Loan:')).toBeInTheDocument();
     expect(within(panel).getByText(/₹12,500\.00/)).toBeInTheDocument();
     expect(within(panel).getByText('unknown_key:')).toBeInTheDocument();
-    expect(within(panel).getByText('Calling arrives in Phase 12')).toBeInTheDocument();
+    expect(await within(panel).findByText('Can call until 30 Oct 2026, 15:30')).toBeInTheDocument();
     expect(
       within(panel).getByRole('link', { name: 'completed · promise to pay · 64 s' }),
     ).toHaveAttribute('href', '/calls/c1');
