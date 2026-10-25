@@ -45,7 +45,7 @@ test('empty state → Connect → Cloud API → Connected card', async () => {
   await expect(card.getByText(phone)).toBeVisible();
   await expect(card.getByText('High quality')).toBeVisible();
   await expect(card.getByText('Cloud API')).toBeVisible();
-  await expect(card.getByText(/Limit 1K \/ day/)).toBeVisible();
+  await expect(card.getByText(/Limit 2K \/ day/)).toBeVisible();
   await expect(card.getByText(/Name approved/)).toBeVisible();
   await expect(card.getByText('Meta billed to: platform credit line ✓')).toBeVisible();
 });

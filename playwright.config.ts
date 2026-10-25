@@ -19,6 +19,11 @@ const prepareScript = fileURLToPath(new URL('./e2e/prepare-backend.mjs', import.
 const fakeMic = fileURLToPath(
   new URL('../cell-ai-voicebot-backend/docs/samples/audio/customer-silence.wav', import.meta.url),
 );
+/** Phase 12: the agent's fake mic in WhatsApp call specs — a 1 kHz tone the fake customer detects. */
+const agentTone = fileURLToPath(
+  new URL('../cell-ai-voicebot-backend/docs/samples/audio/agent-tone.wav', import.meta.url),
+);
+const WA_CALL_SPECS = /calls-wa-.*\.spec\.ts/;
 /** `E2E_BACKEND_LOGS=1` prints backend logs (info) — used by the secret-in-logs check. */
 const backendLogs = Boolean(process.env.E2E_BACKEND_LOGS);
 
@@ -47,6 +52,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: WA_CALL_SPECS,
       use: {
         ...devices['Desktop Chrome'],
         // web test calls: a fake mic (file) and no permission prompt
@@ -56,6 +62,22 @@ export default defineConfig({
             '--use-fake-ui-for-media-stream',
             '--use-fake-device-for-media-stream',
             `--use-file-for-fake-audio-capture=${fakeMic}`,
+          ],
+        },
+      },
+    },
+    {
+      // Phase 12: WhatsApp calls — the agent's microphone plays the tone (runs after chromium)
+      name: 'chromium-wa-calls',
+      testMatch: WA_CALL_SPECS,
+      use: {
+        ...devices['Desktop Chrome'],
+        permissions: ['microphone', 'notifications'],
+        launchOptions: {
+          args: [
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+            `--use-file-for-fake-audio-capture=${agentTone}`,
           ],
         },
       },
@@ -106,6 +128,13 @@ export default defineConfig({
         FAKE_META_STATUS_DELAYS_MS: '200,500,800',
         // Phase 11: the fake reviews templates after 1 s
         FAKE_META_TEMPLATE_REVIEW_MS: '1000',
+        // Phase 12: WhatsApp calls on loopback — fast fake Meta call events, a free UDP range
+        FAKE_META_CALL_DELAYS_MS: '100,200,500',
+        WA_MEDIA_PORT_MIN: '41000',
+        WA_MEDIA_PORT_MAX: '41199',
+        WA_STUN_URLS: '',
+        // calls to the fake phone at any hour (fake Meta only; never in production)
+        WA_CALL_WINDOW_IGNORED: 'true',
         E2E_SUPERADMIN_EMAIL: SUPERADMIN.email,
         E2E_SUPERADMIN_PASSWORD: SUPERADMIN.password,
       },
