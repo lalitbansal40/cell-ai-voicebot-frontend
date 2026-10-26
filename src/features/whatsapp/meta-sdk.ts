@@ -8,8 +8,20 @@ export const META_SDK_SCRIPT_ID = 'facebook-jssdk';
 export const META_SDK_TIMEOUT_MS = 15_000;
 /** How long to wait for the session info message after the code arrived. */
 export const SESSION_INFO_WAIT_MS = 3_000;
-/** Origins allowed to post `WA_EMBEDDED_SIGNUP` messages. */
-export const META_ORIGINS = ['https://www.facebook.com', 'https://web.facebook.com'];
+/** Origins allowed to post `WA_EMBEDDED_SIGNUP` messages: https on facebook.com or a subdomain. */
+export const isMetaOrigin = (origin: string): boolean => {
+  let url: URL;
+  try {
+    url = new URL(origin);
+  } catch {
+    return false;
+  }
+  return (
+    url.protocol === 'https:' &&
+    !url.port &&
+    (url.hostname === 'facebook.com' || url.hostname.endsWith('.facebook.com'))
+  );
+};
 export const SDK_FAILED_MESSAGE =
   "Couldn't load Meta's signup (blocked by an extension or network?)";
 
@@ -93,20 +105,24 @@ export const loadMetaSdk = ({
 };
 
 export type SessionMessage =
-  | { kind: 'finish'; wabaId?: string; phoneNumberId?: string }
+  | { kind: 'finish'; wabaId?: string; phoneNumberId?: string; waacId?: string }
   | { kind: 'error'; message: string }
   | { kind: 'cancel'; step: string | null };
 
 const str = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
 
 /**
- * `WA_EMBEDDED_SIGNUP` messages from Meta's popup (origin-checked, safe JSON).
- * Any `FINISH*` event is a finish (`FINISH`, `FINISH_ONLY_WABA`, the Business app one).
+ * `WA_EMBEDDED_SIGNUP` messages from Meta's popup (origin-checked, safe JSON; Embedded
+ * Signup v4 sends no `version`). The documented finish events are accepted (`FINISH`,
+ * `FINISH_ONLY_WABA`, `FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING`, `FINISH_OBO_MIGRATION`,
+ * `FINISH_GRANT_ONLY_API_ACCESS`); `ERROR`, or `CANCEL` with an `error_message` (the
+ * user reported an error), is an error; any other `CANCEL` is a cancel. `waba_id` names
+ * Meta's Messaging account since 2026; `waac_id` (the WhatsApp account) is kept when sent.
  */
 export const parseSessionMessage = (
   event: Pick<MessageEvent, 'origin' | 'data'>,
 ): SessionMessage | null => {
-  if (!META_ORIGINS.includes(event.origin)) return null;
+  if (!isMetaOrigin(event.origin)) return null;
   let payload: unknown = event.data;
   if (typeof payload === 'string') {
     try {
@@ -120,16 +136,27 @@ export const parseSessionMessage = (
   if (msg.type !== 'WA_EMBEDDED_SIGNUP') return null;
   const data = msg.data ?? {};
   const kind = typeof msg.event === 'string' ? msg.event : '';
-  if (kind.startsWith('FINISH')) {
+  if (
+    [
+      'FINISH',
+      'FINISH_ONLY_WABA',
+      'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING',
+      'FINISH_OBO_MIGRATION',
+      'FINISH_GRANT_ONLY_API_ACCESS',
+    ].includes(kind)
+  ) {
     const wabaId = str(data.waba_id);
     const phoneNumberId = str(data.phone_number_id);
+    const waacId = str(data.waac_id);
     return {
       kind: 'finish',
       ...(wabaId ? { wabaId } : {}),
       ...(phoneNumberId ? { phoneNumberId } : {}),
+      ...(waacId ? { waacId } : {}),
     };
   }
-  if (kind === 'ERROR')
-    return { kind: 'error', message: str(data.error_message) ?? 'Meta reported an error' };
-  return { kind: 'cancel', step: str(data.current_step) ?? null };
+  const reported = str(data.error_message);
+  if (kind === 'ERROR' || (kind === 'CANCEL' && reported))
+    return { kind: 'error', message: reported ?? 'Meta reported an error' };
+  return kind === 'CANCEL' ? { kind: 'cancel', step: str(data.current_step) ?? null } : null;
 };

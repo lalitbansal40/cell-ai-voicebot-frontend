@@ -25455,6 +25455,18 @@ export interface components {
       status: 'ok';
       /** @example 3600 */
       uptimeSec: number;
+      /** @example 0.0.1 */
+      version: string;
+      /**
+       * @description Git sha of the build or `unknown`
+       * @example 3371267
+       */
+      commit: string;
+      /**
+       * @description Build time or `unknown`
+       * @example 2026-10-26T10:00:00Z
+       */
+      builtAt: string;
     };
     Readiness: {
       /** @enum {string} */
@@ -27208,6 +27220,8 @@ export interface components {
         wabaId?: string;
         /** @example 106540352242922 */
         phoneNumberId?: string;
+        /** @example 106540352242922 */
+        waacId?: string;
       };
       /** @enum {string} */
       mode: 'cloud_api' | 'coexistence';

@@ -18,7 +18,7 @@ export interface EmbeddedSignupInput {
   code: string;
   mode: WhatsAppMode;
   /** Ids from Meta's WA_EMBEDDED_SIGNUP message — hints the server verifies. */
-  sessionInfo?: { wabaId?: string; phoneNumberId?: string };
+  sessionInfo?: { wabaId?: string; phoneNumberId?: string; waacId?: string };
 }
 
 export type ChannelOutcome = WhatsAppConnectResult['outcome'];

@@ -13,6 +13,7 @@ import {
 export interface SessionInfo {
   wabaId?: string;
   phoneNumberId?: string;
+  waacId?: string;
 }
 
 export type SignupOutcome =
@@ -25,16 +26,17 @@ export type SignupOutcome =
 /** A login answer this fast without a code means the popup never opened. */
 const POPUP_BLOCKED_MS = 800;
 
-/** `FB.login` options per mode (§1c — coexistence adds the Business app feature type). */
+/**
+ * `FB.login` options per mode — Embedded Signup v4 (Phase 13): the products come from
+ * the Login for Business configuration, Cloud API `extras` stays empty and
+ * session info is always sent (no `sessionInfoVersion`); coexistence still names the
+ * Business app onboarding feature.
+ */
 export const loginOptions = (configId: string, mode: WhatsAppMode): Record<string, unknown> => ({
   config_id: configId,
   response_type: 'code',
   override_default_response_type: true,
-  extras: {
-    setup: {},
-    sessionInfoVersion: 3,
-    ...(mode === 'coexistence' ? { featureType: 'whatsapp_business_app_onboarding' } : {}),
-  },
+  extras: mode === 'coexistence' ? { featureType: 'whatsapp_business_app_onboarding' } : {},
 });
 
 const sessionInfoOf = (msg: SessionMessage | null): SessionInfo =>
@@ -42,6 +44,7 @@ const sessionInfoOf = (msg: SessionMessage | null): SessionInfo =>
     ? {
         ...(msg.wabaId ? { wabaId: msg.wabaId } : {}),
         ...(msg.phoneNumberId ? { phoneNumberId: msg.phoneNumberId } : {}),
+        ...(msg.waacId ? { waacId: msg.waacId } : {}),
       }
     : {};
 

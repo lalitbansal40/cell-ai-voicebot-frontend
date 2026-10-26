@@ -73,7 +73,7 @@ export const fakeWhatsAppConfig = (overrides: Partial<WhatsAppConfig> = {}): Wha
   provider: 'fake',
   appId: null,
   configId: null,
-  graphVersion: 'v23.0',
+  graphVersion: 'v26.0',
   ...overrides,
 });
 
@@ -82,7 +82,7 @@ export const fakeAdminWhatsAppStatus = (
 ): WhatsAppAdminStatus => ({
   enabled: true,
   provider: 'fake',
-  graphVersion: 'v23.0',
+  graphVersion: 'v26.0',
   configured: {
     appId: false,
     appSecret: true,

@@ -10,6 +10,7 @@ import type { WhatsAppChannelList } from '@/services/api/types';
 import { whatsappApi } from '@/services/api/whatsapp';
 import { RealtimeContext } from '@/services/realtime/context';
 import { signInAs } from '@/test/auth';
+import esV4 from '@/test/fixtures/meta-es-v4.json';
 import { fakeRealtime } from '@/test/realtime';
 import { renderWithProviders } from '@/test/render';
 import { fakeChannel, fakeChannelDetail, fakeWhatsAppConfig } from '@/test/whatsapp';
@@ -316,8 +317,8 @@ describe('Meta SDK loader', () => {
   afterEach(() => vi.useRealTimers());
 
   it('injects the script once and initialises the SDK once', async () => {
-    const first = loadMetaSdk({ appId: '1', version: 'v23.0' });
-    const second = loadMetaSdk({ appId: '1', version: 'v23.0' });
+    const first = loadMetaSdk({ appId: '1', version: 'v26.0' });
+    const second = loadMetaSdk({ appId: '1', version: 'v26.0' });
     expect(document.querySelectorAll(`#${META_SDK_SCRIPT_ID}`)).toHaveLength(1);
     expect(document.getElementById(META_SDK_SCRIPT_ID)?.getAttribute('src')).toBe(
       'https://connect.facebook.net/en_US/sdk.js',
@@ -327,27 +328,27 @@ describe('Meta SDK loader', () => {
     window.fbAsyncInit?.();
     expect(await first).toBe(sdk);
     expect(await second).toBe(sdk);
-    await loadMetaSdk({ appId: '1', version: 'v23.0' });
+    await loadMetaSdk({ appId: '1', version: 'v26.0' });
     expect(sdk.init).toHaveBeenCalledTimes(1);
     expect(sdk.init).toHaveBeenCalledWith({
       appId: '1',
       autoLogAppEvents: false,
       xfbml: true,
-      version: 'v23.0',
+      version: 'v26.0',
     });
   });
 
   it('times out, fails on script errors or a missing FB, and can retry', async () => {
     vi.useFakeTimers();
-    const slow = loadMetaSdk({ appId: '1', version: 'v23.0', timeoutMs: 100 });
+    const slow = loadMetaSdk({ appId: '1', version: 'v26.0', timeoutMs: 100 });
     vi.advanceTimersByTime(101);
     await expect(slow).rejects.toThrow(SDK_FAILED_MESSAGE);
     vi.useRealTimers();
     document.getElementById(META_SDK_SCRIPT_ID)?.remove();
-    const broken = loadMetaSdk({ appId: '1', version: 'v23.0' });
+    const broken = loadMetaSdk({ appId: '1', version: 'v26.0' });
     document.getElementById(META_SDK_SCRIPT_ID)?.dispatchEvent(new Event('error'));
     await expect(broken).rejects.toThrow(SDK_FAILED_MESSAGE);
-    const empty = loadMetaSdk({ appId: '1', version: 'v23.0' });
+    const empty = loadMetaSdk({ appId: '1', version: 'v26.0' });
     window.fbAsyncInit?.();
     await expect(empty).rejects.toThrow(SDK_FAILED_MESSAGE);
   });
@@ -380,12 +381,36 @@ describe('session messages', () => {
       { type: 'WA_EMBEDDED_SIGNUP', event: 'CANCEL', data: { current_step: 'PHONE_NUMBER_SETUP' } },
       { kind: 'cancel', step: 'PHONE_NUMBER_SETUP' },
     ],
-    [
-      { type: 'WA_EMBEDDED_SIGNUP', data: {} },
-      { kind: 'cancel', step: null },
-    ],
+    [{ type: 'WA_EMBEDDED_SIGNUP', data: {} }, null],
   ])('%j', (data, expected) => {
     expect(parseSessionMessage(msg(JSON.stringify(data)))).toEqual(expected);
+  });
+
+  it.each(esV4.cases)(
+    "Embedded Signup v4 sample from Meta's docs: $name",
+    ({ message, expected }) => {
+      expect(parseSessionMessage(msg(JSON.stringify(message)))).toEqual(expected);
+    },
+  );
+
+  it('accepts https facebook.com origins only', () => {
+    const finish = { type: 'WA_EMBEDDED_SIGNUP', event: 'FINISH', data: {} };
+    for (const origin of [
+      'https://www.facebook.com',
+      'https://web.facebook.com',
+      'https://business.facebook.com',
+      'https://facebook.com',
+    ])
+      expect(parseSessionMessage(msg(finish, origin))).toEqual({ kind: 'finish' });
+    for (const origin of [
+      'http://www.facebook.com',
+      'https://evilfacebook.com',
+      'https://facebook.com.evil.example',
+      'https://www.facebook.com:8443',
+      'not an origin',
+      '',
+    ])
+      expect(parseSessionMessage(msg(finish, origin))).toBeNull();
   });
 
   it('ignores other origins, other types and bad JSON', () => {
@@ -395,6 +420,9 @@ describe('session messages', () => {
       kind: 'finish',
     });
     expect(parseSessionMessage(msg('{not json'))).toBeNull();
+    expect(
+      parseSessionMessage(msg({ type: 'WA_EMBEDDED_SIGNUP', event: 'FINISH_UNKNOWN' })),
+    ).toBeNull();
     expect(parseSessionMessage(msg(null))).toBeNull();
     expect(parseSessionMessage(msg(JSON.stringify({ type: 'OTHER' })))).toBeNull();
   });
@@ -425,9 +453,12 @@ describe('Embedded Signup run', () => {
       config_id: '99',
       response_type: 'code',
       override_default_response_type: true,
-      extras: { setup: {}, sessionInfoVersion: 3 },
+      extras: {},
     });
-    expect(loginOptions('99', 'coexistence')).toMatchObject({
+    expect(loginOptions('99', 'coexistence')).toEqual({
+      config_id: '99',
+      response_type: 'code',
+      override_default_response_type: true,
       extras: { featureType: 'whatsapp_business_app_onboarding' },
     });
   });
