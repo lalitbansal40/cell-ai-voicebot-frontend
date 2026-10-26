@@ -6,6 +6,16 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 12 · WhatsApp calling (T12.9–T12.12)** — 2026-10-26
+  - API clients and hooks for number calling settings, call permissions, WhatsApp calls (start / answer / decline / hold / transfer, media ticket) and call availability (regenerated types), WS events `whatsapp.call.incoming` / `taken` / `ended_ringing` / `call_permission.updated` and `provider` on call events; a call hours validator sharing its cases with the backend.
+  - Number → Calling: on / off with a confirm, call button + countries, call hours (time zone, 2 ranges a day, holidays), callback permission, who answers (team / AI / AI first) with ringing and a ring list, the permission request text, restrictions and why a number can't call. Contact panel calling section (state, Ask to allow calls, history, recent calls); permission and call bubbles.
+  - Chat Call button (Request permission · Requested · Call → Call yourself / Call with AI with the cost a minute · Can't call + reason), a call bar on every page (timer, mute, hold, keypad, microphone picker, recording dot, network, AI is talking + Take over, Reconnect, low-wallet warning), a global incoming popup (ring sound, browser notification, first Accept wins, "Taken by …"), the availability toggle; the call bar follows account events and polls the active call every 2 s; cancelled mic / dial work never overwrites a later call.
+  - Calls list WhatsApp badge, type and filters; call detail WhatsApp region; wallet lines "WhatsApp call · India · 2:14" and call prices; superadmin calling rates (CSV import + diff, edit, history), call price settings and margin rows; 5 notification icons; dashboard "Today: N WhatsApp calls · M missed".
+  - Bundle: main 462.6 → 463.7 KB gzip per file (+1.1 KB), JS as one stream 450.6 → 452.0 KB (+1.4 KB); the call bar, popup, toggle, dialogs, settings and the calling rates tab are lazy.
+  - E2E: a second project `chromium-wa-calls` (agent tone as the fake microphone), 23 calling tests in 4 specs; the Phase 9 connect spec expects the fake's 2K limit; 148 total, green twice.
+  - Fixed (found by the calling E2E run, each with a unit test): the call bar stayed "Calling…" / "Connecting…" while the agent's socket was open, NaN durations, "Automatic reply" on call bubbles, the bar covered the bottom-right corner.
+  - Tests: 1215 → 1304.
+
 - **Phase 11 · Templates + WhatsApp billing (T11.7–T11.12)** — 2026-10-24
   - API clients and hooks for `/whatsapp/templates`, the price preview, wallet WhatsApp fields and the superadmin WhatsApp billing routes (regenerated types), the `whatsapp.template.updated` WS event, 14 template simulator kinds (58 in all), routes `/whatsapp/templates` (tabs follow the URL) and `/admin/whatsapp-billing`, nav **WhatsApp billing** (`LIVE_PHASE = 11`); a validator that mirrors the backend (shared case file) and the preview model.
   - Templates tab, details drawer (preview, reason + Edit and resubmit, usage, variable values, history, delete by language or name) and the builder (every header kind with example upload + progress / cancel, variables + samples, footer, grouped buttons, call permission template, time to live, live preview, field errors).
