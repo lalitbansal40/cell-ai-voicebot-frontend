@@ -6,6 +6,12 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 13 · Batch 1 (T13.1–T13.4) — Embedded Signup v4, legal pages, staging build** — 2026-10-26
+  - Embedded Signup v4: `FB.login` sends `extras: {}` for Cloud API numbers (coexistence keeps the Business app feature), no `sessionInfoVersion`; session messages from any https `*.facebook.com` origin, every `FINISH*` event (incl. on-behalf-of migration and grant-only access), `CANCEL` with an `error_message` as an error, `waac_id` passed on; Meta's automatic app event logging switched off; the SDK follows Graph v26.0.
+  - Public `/privacy`, `/terms`, `/contact` and the `/data-deletion` instructions (no login): safe Markdown subset (no HTML; `javascript:`, protocol-relative and backslash / control-character links dropped), company details from public `VITE_LEGAL_*`, a Draft banner until approved; links on every auth screen, the user menu and the sign-up consent line; icons (1024 / 512 / 192 / Apple / favicon) + web manifest via `npm run icons`.
+  - `scripts/build-web.sh <sha>`: the staging SPA is built on the server from the git archive with public values only.
+  - Bundle: JS as one stream 452.0 → 452.8 KB (+0.8 KB; legal pages lazy). E2E: `legal-pages.spec.ts` (3 tests); the Phase 9 data deletion spec follows the new instructions text; 151 total, green twice. Tests: 1304 → 1329.
+
 - **Phase 12 · WhatsApp calling (T12.9–T12.12)** — 2026-10-26
   - API clients and hooks for number calling settings, call permissions, WhatsApp calls (start / answer / decline / hold / transfer, media ticket) and call availability (regenerated types), WS events `whatsapp.call.incoming` / `taken` / `ended_ringing` / `call_permission.updated` and `provider` on call events; a call hours validator sharing its cases with the backend.
   - Number → Calling: on / off with a confirm, call button + countries, call hours (time zone, 2 ranges a day, holidays), callback permission, who answers (team / AI / AI first) with ringing and a ring list, the permission request text, restrictions and why a number can't call. Contact panel calling section (state, Ask to allow calls, history, recent calls); permission and call bubbles.

@@ -206,11 +206,18 @@ Dependabot (`.github/dependabot.yml`) opens weekly grouped update PRs. Repo sett
 
 Copy `.env.example` → `.env.local` (gitignored). **Every `VITE_*` variable is public** — it is compiled into the browser bundle, so never put a secret here. Policy: [secrets.md](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/secrets.md).
 
-| Variable        | Required                          | Description                                                                               |
-| --------------- | --------------------------------- | ----------------------------------------------------------------------------------------- |
-| `VITE_API_URL`  | no (default `/api/v1`)            | API base URL; default uses the dev proxy to `:5100`                                       |
-| `VITE_WS_URL`   | no (default: page origin + `/ws`) | WebSocket **base** URL (`ws://localhost:3100/ws` via proxy); the client appends `/events` |
-| `VITE_APP_NAME` | no                                | Display name of the app                                                                   |
+| Variable                       | Required                          | Description                                                                               |
+| ------------------------------ | --------------------------------- | ----------------------------------------------------------------------------------------- |
+| `VITE_API_URL`                 | no (default `/api/v1`)            | API base URL; default uses the dev proxy to `:5100`                                       |
+| `VITE_WS_URL`                  | no (default: page origin + `/ws`) | WebSocket **base** URL (`ws://localhost:3100/ws` via proxy); the client appends `/events` |
+| `VITE_APP_NAME`                | no                                | Display name of the app                                                                   |
+| `VITE_LEGAL_COMPANY`           | no (staging / production: yes)    | Company name on the privacy policy, terms and contact pages (Phase 13)                    |
+| `VITE_LEGAL_ADDRESS`           | no (staging / production: yes)    | Registered address on those pages                                                         |
+| `VITE_LEGAL_EMAIL`             | no (staging / production: yes)    | Support / privacy e-mail on those pages and the data deletion page                        |
+| `VITE_LEGAL_GRIEVANCE_OFFICER` | no (staging / production: yes)    | Grievance Officer name (DPDP Act) on the privacy and contact pages                        |
+| `VITE_LEGAL_WEBSITE`           | no (staging / production: yes)    | The app's public URL named in the texts                                                   |
+
+A missing `VITE_LEGAL_*` value shows as `[name]` with a "Draft" banner; the texts in `src/content/legal/*.md` stay drafts (`status: draft`) until the client's legal team approves them (`status: approved`).
 
 ## Docs
 
@@ -222,3 +229,9 @@ All project docs (plans, ADRs, conventions) live in the **backend repo** `docs/`
 - [Definition of Done](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/definition-of-done.md)
 - [Architecture Decision Records](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/adr/README.md)
 - [API conventions](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/api.md) · [Error codes](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/error-codes.md) · [WebSocket](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/websocket.md) · [Data](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/data.md) · [Code style](https://github.com/lalitbansal40/cell-ai-voicebot-backend/blob/main/docs/conventions/code-style.md)
+
+## Staging and public pages (Phase 13)
+
+`/privacy`, `/terms`, `/contact` and `/data-deletion` work without login, with links on the auth screens and user menu. Legal Markdown is rendered as React text (no raw HTML), with public `VITE_LEGAL_*` placeholders and a draft banner until approved and complete. Icons/manifest come from `npm run icons` using the existing pinned Playwright renderer. `scripts/build-web.sh <sha>` builds and packages an immutable artifact; supply only public build values. Backend secrets must never enter this process.
+
+Embedded Signup uses the v4 configuration (`extras: {}` for Cloud API), keeps coexistence options separate and accepts compatible session messages. Graph defaults to v26.0 in the API. Three legal-page browser scenarios supplement the existing suite. See the backend [staging runbook](../cell-ai-voicebot-backend/docs/ops/staging.md) for owner gates and deployment.
