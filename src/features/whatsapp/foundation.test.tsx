@@ -331,7 +331,7 @@ describe('Meta SDK loader', () => {
     expect(sdk.init).toHaveBeenCalledTimes(1);
     expect(sdk.init).toHaveBeenCalledWith({
       appId: '1',
-      autoLogAppEvents: true,
+      autoLogAppEvents: false,
       xfbml: true,
       version: 'v23.0',
     });

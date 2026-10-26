@@ -46,7 +46,7 @@ export const resetMetaSdk = (): void => {
 
 const init = (sdk: FacebookSdk, appId: string, version: string): FacebookSdk => {
   if (!initialized) {
-    sdk.init({ appId, autoLogAppEvents: true, xfbml: true, version });
+    sdk.init({ appId, autoLogAppEvents: false, xfbml: true, version });
     initialized = true;
   }
   return sdk;
