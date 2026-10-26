@@ -4,6 +4,7 @@ import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink, useNavigate } from 'react-router';
@@ -109,6 +110,17 @@ export function SignupPage() {
           error={Boolean(errors.timezone)}
           helperText={errors.timezone?.message ?? 'Used for calling windows and reports.'}
         />
+        <Typography variant="caption" color="text.secondary">
+          By creating an account you agree to the{' '}
+          <Link component={RouterLink} to="/terms">
+            Terms of Service
+          </Link>{' '}
+          and the{' '}
+          <Link component={RouterLink} to="/privacy">
+            Privacy Policy
+          </Link>
+          .
+        </Typography>
         <Button type="submit" variant="contained" size="large" disabled={signup.isPending}>
           {signup.isPending ? 'Creating…' : 'Create account'}
         </Button>

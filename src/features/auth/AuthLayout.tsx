@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router';
 
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { LegalLinks } from '@/features/legal/LegalLinks';
 
 interface AuthLayoutProps {
   title: string;
@@ -55,6 +56,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
             {footer}
           </Typography>
         )}
+        <LegalLinks />
       </Stack>
     </Box>
   );

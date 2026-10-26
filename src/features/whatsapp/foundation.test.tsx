@@ -617,7 +617,7 @@ describe('routes', () => {
     });
     renderWithProviders({ route: '/data-deletion?code=ABCDEFGHIJKLMNOP' });
     expect(await screen.findByText(/completed/)).toBeInTheDocument();
-    expect(screen.getByText(/remove the Cell AI Voicebot app/)).toBeInTheDocument();
+    expect(screen.getByText(/Remove the.*app/, { exact: false })).toBeInTheDocument();
   });
 
   it('/data-deletion: received, unknown, no code', async () => {

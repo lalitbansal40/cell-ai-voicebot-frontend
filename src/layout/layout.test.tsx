@@ -217,6 +217,16 @@ describe('AppLayout', () => {
     expect(useAuthStore.getState().status).toBe('anonymous');
   });
 
+  it('the account menu links the privacy policy, terms and contact pages', async () => {
+    signInAs('owner');
+    renderWithProviders({ route: '/' });
+    await userEvent.click(screen.getByRole('button', { name: 'Account menu' }));
+    for (const name of ['Privacy', 'Terms'])
+      expect(screen.getByRole('menuitem', { name })).toBeVisible();
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Contact' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Contact' })).toBeInTheDocument();
+  });
+
   it('asks before signing out everywhere', async () => {
     signInAs('owner');
     renderWithProviders({ route: '/' });

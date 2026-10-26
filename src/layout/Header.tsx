@@ -20,6 +20,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useSession } from '@/features/auth/hooks';
 import { signOut } from '@/features/auth/session';
 import { useAuthStore } from '@/features/auth/store';
+import { LEGAL_LINKS } from '@/features/legal/links';
 import { NotificationsBell } from '@/features/notifications/NotificationsBell';
 import { authApi } from '@/services/api/auth';
 import { getErrorMessage } from '@/services/api/errors';
@@ -133,6 +134,12 @@ export function Header({ onMenu }: { onMenu: () => void }) {
           <Divider />
           <MenuItem onClick={() => go('/settings/profile')}>Profile</MenuItem>
           <MenuItem onClick={() => go('/settings/security')}>Security & sessions</MenuItem>
+          <Divider />
+          {LEGAL_LINKS.slice(0, 3).map((l) => (
+            <MenuItem key={l.to} dense onClick={() => go(l.to)}>
+              {l.label}
+            </MenuItem>
+          ))}
           <Divider />
           <MenuItem onClick={() => void logout()}>Sign out</MenuItem>
           {!session?.impersonation && (

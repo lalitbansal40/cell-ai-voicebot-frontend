@@ -93,6 +93,25 @@ export const routes: RouteObject[] = [
       },
       { path: '/reset-password', element: <ResetPasswordPage /> },
       { path: '/accept-invite', element: <AcceptInvitePage /> },
+      // public legal pages (no login — Meta app settings, footer links)
+      {
+        path: '/privacy',
+        lazy: async () => ({
+          Component: (await import('@/pages/legal/PrivacyPage')).PrivacyPage,
+        }),
+      },
+      {
+        path: '/terms',
+        lazy: async () => ({
+          Component: (await import('@/pages/legal/TermsPage')).TermsPage,
+        }),
+      },
+      {
+        path: '/contact',
+        lazy: async () => ({
+          Component: (await import('@/pages/legal/ContactPage')).ContactPage,
+        }),
+      },
       {
         // public: Meta's data deletion status page (no login)
         path: '/data-deletion',

@@ -1,7 +1,7 @@
 {
   "name": "cell-ai-voicebot-frontend",
   "version": "0.0.1",
-  "description": "Cell AI Voicebot — dashboard for the multi-tenant AI voice calling platform",
+  "description": "Cell AI Voicebot \u2014 dashboard for the multi-tenant AI voice calling platform",
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
@@ -23,7 +23,8 @@
     "test:coverage": "vitest run --coverage",
     "gen:api": "node scripts/gen-api.mjs",
     "e2e": "playwright test",
-    "e2e:report": "playwright show-report"
+    "e2e:report": "playwright show-report",
+    "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
     "@dagrejs/dagre": "3.1.1",
