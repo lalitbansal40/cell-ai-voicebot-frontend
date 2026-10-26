@@ -46,7 +46,15 @@ describe('markdown subset', () => {
     expect(safeHref('https://x.example/a')).toBe('https://x.example/a');
     expect(safeHref(' /privacy ')).toBe('/privacy');
     expect(safeHref('mailto:a@b.example')).toBe('mailto:a@b.example');
-    for (const bad of ['javascript:alert(1)', 'http://x.example', '//evil.example', 'data:x', ''])
+    for (const bad of [
+      'javascript:alert(1)',
+      'http://x.example',
+      '//evil.example',
+      String.raw`/\evil.example`,
+      '/\n/evil.example',
+      'data:x',
+      '',
+    ])
       expect(safeHref(bad)).toBeNull();
   });
 

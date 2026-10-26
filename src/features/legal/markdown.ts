@@ -22,6 +22,10 @@ export interface LegalDoc {
 /** Only these link targets are kept; anything else (e.g. `javascript:`) becomes text. */
 export const safeHref = (href: string): string | null => {
   const h = href.trim();
+  // Browsers normalize backslashes and strip embedded control characters. Reject
+  // those before deciding whether an app path is confined to this origin.
+  // eslint-disable-next-line no-control-regex -- intentionally reject URL controls
+  if (/[\\\u0000-\u0020\u007f]/u.test(h)) return null;
   if (h.startsWith('/') && !h.startsWith('//')) return h;
   if (/^mailto:[^\s]+@[^\s]+$/i.test(h)) return h;
   if (/^https:\/\/[^\s]+$/i.test(h)) return h;
