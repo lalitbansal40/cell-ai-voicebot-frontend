@@ -309,6 +309,22 @@ export const routes: RouteObject[] = [
             ],
           },
           {
+            path: '/reports/:tab?',
+            element: (
+              <RequirePermission perm="reports.read">
+                <Outlet />
+              </RequirePermission>
+            ),
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('@/pages/reports/ReportsPage')).ReportsPage,
+                }),
+              },
+            ],
+          },
+          {
             path: '/inbox',
             element: (
               <RequirePermission perm="inbox.read">
