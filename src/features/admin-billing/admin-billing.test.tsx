@@ -99,6 +99,7 @@ const CARD = {
   billUnansweredAttempts: false,
   aiTextPer1kTokensMicros: 200_000,
   embeddingPer1kTokensMicros: 10_000,
+  sttPerMinuteMicros: 500_000,
 };
 const VERSION = (overrides: Partial<RateCardVersion> = {}): RateCardVersion => ({
   id: 'rc1',
@@ -232,6 +233,7 @@ describe('account rates tab', () => {
       billUnansweredAttempts: true,
       aiTextPer1kTokensMicros: 250_000,
       embeddingPer1kTokensMicros: 10_000,
+      sttPerMinuteMicros: 500_000,
       note: 'Festive offer',
     });
     expect(await screen.findByText('New prices saved for Demo Finance')).toBeInTheDocument();

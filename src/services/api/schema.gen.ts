@@ -11957,6 +11957,7 @@ export interface paths {
             billUnansweredAttempts: boolean;
             aiTextPer1kTokensMicros?: number;
             embeddingPer1kTokensMicros?: number;
+            sttPerMinuteMicros?: number;
             note?: string | null;
           };
         };
@@ -12156,6 +12157,7 @@ export interface paths {
             billUnansweredAttempts: boolean;
             aiTextPer1kTokensMicros?: number;
             embeddingPer1kTokensMicros?: number;
+            sttPerMinuteMicros?: number;
             note?: string | null;
           };
         };
@@ -13477,6 +13479,15 @@ export interface paths {
           to?: string;
           /** @description Contact name */
           q?: string;
+          /** @description Comma-separated outcome keys (Phase 14) */
+          disposition?: string;
+          sentiment?: 'positive' | 'neutral' | 'negative';
+          hasPromise?: 'true' | 'false';
+          hasSummary?: 'true' | 'false';
+          /** @description Team member who answered */
+          answeredBy?: string;
+          /** @description WhatsApp number */
+          channelId?: string;
         };
         header?: never;
         path?: never;
@@ -23500,6 +23511,1366 @@ export interface paths {
     };
     trace?: never;
   };
+  '/api/v1/calls/{id}/insights': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Post-call AI insights of a call: latest version + history (calls.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['CallInsights'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/calls/{id}/insights/regenerate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Run the insights again as a new version (calls.listen; uses AI credit; 409 INSIGHTS_NOT_AVAILABLE / INSIGHTS_DISABLED, 422 WALLET_INSUFFICIENT_BALANCE) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Queued */
+        202: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['CallInsights'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/calls/{id}/disposition': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Set the call's outcome by hand (calls.trigger; an active disposition key; 422 DISPOSITION_UNKNOWN) */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            disposition: string;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['CallInsights'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/api/v1/account/insights-settings': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Post-call AI settings (account.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['InsightsSettings'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    /** Turn post-call AI, chat summaries on close and team-call transcription on or off (account.update) */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            enabled?: boolean;
+            chatSummaryOnClose?: boolean;
+            transcribeHumanCalls?: boolean;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['InsightsSettings'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/account/dispositions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The account's call outcomes (account.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Dispositions'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    /** Replace the call outcomes (account.update; ≤ 30; keys in use can't be removed — deactivate them) */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            dispositions: {
+              key: string;
+              label: string;
+              active: boolean;
+            }[];
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Dispositions'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/inbox/conversations/{id}/summary': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Summaries of a WhatsApp chat, newest first (inbox.read; ≤ 20) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['ChatSummary'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    /** Summarise the messages since the last summary (inbox.reply; uses AI credit; 409 CHAT_SUMMARY_EMPTY / INSIGHTS_DISABLED / CONFLICT_INVALID_STATE, 422 WALLET_INSUFFICIENT_BALANCE) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Queued */
+        202: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['ChatSummary'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/reports/overview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Report: overview (reports.read; ≤ 366 days; cached 60 s; ETag / 304; 422 REPORT_RANGE_INVALID) */
+    get: {
+      parameters: {
+        query?: {
+          /** @description First day (account timezone). Default: 6 days ago */
+          from?: string;
+          /** @description Last day, inclusive. Default: today */
+          to?: string;
+          /** @description Also return the previous period of the same length */
+          compare?: 'true' | 'false';
+          /** @description Calls of one channel */
+          channel?: 'voice' | 'whatsapp';
+          /** @description A WhatsApp number */
+          channelId?: string;
+          campaignId?: string;
+          /** @description Campaigns tab: up to 10 to compare (comma-separated) */
+          campaignIds?: string;
+          flowId?: string;
+          agentId?: string;
+          userId?: string;
+          /** @description Count test calls too */
+          includeTest?: 'true' | 'false';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Report'];
+            };
+          };
+        };
+        /** @description Not modified (If-None-Match) */
+        304: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/reports/calls': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Report: calls (reports.read; ≤ 366 days; cached 60 s; ETag / 304; 422 REPORT_RANGE_INVALID) */
+    get: {
+      parameters: {
+        query?: {
+          /** @description First day (account timezone). Default: 6 days ago */
+          from?: string;
+          /** @description Last day, inclusive. Default: today */
+          to?: string;
+          /** @description Also return the previous period of the same length */
+          compare?: 'true' | 'false';
+          /** @description Calls of one channel */
+          channel?: 'voice' | 'whatsapp';
+          /** @description A WhatsApp number */
+          channelId?: string;
+          campaignId?: string;
+          /** @description Campaigns tab: up to 10 to compare (comma-separated) */
+          campaignIds?: string;
+          flowId?: string;
+          agentId?: string;
+          userId?: string;
+          /** @description Count test calls too */
+          includeTest?: 'true' | 'false';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Report'];
+            };
+          };
+        };
+        /** @description Not modified (If-None-Match) */
+        304: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/reports/whatsapp': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Report: whatsapp (reports.read; ≤ 366 days; cached 60 s; ETag / 304; 422 REPORT_RANGE_INVALID) */
+    get: {
+      parameters: {
+        query?: {
+          /** @description First day (account timezone). Default: 6 days ago */
+          from?: string;
+          /** @description Last day, inclusive. Default: today */
+          to?: string;
+          /** @description Also return the previous period of the same length */
+          compare?: 'true' | 'false';
+          /** @description Calls of one channel */
+          channel?: 'voice' | 'whatsapp';
+          /** @description A WhatsApp number */
+          channelId?: string;
+          campaignId?: string;
+          /** @description Campaigns tab: up to 10 to compare (comma-separated) */
+          campaignIds?: string;
+          flowId?: string;
+          agentId?: string;
+          userId?: string;
+          /** @description Count test calls too */
+          includeTest?: 'true' | 'false';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Report'];
+            };
+          };
+        };
+        /** @description Not modified (If-None-Match) */
+        304: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/reports/templates': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Report: templates (reports.read; ≤ 366 days; cached 60 s; ETag / 304; 422 REPORT_RANGE_INVALID) */
+    get: {
+      parameters: {
+        query?: {
+          /** @description First day (account timezone). Default: 6 days ago */
+          from?: string;
+          /** @description Last day, inclusive. Default: today */
+          to?: string;
+          /** @description Also return the previous period of the same length */
+          compare?: 'true' | 'false';
+          /** @description Calls of one channel */
+          channel?: 'voice' | 'whatsapp';
+          /** @description A WhatsApp number */
+          channelId?: string;
+          campaignId?: string;
+          /** @description Campaigns tab: up to 10 to compare (comma-separated) */
+          campaignIds?: string;
+          flowId?: string;
+          agentId?: string;
+          userId?: string;
+          /** @description Count test calls too */
+          includeTest?: 'true' | 'false';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Report'];
+            };
+          };
+        };
+        /** @description Not modified (If-None-Match) */
+        304: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/reports/campaigns': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Report: campaigns (reports.read; ≤ 366 days; cached 60 s; ETag / 304; 422 REPORT_RANGE_INVALID) */
+    get: {
+      parameters: {
+        query?: {
+          /** @description First day (account timezone). Default: 6 days ago */
+          from?: string;
+          /** @description Last day, inclusive. Default: today */
+          to?: string;
+          /** @description Also return the previous period of the same length */
+          compare?: 'true' | 'false';
+          /** @description Calls of one channel */
+          channel?: 'voice' | 'whatsapp';
+          /** @description A WhatsApp number */
+          channelId?: string;
+          campaignId?: string;
+          /** @description Campaigns tab: up to 10 to compare (comma-separated) */
+          campaignIds?: string;
+          flowId?: string;
+          agentId?: string;
+          userId?: string;
+          /** @description Count test calls too */
+          includeTest?: 'true' | 'false';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Report'];
+            };
+          };
+        };
+        /** @description Not modified (If-None-Match) */
+        304: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/reports/flows': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Report: flows (reports.read; ≤ 366 days; cached 60 s; ETag / 304; 422 REPORT_RANGE_INVALID) */
+    get: {
+      parameters: {
+        query?: {
+          /** @description First day (account timezone). Default: 6 days ago */
+          from?: string;
+          /** @description Last day, inclusive. Default: today */
+          to?: string;
+          /** @description Also return the previous period of the same length */
+          compare?: 'true' | 'false';
+          /** @description Calls of one channel */
+          channel?: 'voice' | 'whatsapp';
+          /** @description A WhatsApp number */
+          channelId?: string;
+          campaignId?: string;
+          /** @description Campaigns tab: up to 10 to compare (comma-separated) */
+          campaignIds?: string;
+          flowId?: string;
+          agentId?: string;
+          userId?: string;
+          /** @description Count test calls too */
+          includeTest?: 'true' | 'false';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Report'];
+            };
+          };
+        };
+        /** @description Not modified (If-None-Match) */
+        304: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/reports/agents': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Report: agents (reports.read; ≤ 366 days; cached 60 s; ETag / 304; 422 REPORT_RANGE_INVALID) */
+    get: {
+      parameters: {
+        query?: {
+          /** @description First day (account timezone). Default: 6 days ago */
+          from?: string;
+          /** @description Last day, inclusive. Default: today */
+          to?: string;
+          /** @description Also return the previous period of the same length */
+          compare?: 'true' | 'false';
+          /** @description Calls of one channel */
+          channel?: 'voice' | 'whatsapp';
+          /** @description A WhatsApp number */
+          channelId?: string;
+          campaignId?: string;
+          /** @description Campaigns tab: up to 10 to compare (comma-separated) */
+          campaignIds?: string;
+          flowId?: string;
+          agentId?: string;
+          userId?: string;
+          /** @description Count test calls too */
+          includeTest?: 'true' | 'false';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Report'];
+            };
+          };
+        };
+        /** @description Not modified (If-None-Match) */
+        304: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/reports/team': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Report: team (reports.read; ≤ 366 days; cached 60 s; ETag / 304; 422 REPORT_RANGE_INVALID) */
+    get: {
+      parameters: {
+        query?: {
+          /** @description First day (account timezone). Default: 6 days ago */
+          from?: string;
+          /** @description Last day, inclusive. Default: today */
+          to?: string;
+          /** @description Also return the previous period of the same length */
+          compare?: 'true' | 'false';
+          /** @description Calls of one channel */
+          channel?: 'voice' | 'whatsapp';
+          /** @description A WhatsApp number */
+          channelId?: string;
+          campaignId?: string;
+          /** @description Campaigns tab: up to 10 to compare (comma-separated) */
+          campaignIds?: string;
+          flowId?: string;
+          agentId?: string;
+          userId?: string;
+          /** @description Count test calls too */
+          includeTest?: 'true' | 'false';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Report'];
+            };
+          };
+        };
+        /** @description Not modified (If-None-Match) */
+        304: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -23812,7 +25183,12 @@ export interface components {
         | 'call.whatsapp_started'
         | 'call.whatsapp_answered'
         | 'call.whatsapp_transferred'
-        | 'whatsapp.calling_restricted';
+        | 'whatsapp.calling_restricted'
+        | 'call.disposition_updated'
+        | 'call.insights_regenerated'
+        | 'account.insights_updated'
+        | 'account.dispositions_updated'
+        | 'conversation.summary_created';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
@@ -25636,6 +27012,7 @@ export interface components {
       billUnansweredAttempts: boolean;
       aiTextPer1kTokensMicros: number;
       embeddingPer1kTokensMicros: number;
+      sttPerMinuteMicros: number;
       /** @enum {string} */
       source: 'account' | 'default';
       effectiveFrom: string;
@@ -25718,7 +27095,10 @@ export interface components {
           | 'flow_simulator'
           | 'flow_intent'
           | 'whatsapp'
-          | 'whatsapp_call';
+          | 'whatsapp_call'
+          | 'insights'
+          | 'stt'
+          | 'chat_summary';
         waCategory?: string;
         waMarket?: string;
         waPricingType?: string;
@@ -25890,6 +27270,7 @@ export interface components {
       billUnansweredAttempts: boolean;
       aiTextPer1kTokensMicros: number;
       embeddingPer1kTokensMicros: number;
+      sttPerMinuteMicros: number;
       inheritsDefault: boolean;
       effectiveFrom: string;
       createdBy: string | null;
@@ -25909,6 +27290,7 @@ export interface components {
         billUnansweredAttempts: boolean;
         aiTextPer1kTokensMicros: number;
         embeddingPer1kTokensMicros: number;
+        sttPerMinuteMicros: number;
         effectiveFrom: string;
       };
       history: components['schemas']['RateCardVersion'][];
@@ -25932,6 +27314,7 @@ export interface components {
         billUnansweredAttempts: boolean;
         aiTextPer1kTokensMicros: number;
         embeddingPer1kTokensMicros: number;
+        sttPerMinuteMicros: number;
         effectiveFrom: string;
       };
       wallet: components['schemas']['Wallet'];
@@ -26064,7 +27447,8 @@ export interface components {
         | 'whatsapp.call_permission_granted'
         | 'whatsapp.call_permission_declined'
         | 'whatsapp.calling_restricted'
-        | 'whatsapp.call_permission_revoked';
+        | 'whatsapp.call_permission_revoked'
+        | 'analytics.reconcile_mismatch';
       title: string;
       body: string;
       link: string | null;
@@ -26170,6 +27554,18 @@ export interface components {
         [key: string]: unknown;
       };
       disposition: string | null;
+      /** @enum {string|null} */
+      dispositionSource: 'flow' | 'agent' | 'user' | 'ai' | null;
+      insights: {
+        /** @enum {string} */
+        status: 'pending' | 'done' | 'skipped' | 'failed';
+        reason: string | null;
+        /** @enum {string|null} */
+        sentiment: 'positive' | 'neutral' | 'negative' | null;
+        hasPromise: boolean;
+        promiseAmountMicros: number | null;
+        hasSummary: boolean;
+      } | null;
       languageDetected: string | null;
       metrics: {
         whatsapp?: {
@@ -27210,6 +28606,125 @@ export interface components {
       mediaTicket: string;
       expiresAt: string;
       wsPath: string;
+    };
+    CallInsightVersion: {
+      version: number;
+      /** @enum {string} */
+      status: 'pending' | 'done' | 'skipped' | 'failed';
+      reason: string | null;
+      output: {
+        summary: string;
+        suggestedDisposition: string | null;
+        sentiment: {
+          /** @enum {string} */
+          label: 'positive' | 'neutral' | 'negative';
+          score: number;
+        };
+        keyInfo: {
+          promiseDate: string | null;
+          promiseAmountMicros: number | null;
+          callbackAt: string | null;
+          disputeReason: string | null;
+          wrongNumber: boolean;
+          languagePreference: string | null;
+          notes: string | null;
+        };
+        confidence: {
+          disposition: number;
+          promise: number;
+          sentiment: number;
+        };
+      } | null;
+      model: string | null;
+      costMicros: number;
+      createdBy: {
+        id: string;
+        name: string;
+      } | null;
+      createdAt: string;
+    };
+    CallInsights: {
+      callId: string;
+      /** @enum {string|null} */
+      status: 'pending' | 'done' | 'skipped' | 'failed' | null;
+      reason: string | null;
+      disposition: string | null;
+      /** @enum {string|null} */
+      dispositionSource: 'flow' | 'agent' | 'user' | 'ai' | null;
+      latest: components['schemas']['CallInsightVersion'] & (Record<string, never> | null);
+      history: components['schemas']['CallInsightVersion'][];
+      canRegenerate: boolean;
+    };
+    InsightsSettings: {
+      enabled: boolean;
+      chatSummaryOnClose: boolean;
+      transcribeHumanCalls: boolean;
+    };
+    Dispositions: {
+      dispositions: {
+        key: string;
+        label: string;
+        active: boolean;
+      }[];
+    };
+    ChatSummary: {
+      id: string;
+      /** @enum {string} */
+      status: 'pending' | 'done' | 'skipped' | 'failed';
+      reason: string | null;
+      summary: string | null;
+      messageCount: number;
+      costMicros: number;
+      createdBy: {
+        id: string;
+        name: string;
+      } | null;
+      createdAt: string;
+    };
+    Report: {
+      /** @enum {string} */
+      tab:
+        'overview' | 'calls' | 'whatsapp' | 'templates' | 'campaigns' | 'flows' | 'agents' | 'team';
+      range: {
+        from: string;
+        to: string;
+        timezone: string;
+      };
+      compareRange: {
+        from: string;
+        to: string;
+      } | null;
+      kpis: {
+        key: string;
+        value: number | null;
+        previous?: number | null;
+        /** @enum {string} */
+        unit: 'count' | 'percent' | 'seconds' | 'micros';
+      }[];
+      series: {
+        key: string;
+        /** @enum {string} */
+        unit: 'count' | 'percent' | 'seconds' | 'micros';
+        points: {
+          day: string;
+          value: number | null;
+        }[];
+      }[];
+      table: {
+        columns: {
+          key: string;
+          /** @enum {string} */
+          unit: 'count' | 'percent' | 'seconds' | 'micros';
+        }[];
+        rows: {
+          id: string | null;
+          label: string;
+          values: {
+            [key: string]: number | null;
+          };
+        }[];
+      };
+      updatedAt: string;
     };
     WhatsAppEmbeddedSignupInput: {
       /** @description Code from FB.login (single use) */

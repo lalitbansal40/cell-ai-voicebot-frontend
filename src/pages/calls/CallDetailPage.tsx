@@ -38,6 +38,7 @@ import {
   useCanListenCalls,
   useCanTriggerCalls,
 } from '@/features/calls/queries';
+import { InsightsCard } from '@/features/insights/InsightsCard';
 import { CallWhatsAppDetails } from '@/features/whatsapp-calling/CallWhatsAppDetails';
 import { callsApi } from '@/services/api/calls';
 import { getErrorMessage } from '@/services/api/errors';
@@ -58,6 +59,12 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
     </Stack>
   );
 }
+
+const SPEAKER: Record<'customer' | 'bot' | 'agent', string> = {
+  customer: 'Customer',
+  bot: 'Bot',
+  agent: 'Team member',
+};
 
 const str = (v: unknown): string =>
   typeof v === 'string' || typeof v === 'number' ? String(v) : '';
@@ -256,6 +263,12 @@ export function CallDetailPage() {
               <Divider sx={{ my: 1.5 }} />
               <Outcome call={c} />
             </Paper>
+            <InsightsCard
+              callId={c.id}
+              answered={Boolean(c.timestamps.answeredAt)}
+              live={live}
+              timezone={timezone}
+            />
             {c.recording &&
               (canListen ? (
                 <Paper variant="outlined" sx={{ p: 2 }}>
@@ -297,11 +310,19 @@ export function CallDetailPage() {
                             variant="body2"
                             sx={{ fontWeight: 600, mr: 1 }}
                           >
-                            {t.speaker === 'customer' ? 'Customer' : 'Bot'}
+                            {SPEAKER[t.speaker]}
                           </Typography>
                           <Typography component="span" variant="body2">
                             {t.text}
                           </Typography>
+                          {t.source === 'stt' && (
+                            <Chip
+                              size="small"
+                              variant="outlined"
+                              label="from the recording"
+                              sx={{ ml: 1 }}
+                            />
+                          )}
                           {t.interrupted && (
                             <Chip
                               size="small"

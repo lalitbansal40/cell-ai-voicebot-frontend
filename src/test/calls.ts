@@ -26,6 +26,8 @@ export const fakeCall = (overrides: Partial<Call> = {}): Call => ({
   variables: { name: 'Asha Verma' },
   outcome: { disposition: 'paid' },
   disposition: 'paid',
+  dispositionSource: null,
+  insights: null,
   languageDetected: 'hi',
   metrics: {
     latency: { p50Ms: 820, p95Ms: 1400, maxMs: 1600, samples: 4 },
