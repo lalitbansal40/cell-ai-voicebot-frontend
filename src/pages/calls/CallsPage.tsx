@@ -19,15 +19,17 @@ import { Link as RouterLink, useSearchParams } from 'react-router';
 import { DataTable, type Column } from '@/components/DataTable';
 import { PageHeader } from '@/components/PageHeader';
 import { RelativeTime } from '@/components/RelativeTime';
-import { usePermission } from '@/features/auth/hooks';
+import { useCan, usePermission } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/store';
 import { END_REASON_LABELS, STATUS_LABELS, statusColor } from '@/features/calls/labels';
 import { useCallLiveUpdates, useCalls, useCanTriggerCalls } from '@/features/calls/queries';
 import { useCampaigns } from '@/features/campaigns/queries';
 import { SENTIMENT_LABELS, sentimentColor, type SentimentLabel } from '@/features/insights/labels';
 import { outcomeLabel, useDispositions } from '@/features/insights/queries';
+import { RecordExportButton } from '@/features/reports/RecordExportButton';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import type { ListCallsQuery } from '@/services/api/calls';
+import { recordExportsApi } from '@/services/api/record-exports';
 import type { Call } from '@/services/api/types';
 import { shiftYmd, startOfDayIso } from '@/utils/datetime';
 import { formatCurrencyMicros } from '@/utils/format';
@@ -120,6 +122,9 @@ export function CallsPage() {
     ...(to ? { to: startOfDayIso(shiftYmd(to, 1), timezone) } : {}),
   };
   const calls = useCalls(query);
+  const can = useCan();
+  // the export takes the same filters, with days instead of instants
+  const { limit: _limit, from: _from, to: _to, ...exportFilters } = query;
   const filtered =
     status.length > 0 ||
     testOnly ||
@@ -218,16 +223,45 @@ export function CallsPage() {
         title="Calls"
         subtitle="Test calls and their recordings, transcripts and costs"
         actions={
-          canTrigger ? (
-            <Button
-              variant="contained"
-              startIcon={<AddIcCallOutlined />}
-              component={RouterLink}
-              to="/calls/test"
-            >
-              New test call
-            </Button>
-          ) : undefined
+          <Stack direction="row" spacing={1}>
+            {can('calls.export') && (
+              <RecordExportButton
+                title="Export calls"
+                note="Exports the calls matching the filters on this page (up to 200,000)."
+                options={[
+                  {
+                    key: 'includePhone',
+                    label: 'Full phone numbers',
+                    disabled: !can('contacts.export'),
+                    help: can('contacts.export')
+                      ? undefined
+                      : 'Numbers are shortened — full numbers need the contacts export permission.',
+                  },
+                  { key: 'includeSummary', label: 'AI summaries' },
+                ]}
+                start={(format, chosen) =>
+                  recordExportsApi.calls({
+                    ...exportFilters,
+                    format,
+                    ...(from ? { from } : {}),
+                    ...(to ? { to } : {}),
+                    includePhone: Boolean(chosen.includePhone),
+                    includeSummary: Boolean(chosen.includeSummary),
+                  })
+                }
+              />
+            )}
+            {canTrigger && (
+              <Button
+                variant="contained"
+                startIcon={<AddIcCallOutlined />}
+                component={RouterLink}
+                to="/calls/test"
+              >
+                New test call
+              </Button>
+            )}
+          </Stack>
         }
       />
       <Stack spacing={2}>

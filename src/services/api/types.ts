@@ -314,3 +314,7 @@ export type Dispositions = Schemas['Dispositions'];
 export type AccountDisposition = Dispositions['dispositions'][number];
 export type ChatSummary = Schemas['ChatSummary'];
 export type Report = Schemas['Report'];
+/** Phase 14 record exports (calls, message metadata, a report tab). */
+export type RecordExport = Schemas['RecordExport'];
+/** Phase 14 report e-mails (each person's own). */
+export type ReportSubscription = Schemas['ReportSubscription'];

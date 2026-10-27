@@ -259,6 +259,7 @@ describe('SettingsPage', () => {
       'Calls',
       'Inbox',
       'AI & outcomes',
+      'Notifications',
       'Billing details',
     ]);
   });

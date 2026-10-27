@@ -6,6 +6,9 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 14 · T14.7 — record exports and scheduled report emails** — 2026-10-27
+  - Calls and report tabs export CSV / XLSX with permission-aware phone / summary options, progress and recent downloads. Settings → Notifications manages up to five personal report subscriptions; public unsubscribe confirms a signed email link. Mutations and exports stay blocked while impersonating.
+
 - **Phase 13 · Batch 1 (T13.1–T13.4) — Embedded Signup v4, legal pages, staging build** — 2026-10-26
   - Embedded Signup v4: `FB.login` sends `extras: {}` for Cloud API numbers (coexistence keeps the Business app feature), no `sessionInfoVersion`; session messages from any https `*.facebook.com` origin, every `FINISH*` event (incl. on-behalf-of migration and grant-only access), `CANCEL` with an `error_message` as an error, `waac_id` passed on; Meta's automatic app event logging switched off; the SDK follows Graph v26.0.
   - Public `/privacy`, `/terms`, `/contact` and the `/data-deletion` instructions (no login): safe Markdown subset (no HTML; `javascript:`, protocol-relative and backslash / control-character links dropped), company details from public `VITE_LEGAL_*`, a Draft banner until approved; links on every auth screen, the user menu and the sign-up consent line; icons (1024 / 512 / 192 / Apple / favicon) + web manifest via `npm run icons`.

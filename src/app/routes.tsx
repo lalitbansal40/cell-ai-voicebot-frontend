@@ -93,6 +93,13 @@ export const routes: RouteObject[] = [
       },
       { path: '/reset-password', element: <ResetPasswordPage /> },
       { path: '/accept-invite', element: <AcceptInvitePage /> },
+      {
+        // public: the stop link in a report e-mail (Phase 14)
+        path: '/report-emails/unsubscribe',
+        lazy: async () => ({
+          Component: (await import('@/pages/reports/ReportUnsubscribePage')).ReportUnsubscribePage,
+        }),
+      },
       // public legal pages (no login — Meta app settings, footer links)
       {
         path: '/privacy',

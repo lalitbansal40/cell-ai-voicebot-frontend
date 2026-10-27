@@ -24,6 +24,7 @@ import {
 } from 'react-router';
 
 import { PageHeader } from '@/components/PageHeader';
+import { useCan, useSession } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/store';
 import { outcomeLabel, useDispositions } from '@/features/insights/queries';
 import { FilterBar } from '@/features/reports/FilterBar';
@@ -38,8 +39,11 @@ import {
 import { KpiTile } from '@/features/reports/KpiTile';
 import { formatMetric, metricLabel } from '@/features/reports/labels';
 import { useReport } from '@/features/reports/queries';
+import { RecentExportsButton } from '@/features/reports/RecentExports';
+import { RecordExportButton } from '@/features/reports/RecordExportButton';
 import { ReportTable } from '@/features/reports/ReportTable';
 import { getErrorMessage } from '@/services/api/errors';
+import { recordExportsApi } from '@/services/api/record-exports';
 import type { ReportTab } from '@/services/api/reports';
 import type { Report } from '@/services/api/types';
 import { todayInTz } from '@/utils/datetime';
@@ -97,6 +101,9 @@ export function ReportsPage() {
   const current: ReportTab = valid ? tab : 'overview';
   const report = useReport(current, toQuery(filters, current), valid);
   const dispositions = useDispositions(current === 'calls');
+  const can = useCan();
+  const impersonating = Boolean(useSession()?.impersonation);
+  const canExport = can('reports.export') && !impersonating;
   if (!valid) return <Navigate to="/reports" replace />;
 
   const data = report.data;
@@ -124,11 +131,38 @@ export function ReportsPage() {
         title="Reports"
         subtitle="Calls, WhatsApp and spend — from daily totals"
         actions={
-          current === 'calls' ? (
-            <Button component={RouterLink} to={callsLink(filters)}>
-              See these calls
-            </Button>
-          ) : undefined
+          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+            {current === 'calls' && (
+              <Button component={RouterLink} to={callsLink(filters)}>
+                See these calls
+              </Button>
+            )}
+            {canExport && (
+              <RecordExportButton
+                title="Export this report"
+                note="The numbers and table of this tab, with the filters above."
+                start={(format) =>
+                  recordExportsApi.report(format, current, toQuery(filters, current))
+                }
+              />
+            )}
+            {canExport && current === 'whatsapp' && (
+              <RecordExportButton
+                label="Export messages"
+                title="Export WhatsApp messages"
+                note="One row per message: time, direction, type, status, template, number and team member — never the message text."
+                start={(format) =>
+                  recordExportsApi.messages({
+                    format,
+                    from: filters.from,
+                    to: filters.to,
+                    ...(filters.slice?.key === 'channelId' ? { channelId: filters.slice.id } : {}),
+                  })
+                }
+              />
+            )}
+            {(canExport || (can('calls.export') && !impersonating)) && <RecentExportsButton />}
+          </Stack>
         }
       />
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>

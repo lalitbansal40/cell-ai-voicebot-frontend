@@ -19,7 +19,8 @@ export interface ReportQuery {
   includeTest?: boolean;
 }
 
-const params = ({ compare, includeTest, campaignIds, ...rest }: ReportQuery) => ({
+/** `ReportQuery` → the wire format (string flags, comma lists) — also the `/exports/report` body's `query`. */
+export const reportParams = ({ compare, includeTest, campaignIds, ...rest }: ReportQuery) => ({
   ...rest,
   ...(compare === undefined ? {} : { compare: String(compare) }),
   ...(includeTest === undefined ? {} : { includeTest: String(includeTest) }),
@@ -29,5 +30,7 @@ const params = ({ compare, includeTest, campaignIds, ...rest }: ReportQuery) => 
 /** Phase 14 — reports from the daily rollups. */
 export const reportsApi = {
   get: (tab: ReportTab, query: ReportQuery) =>
-    unwrap(apiClient.get<SuccessEnvelope<Report>>(`/reports/${tab}`, { params: params(query) })),
+    unwrap(
+      apiClient.get<SuccessEnvelope<Report>>(`/reports/${tab}`, { params: reportParams(query) }),
+    ),
 };
