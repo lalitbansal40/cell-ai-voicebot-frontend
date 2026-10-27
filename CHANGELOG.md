@@ -6,11 +6,12 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
-- **Phase 14 · T14.8 — data retention** — 2026-10-27
-  - Settings → Data retention (owner / admin; read-only for others): days for call recordings, call records and WhatsApp chats, each empty for the platform default, bounds from the server, a confirm dialog listing what a shorter period deletes tonight. Superadmin account page: data retention limit. Call detail says when a recording was deleted by the retention setting. Privacy Policy draft mentions per-account periods.
-
-- **Phase 14 · T14.7 — record exports and scheduled report emails** — 2026-10-27
-  - Calls and report tabs export CSV / XLSX with permission-aware phone / summary options, progress and recent downloads. Settings → Notifications manages up to five personal report subscriptions; public unsubscribe confirms a signed email link. Mutations and exports stay blocked while impersonating.
+- **Phase 14 · Batch 2 (T14.5–T14.8) — call insights, reports, exports, report e-mails, data retention** — 2026-10-27
+  - Call detail: AI insights card (summary, outcome with who set it, mood, promise date / amount, regenerate with history), outcome editing, "Team member" lines from the recording; Calls list outcome / mood / promise filters; inbox chat summary drawer; Settings → AI & outcomes (insights on / off, chat summary on close, team-call transcription, the account's outcomes); STT prices in billing views; live `call.insights` / `inbox.conversation.summary` updates.
+  - Reports (`/reports/:tab`, 8 tabs, `reports.read`): KPI tiles against the period before, trend charts with a table view, detail tables with drill-down, a URL-backed filter bar (period, compare, calls channel, one slice, test calls); dashboard KPI row.
+  - Calls list and every report tab export CSV / XLSX (full phones only with `contacts.export`, AI summaries on request, WhatsApp messages without text) with live progress, a download link and Recent exports; Settings → Notifications → Email reports (up to five, daily / weekly / monthly, account-local hour); public `/report-emails/unsubscribe` (stops after a click).
+  - Settings → Data retention (recordings, call records, WhatsApp chats; confirm before a shorter period deletes data), superadmin data retention limit, "recording deleted" on call detail, Privacy Policy draft sentence.
+  - Tests 1359 → 1386, coverage 96.21 / 92.12 / 93.82 / 96.96. Bundle (gzip): main 312.8 KB, ReportsPage 6.0 KB (lazy), TrendChart 7.7 KB (lazy), RetentionTab 2.2 KB (lazy). E2E 151 / 151 twice (port 3150), backend log grep 0.
 
 - **Phase 13 · Batch 1 (T13.1–T13.4) — Embedded Signup v4, legal pages, staging build** — 2026-10-26
   - Embedded Signup v4: `FB.login` sends `extras: {}` for Cloud API numbers (coexistence keeps the Business app feature), no `sessionInfoVersion`; session messages from any https `*.facebook.com` origin, every `FINISH*` event (incl. on-behalf-of migration and grant-only access), `CANCEL` with an `error_message` as an error, `waac_id` passed on; Meta's automatic app event logging switched off; the SDK follows Graph v26.0.
