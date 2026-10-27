@@ -7,6 +7,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 ### Added
 
 - **Phase 14 · Batch 3 (T14.9–T14.10) — end-to-end checks** — 2026-10-28
+  - Phase 14 complete (sign-off in the backend repo, `docs/phases/PHASE_14_SIGNOFF.md`): tests 1386 (96.21 / 92.12 / 93.82 / 96.96), Playwright 158 / 158.
   - Playwright `reports-insights.spec.ts` (insights state on a call, outcome change → calls report, calls export file, report e-mail through Mailpit + its unsubscribe link, retention purge → "recording deleted", viewer / agent views) and `insights-chat.spec.ts` (chat summary, chat retention); helpers `e2e/reports.ts`. Suite 151 → 158.
 
 - **Phase 14 · Batch 2 (T14.5–T14.8) — call insights, reports, exports, report e-mails, data retention** — 2026-10-27
