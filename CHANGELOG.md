@@ -6,6 +6,9 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 14 · Batch 3 (T14.9–T14.10) — end-to-end checks** — 2026-10-28
+  - Playwright `reports-insights.spec.ts` (insights state on a call, outcome change → calls report, calls export file, report e-mail through Mailpit + its unsubscribe link, retention purge → "recording deleted", viewer / agent views) and `insights-chat.spec.ts` (chat summary, chat retention); helpers `e2e/reports.ts`. Suite 151 → 158.
+
 - **Phase 14 · Batch 2 (T14.5–T14.8) — call insights, reports, exports, report e-mails, data retention** — 2026-10-27
   - Call detail: AI insights card (summary, outcome with who set it, mood, promise date / amount, regenerate with history), outcome editing, "Team member" lines from the recording; Calls list outcome / mood / promise filters; inbox chat summary drawer; Settings → AI & outcomes (insights on / off, chat summary on close, team-call transcription, the account's outcomes); STT prices in billing views; live `call.insights` / `inbox.conversation.summary` updates.
   - Reports (`/reports/:tab`, 8 tabs, `reports.read`): KPI tiles against the period before, trend charts with a table view, detail tables with drill-down, a URL-backed filter bar (period, compare, calls channel, one slice, test calls); dashboard KPI row.
