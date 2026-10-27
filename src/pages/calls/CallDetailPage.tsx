@@ -45,7 +45,7 @@ import { getErrorMessage } from '@/services/api/errors';
 import type { Call } from '@/services/api/types';
 import { useWsEvent, useWsTopic } from '@/services/realtime';
 import { formatInAccountTz } from '@/utils/datetime';
-import { formatCurrencyMicros, formatNumber } from '@/utils/format';
+import { formatCurrencyMicros, formatDateOnly, formatNumber } from '@/utils/format';
 
 function Row({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -269,7 +269,14 @@ export function CallDetailPage() {
               live={live}
               timezone={timezone}
             />
+            {c.recording?.deletedAt && (
+              <Alert severity="info">
+                The recording was deleted on {formatDateOnly(c.recording.deletedAt)} under this
+                account's data retention setting. The transcript and summary are kept.
+              </Alert>
+            )}
             {c.recording &&
+              !c.recording.deletedAt &&
               (canListen ? (
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <RecordingPlayer

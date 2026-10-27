@@ -1135,6 +1135,123 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/account/retention': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** How long recordings, call records and WhatsApp chats are kept (account.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Retention'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    /** Change how long data is kept (account.update; calls ≥ 7, chats ≥ 30, recordings ≥ 1 and ≤ calls, ≤ the platform maximum; 422 RETENTION_OUT_OF_BOUNDS) */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            recordingsDays?: number | null;
+            callsDays?: number | null;
+            inboxDays?: number | null;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Retention'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/admin/accounts': {
     parameters: {
       query?: never;
@@ -1598,6 +1715,82 @@ export interface paths {
         };
       };
     };
+    trace?: never;
+  };
+  '/api/v1/admin/accounts/{id}/retention-cap': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Cap how long an account may keep call records and WhatsApp chats (superadmin; null = platform default; audited) */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            callsDays: number | null;
+            inboxDays: number | null;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Retention'];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   '/api/v1/admin/accounts/{id}/campaigns/pause': {
@@ -25989,6 +26182,8 @@ export interface components {
         | 'call.insights_regenerated'
         | 'account.insights_updated'
         | 'account.dispositions_updated'
+        | 'account.retention_updated'
+        | 'account.retention_cap_updated'
         | 'conversation.summary_created'
         | 'report.exported'
         | 'report_subscription.created'
@@ -26011,6 +26206,40 @@ export interface components {
       } | null;
       ip: string | null;
       at: string;
+    };
+    Retention: {
+      settings: {
+        recordingsDays: number | null;
+        callsDays: number | null;
+        inboxDays: number | null;
+      };
+      effective: {
+        recordingsDays: number;
+        callsDays: number;
+        inboxDays: number | null;
+      };
+      platform: {
+        callsDays: number;
+        inboxDays: number | null;
+      };
+      cap: {
+        callsDays: number | null;
+        inboxDays: number | null;
+      };
+      bounds: {
+        recordingsDays: {
+          min: number;
+          max: number;
+        };
+        callsDays: {
+          min: number;
+          max: number;
+        };
+        inboxDays: {
+          min: number;
+          max: number;
+        };
+      };
     };
     AccountLimits: {
       maxConcurrentCalls: number;
@@ -26036,6 +26265,7 @@ export interface components {
         disabled: number;
       };
       limits: components['schemas']['AccountLimits'];
+      retention: components['schemas']['Retention'];
       /** @description Scheduled, running or paused */
       activeCampaigns: number;
       /** @description Paused by the platform team — only a superadmin resumes them (≤ 100) */
@@ -28403,6 +28633,8 @@ export interface components {
       recording: {
         durationSec: number;
         sizeBytes: number;
+        /** @description Phase 14: the file was deleted by the retention setting */
+        deletedAt: string | null;
       } | null;
       flowRunId: string | null;
       error: {

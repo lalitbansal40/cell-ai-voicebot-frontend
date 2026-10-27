@@ -419,6 +419,20 @@ describe('/calls/:id detail', () => {
     play.mockRestore();
   });
 
+  it('a recording deleted by the retention setting: no player, a note, the transcript stays', async () => {
+    signInAs('owner');
+    api.get.mockResolvedValue(
+      fakeCall({
+        recording: { durationSec: 26, sizeBytes: 793_004, deletedAt: '2026-10-20T01:00:00.000Z' },
+      }),
+    );
+    renderWithProviders({ route: '/calls/c1' });
+    expect(await screen.findByText(/The recording was deleted on/)).toBeInTheDocument();
+    expect(screen.getByText(/data retention setting/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Load recording' })).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Transcript' })).toBeInTheDocument();
+  });
+
   it('viewers see no player; recording link errors show; agent source and typed values', async () => {
     const user = userEvent.setup();
     signInAs('viewer');

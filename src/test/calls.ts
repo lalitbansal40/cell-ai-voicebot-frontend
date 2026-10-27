@@ -44,7 +44,7 @@ export const fakeCall = (overrides: Partial<Call> = {}): Call => ({
     commissionMicros: 295_000,
     totalMicros: 895_000,
   },
-  recording: { durationSec: 26, sizeBytes: 793_004 },
+  recording: { durationSec: 26, sizeBytes: 793_004, deletedAt: null },
   flowRunId: 'r1',
   error: null,
   createdAt: '2026-10-15T10:00:00.000Z',

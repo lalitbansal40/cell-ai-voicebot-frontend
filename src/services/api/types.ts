@@ -318,3 +318,5 @@ export type Report = Schemas['Report'];
 export type RecordExport = Schemas['RecordExport'];
 /** Phase 14 report e-mails (each person's own). */
 export type ReportSubscription = Schemas['ReportSubscription'];
+/** Phase 14 per-account retention (settings, effective days, platform, cap, bounds). */
+export type Retention = Schemas['Retention'];

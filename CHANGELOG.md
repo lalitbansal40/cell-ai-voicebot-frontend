@@ -6,6 +6,9 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 14 · T14.8 — data retention** — 2026-10-27
+  - Settings → Data retention (owner / admin; read-only for others): days for call recordings, call records and WhatsApp chats, each empty for the platform default, bounds from the server, a confirm dialog listing what a shorter period deletes tonight. Superadmin account page: data retention limit. Call detail says when a recording was deleted by the retention setting. Privacy Policy draft mentions per-account periods.
+
 - **Phase 14 · T14.7 — record exports and scheduled report emails** — 2026-10-27
   - Calls and report tabs export CSV / XLSX with permission-aware phone / summary options, progress and recent downloads. Settings → Notifications manages up to five personal report subscriptions; public unsubscribe confirms a signed email link. Mutations and exports stay blocked while impersonating.
 

@@ -5,5 +5,6 @@ export const settingsKeys = {
   sessions: ['settings', 'sessions'] as const,
   apiKeys: ['settings', 'api-keys'] as const,
   reportEmails: ['settings', 'report-emails'] as const,
+  retention: ['settings', 'retention'] as const,
   audit: (query: Omit<AuditQuery, 'cursor'>) => ['settings', 'audit', query] as const,
 };

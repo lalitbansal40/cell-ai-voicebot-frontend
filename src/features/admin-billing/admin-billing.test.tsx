@@ -15,6 +15,7 @@ import type {
 } from '@/services/api/types';
 import { fakeSession, signInAs } from '@/test/auth';
 import { renderWithProviders } from '@/test/render';
+import { fakeRetention } from '@/test/retention';
 
 vi.mock('@/services/api/admin', () => ({
   adminApi: { account: vi.fn(), accounts: vi.fn() },
@@ -78,6 +79,7 @@ const DETAIL: AdminAccountDetail = {
   owner: base.user as AdminAccountDetail['owner'],
   usersCount: 3,
   usersByStatus: { active: 3, invited: 0, disabled: 0 },
+  retention: fakeRetention(),
   limits: { maxConcurrentCalls: 10, dialsPerMinute: 60 },
   activeCampaigns: 0,
   adminPausedCampaigns: [],
