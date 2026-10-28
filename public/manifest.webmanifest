@@ -1,6 +1,6 @@
 {
-  "name": "Cell AI Voicebot",
-  "short_name": "Cell AI",
+  "name": "NotifyNow",
+  "short_name": "NotifyNow",
   "description": "AI voice calling and WhatsApp for businesses",
   "start_url": "/",
   "display": "standalone",

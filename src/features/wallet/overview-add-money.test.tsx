@@ -120,7 +120,7 @@ const CHECKOUT = (provider: 'fake' | 'razorpay' = 'fake'): TopupCheckout => ({
     providerOrderId: 'order_1',
     amountPaise: 118_000,
     currency: 'INR',
-    name: 'Cell AI Voicebot',
+    name: 'NotifyNow',
     description: 'Wallet recharge',
     prefill: { name: PROFILE.legalName, email: PROFILE.email },
   },

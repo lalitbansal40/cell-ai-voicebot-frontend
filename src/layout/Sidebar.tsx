@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import { lazy, Suspense } from 'react';
 import { useLocation } from 'react-router';
 
+import { APP_NAME } from '@/app/brand';
 import { useCan, useIsPlatformAdmin } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/store';
 
@@ -65,7 +66,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen: boolean; onClose:
   const brand = (
     <Toolbar>
       <Typography variant="h6" noWrap sx={{ fontWeight: 700 }}>
-        Cell AI Voicebot
+        {APP_NAME}
       </Typography>
     </Toolbar>
   );

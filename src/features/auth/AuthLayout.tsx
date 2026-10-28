@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router';
 
+import { APP_NAME } from '@/app/brand';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LegalLinks } from '@/features/legal/LegalLinks';
 
@@ -35,7 +36,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
       <Stack spacing={2} sx={{ width: '100%', maxWidth: 440 }}>
         <Link component={RouterLink} to="/" underline="none" sx={{ textAlign: 'center' }}>
           <Typography variant="h5" component="p" sx={{ fontWeight: 700 }}>
-            Cell AI Voicebot
+            {APP_NAME}
           </Typography>
         </Link>
         <Card variant="outlined">
