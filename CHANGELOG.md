@@ -6,6 +6,14 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 15 · Batch 2 (T15.7) — Integrations, API key details, WhatsApp after calls** — 2026-10-30
+  - Integrations (`/integrations/:tab`, `LIVE_PHASE` 15):
+    - Webhooks: secret shown once, send test, delivery log with filters and replay, failing-endpoint banner.
+    - After the call: rules with a live template preview and values from the contact, the call or the AI insights.
+    - Google Sheets: check the link, map the columns, schedule, run now.
+  - Settings → API keys: grouped scopes, IP allowlist, expiry, a change dialog, a 7-day request log and "Test a key". The flow "Send WhatsApp" step gets number and approved-template pickers. The call page gets an "After the call" card with the exact skip reasons. The contacts import links to Google Sheets.
+  - Tests 1386 → 1436, coverage 96.31 / 92.27 / 94.02 / 97.03. Bundle (gzip): main 314.6 KB (+1.8 KB), IntegrationsPage 9.6 KB (lazy). E2E 158 / 158 (port 3150), backend log grep 0.
+
 - **Phase 14 · Batch 3 (T14.9–T14.10) — end-to-end checks** — 2026-10-28
   - Phase 14 complete (sign-off in the backend repo, `docs/phases/PHASE_14_SIGNOFF.md`): tests 1386 (96.21 / 92.12 / 93.82 / 96.96), Playwright 158 / 158.
   - Playwright `reports-insights.spec.ts` (insights state on a call, outcome change → calls report, calls export file, report e-mail through Mailpit + its unsubscribe link, retention purge → "recording deleted", viewer / agent views) and `insights-chat.spec.ts` (chat summary, chat retention); helpers `e2e/reports.ts`. Suite 151 → 158.
