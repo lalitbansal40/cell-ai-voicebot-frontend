@@ -69,6 +69,8 @@ export const webhooksApi = {
         { params: { limit: 50, ...query } },
       ),
     ),
+  /** DEV ONLY: the backend's own test receiver (404 when the mock APIs are off). */
+  devReceiver: () => apiClient.get<{ url: string }>('/mock/dev-receiver').then((r) => r.data.url),
   replay: (deliveryId: string) =>
     unwrap(
       apiClient.post<SuccessEnvelope<WebhookDelivery>>(`/webhook-deliveries/${deliveryId}/replay`),

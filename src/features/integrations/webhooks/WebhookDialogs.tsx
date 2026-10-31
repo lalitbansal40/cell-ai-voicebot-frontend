@@ -14,7 +14,7 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { CopyButton } from '@/components/CopyButton';
@@ -78,6 +78,14 @@ export function EndpointDialog({
   });
   const [touched, setTouched] = useState(false);
   const problem = endpointProblem(draft);
+  // dev / test servers only: the backend's own receiver (the request 404s elsewhere)
+  const devReceiver = useQuery({
+    queryKey: integrationKeys.devReceiver,
+    queryFn: webhooksApi.devReceiver,
+    staleTime: Infinity,
+    retry: false,
+    meta: { silent: true },
+  });
   const save = useMutation({
     mutationFn: () => {
       const body: EndpointInput = {
@@ -121,6 +129,22 @@ export function EndpointDialog({
             }}
             helperText="Your server's address — https only. Answer with any 2xx within 10 seconds."
           />
+          {devReceiver.data && (
+            <Button
+              size="small"
+              sx={{ alignSelf: 'flex-start' }}
+              onClick={() => {
+                setTouched(true);
+                setDraft({
+                  ...draft,
+                  url: devReceiver.data,
+                  description: draft.description || 'Dev receiver',
+                });
+              }}
+            >
+              Use the dev receiver
+            </Button>
+          )}
           <TextField
             label="Description (optional)"
             value={draft.description}

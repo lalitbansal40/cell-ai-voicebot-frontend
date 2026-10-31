@@ -48,6 +48,7 @@ describe('Phase 15 API clients', () => {
     await webhooksApi.deliveries('we1');
     await webhooksApi.deliveries('we1', { status: 'failed', cursor: 'c2' });
     await webhooksApi.replay('wd1');
+    await webhooksApi.devReceiver();
     expect(seen).toEqual([
       ['get', '/webhook-endpoints', undefined, undefined],
       ['post', '/webhook-endpoints', { url: 'https://x.test/h', events: ['*'] }, undefined],
@@ -64,6 +65,7 @@ describe('Phase 15 API clients', () => {
         { limit: 50, status: 'failed', cursor: 'c2' },
       ],
       ['post', '/webhook-deliveries/wd1/replay', undefined, undefined],
+      ['get', '/mock/dev-receiver', undefined, undefined],
     ]);
   });
 

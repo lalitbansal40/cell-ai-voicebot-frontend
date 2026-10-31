@@ -17997,6 +17997,157 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/mock/payment-link': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Fake payment link for a loan (for "Call API" steps and after-call templates) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /** @example LN-1001 */
+            loanId: string;
+            /**
+             * @description Rupees
+             * @example 2500
+             */
+            amount: number;
+          };
+        };
+      };
+      responses: {
+        /** @description A made-up link */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['MockPaymentLink'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/mock/webhook-receiver': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The last 50 deliveries the dev receiver got (newest first, no payloads) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Receipts */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['MockWebhookReceipt'][];
+          };
+        };
+      };
+    };
+    put?: never;
+    /** Dev webhook receiver: checks the signature, keeps the last 50 deliveries in memory */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Received */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['MockWebhookReceipt'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/mock/dev-receiver': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The dev webhook receiver address (only while the mocks are on) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Address */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              url: string;
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/notifications': {
     parameters: {
       query?: never;
@@ -31317,6 +31468,19 @@ export interface components {
       outstandingRupees: number;
       /** @description YYYY-MM-DD */
       dueDate: string;
+    };
+    MockPaymentLink: {
+      /** @example https://pay.example.com/l/LN-1001?amount=2500 */
+      url: string;
+      expiresAt: string;
+    };
+    MockWebhookReceipt: {
+      at: string;
+      eventId: string | null;
+      type: string | null;
+      /** @description The signature matched an endpoint pointing here */
+      verified: boolean;
+      bytes: number;
     };
     Notification: {
       id: string;

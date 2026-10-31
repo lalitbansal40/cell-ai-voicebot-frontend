@@ -24,6 +24,7 @@ vi.mock('@/services/api/webhooks', async (importOriginal) => ({
     enable: vi.fn(),
     deliveries: vi.fn(),
     replay: vi.fn(),
+    devReceiver: vi.fn(),
   },
 }));
 
@@ -38,6 +39,7 @@ beforeEach(() => {
   signInAs('owner');
   api.list.mockResolvedValue([fakeEndpoint()]);
   api.deliveries.mockResolvedValue({ items: [], nextCursor: null });
+  api.devReceiver.mockRejectedValue(new Error('404 — mocks off'));
 });
 
 describe('Webhooks tab', () => {
@@ -116,6 +118,31 @@ describe('Webhooks tab', () => {
     await userEvent.click(within(secret).getByRole('button', { name: "I've copied it" }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(screen.queryByDisplayValue('whsec_abc123')).not.toBeInTheDocument();
+  });
+
+  it('offers the dev receiver only when the mock APIs are on', async () => {
+    const url = 'http://127.0.0.1:5100/api/v1/mock/webhook-receiver';
+    api.devReceiver.mockResolvedValue(url);
+    api.create.mockResolvedValue({ endpoint: fakeEndpoint(), secret: 'whsec_dev' });
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Add webhook' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add webhook' });
+    await userEvent.click(
+      await within(dialog).findByRole('button', { name: 'Use the dev receiver' }),
+    );
+    expect(within(dialog).getByLabelText('URL')).toHaveValue(url);
+    expect(within(dialog).getByLabelText('Description (optional)')).toHaveValue('Dev receiver');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Add webhook' }));
+    expect(api.create).toHaveBeenCalledWith(
+      expect.objectContaining({ url, description: 'Dev receiver' }),
+    );
+  });
+
+  it('hides the dev receiver when the mocks are off', async () => {
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Add webhook' }));
+    await waitFor(() => expect(api.devReceiver).toHaveBeenCalled());
+    expect(screen.queryByRole('button', { name: 'Use the dev receiver' })).toBeNull();
   });
 
   it('changes an endpoint (no secret), and shows save errors', async () => {
