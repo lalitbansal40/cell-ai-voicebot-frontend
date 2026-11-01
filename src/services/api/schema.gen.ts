@@ -9507,6 +9507,8 @@ export interface paths {
             required?: boolean;
             /** @description Currency in rupees (stored as micros); dates `YYYY-MM-DD` or `DD/MM/YYYY` */
             defaultValue?: string | number | null;
+            /** @description Seal this field at rest; existing values move in the background */
+            sensitive?: boolean;
           };
         };
       };
@@ -28810,7 +28812,8 @@ export interface components {
         | 'outcome_rule.deleted'
         | 'sheet_import.created'
         | 'sheet_import.deleted'
-        | 'keys.resealed';
+        | 'keys.resealed'
+        | 'custom_field.sensitive_changed';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
@@ -29980,6 +29983,13 @@ export interface components {
       /** @description Stored form: currency in micros, date `YYYY-MM-DD` */
       defaultValue: string | number | null;
       order: number;
+      sensitive: boolean;
+      sensitiveJob: {
+        /** @enum {string} */
+        status: 'running' | 'done' | 'failed';
+        done: number;
+        total: number;
+      } | null;
       /** @description Contacts with a value (only with `?withUsage=true`) */
       usageCount?: number;
       createdAt: string;

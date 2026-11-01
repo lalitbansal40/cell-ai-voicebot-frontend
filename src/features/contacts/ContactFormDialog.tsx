@@ -155,12 +155,13 @@ export function ContactFormDialog({
                       key={f.key}
                       label={f.label}
                       required={f.required}
-                      type={INPUT_TYPE[f.type]}
+                      type={f.sensitive ? 'text' : INPUT_TYPE[f.type]}
                       {...form.register(`variables.${f.key}`)}
                       error={Boolean(fieldError)}
                       helperText={fieldError?.message}
                       slotProps={{
-                        inputLabel: f.type === 'date' ? { shrink: true } : undefined,
+                        inputLabel:
+                          f.type === 'date' && !f.sensitive ? { shrink: true } : undefined,
                         input:
                           f.type === 'currency'
                             ? {
