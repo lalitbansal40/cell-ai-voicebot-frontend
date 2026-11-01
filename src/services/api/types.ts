@@ -1,6 +1,6 @@
 import type { components, paths } from './schema.gen';
 
-type Schemas = components['schemas'];
+export type Schemas = components['schemas'];
 
 /** Backend app info (`GET /api/v1/system/info`). */
 export type AppInfo = Schemas['AppInfo'];
