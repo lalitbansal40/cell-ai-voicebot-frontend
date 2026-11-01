@@ -90,6 +90,14 @@ describe('nav config', () => {
 });
 
 describe('AppLayout', () => {
+  it('shows Integrations with either integrations.manage or contacts.import', () => {
+    const keys = (perms: string[]) =>
+      visibleNavItems((p) => perms.includes(p), false).map((i) => i.key);
+    expect(keys(['integrations.manage'])).toContain('integrations');
+    expect(keys(['contacts.import'])).toContain('integrations'); // managers: Google Sheets
+    expect(keys(['contacts.read', 'calls.read'])).not.toContain('integrations');
+  });
+
   it('shows the menu for an owner (no superadmin section)', () => {
     signInAs('owner');
     renderWithProviders({ route: '/' });
