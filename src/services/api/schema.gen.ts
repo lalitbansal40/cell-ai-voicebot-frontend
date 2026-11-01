@@ -28809,7 +28809,8 @@ export interface components {
         | 'outcome_rule.updated'
         | 'outcome_rule.deleted'
         | 'sheet_import.created'
-        | 'sheet_import.deleted';
+        | 'sheet_import.deleted'
+        | 'keys.resealed';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
