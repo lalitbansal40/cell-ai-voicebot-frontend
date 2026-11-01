@@ -78,9 +78,11 @@ Under the Digital Personal Data Protection Act, 2023 you can ask for a summary o
 
 ## 11. Deleting data
 
-- A customer can delete contacts and turn off recording in the Service, and can disconnect a WhatsApp number at any time.
+- A customer can delete or permanently erase contacts and turn off recording in the Service, and can disconnect a WhatsApp number at any time.
 - To delete an account and its data, the account owner writes to {{email}} from the owner's e-mail address.
 - If you connected WhatsApp through Facebook, you can remove {{appName}} in Facebook → Settings & privacy → Settings → Business integrations. Meta then sends us a deletion request and we delete the access tokens and your Meta user id; you can check the status on our [data deletion page](/data-deletion).
+
+When an account erases a person from its contacts, we delete their chats, recordings, transcripts and call details. We keep call counts and charges without personal details, and a one-way code of the number, so it isn't added again and an opt-out stays in force. We can't delete chats on the person's own phone, data Meta holds, data already sent to the account's own systems, or copies in backups until those backups expire.
 
 ## 12. Cookies and browser storage
 
