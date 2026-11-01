@@ -3297,7 +3297,7 @@ export interface paths {
       };
     };
     put?: never;
-    /** Create a customer account; the owner gets an invitation e-mail (superadmin) */
+    /** Create a customer account with an owner who can sign in at once (superadmin) */
     post: {
       parameters: {
         query?: never;
@@ -3317,6 +3317,7 @@ export interface paths {
              * @example asha@example.com
              */
             ownerEmail: string;
+            ownerPassword: string;
             ownerPhone?: string;
             /** @example Asia/Kolkata */
             timezone?: string;
@@ -3381,7 +3382,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/api/v1/admin/accounts/{id}/resend-owner-invite': {
+  '/api/v1/admin/accounts/{id}/owner-password': {
     parameters: {
       query?: never;
       header?: never;
@@ -3390,7 +3391,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Send the owner a new invitation link (superadmin) */
+    /** Set the owner's password; the owner's sessions end (superadmin) */
     post: {
       parameters: {
         query?: never;
@@ -3400,7 +3401,13 @@ export interface paths {
         };
         cookie?: never;
       };
-      requestBody?: never;
+      requestBody?: {
+        content: {
+          'application/json': {
+            password: string;
+          };
+        };
+      };
       responses: {
         /** @description No content */
         204: {
@@ -3445,8 +3452,8 @@ export interface paths {
             'application/json': components['schemas']['ErrorEnvelope'];
           };
         };
-        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
-        429: {
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
           headers: {
             [name: string]: unknown;
           };
