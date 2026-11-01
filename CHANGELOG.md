@@ -6,6 +6,9 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 16 · Batch 1 (T16.2) — dependency fixes** — 2026-11-01
+  - `npm audit --omit=dev` reports 0 (follow-redirects, zod, fast-uri, seroval).
+
 - **Phase 15 · Batch 3 (T15.8–T15.10) — dev receiver, end-to-end checks** — 2026-11-01
   - Phase 15 complete (sign-off in the backend repo, `docs/phases/PHASE_15_SIGNOFF.md`). Webhook form: "Use the dev receiver" when the mock APIs are on.
   - Fixed: managers had no Integrations menu link to their Google Sheets tab.
