@@ -55,6 +55,13 @@ export const adminApi = {
         `/admin/accounts/${id}/deletion/run`,
       ),
     ),
+  setApiLimits: (
+    id: string,
+    apiLimits: { readsPerMinute: number; writesPerMinute: number } | null,
+  ) =>
+    unwrap(
+      apiClient.patch<SuccessEnvelope<unknown>>(`/admin/accounts/${id}/api-limits`, { apiLimits }),
+    ),
   setOwnerPassword: async (id: string, password: string) => {
     await apiClient.post(`/admin/accounts/${id}/owner-password`, { password });
   },
