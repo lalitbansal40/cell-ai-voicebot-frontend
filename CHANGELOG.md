@@ -6,6 +6,9 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 16 · Batch 2 (T16.4–T16.6) — data rights** — 2026-11-02
+  - Sensitive switch in Contact fields, Erase permanently on contacts, and Your data in Settings → Account (export, delete, grace banner). Superadmin list of accounts waiting to be deleted.
+
 - **Phase 16 · Batch 1 (T16.2) — dependency fixes** — 2026-11-01
   - `npm audit --omit=dev` reports 0 (follow-redirects, zod, fast-uri, seroval).
 - **Superadmin Add account: password instead of invitation** — 2026-11-01
