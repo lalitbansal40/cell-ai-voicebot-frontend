@@ -952,6 +952,8 @@ export interface paths {
               recordingEnabled?: boolean;
               recordingNotice?: string;
               aiDisclosureEnabled?: boolean;
+              /** @description Refuse marketing templates to contacts with no recorded consent */
+              requireOptInForMarketing?: boolean;
             };
           };
         };
@@ -11969,6 +11971,204 @@ export interface paths {
         };
       };
     };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/account/compliance': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The calling, consent and opt-out rules in force, with counts (account.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['Compliance'];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/account/compliance/export': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** CSV of DND and opt-out changes; phones masked without contacts.export (account.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description CSV file */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/csv': string;
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/compliance/ceiling': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The widest calling window an account may save (superadmin) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                start: string;
+                end: string;
+              };
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    /** Change the widest calling window an account may save (superadmin) */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            start: string;
+            end: string;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                start: string;
+                end: string;
+              };
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -29587,7 +29787,9 @@ export interface components {
         | 'account.export_downloaded'
         | 'account.delete_requested'
         | 'account.delete_canceled'
-        | 'account.purged';
+        | 'account.purged'
+        | 'compliance.exported'
+        | 'compliance.ceiling_changed';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
@@ -30982,13 +31184,36 @@ export interface components {
       createdAt: string;
       updatedAt: string;
     };
+    Compliance: {
+      callingWindow: {
+        start: string;
+        end: string;
+        days: number[];
+      };
+      ceiling: {
+        start: string;
+        end: string;
+      };
+      timezone: string;
+      aiDisclosureEnabled: boolean;
+      recordingEnabled: boolean;
+      requireOptInForMarketing: boolean;
+      optOutKeywords: string[];
+      counts: {
+        contacts: number;
+        withConsent: number;
+        dnd: number;
+        optedOut: number;
+        suppressed: number;
+      };
+    };
     DndEntry: {
       id: string;
       /** @example +919876543210 */
       phoneE164: string;
       reason: string | null;
       /** @enum {string} */
-      source: 'manual' | 'upload' | 'keyword' | 'dtmf' | 'whatsapp';
+      source: 'manual' | 'upload' | 'keyword' | 'dtmf' | 'whatsapp' | 'voice';
       addedBy: string | null;
       createdAt: string;
     };

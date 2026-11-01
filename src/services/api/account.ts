@@ -24,6 +24,10 @@ export const accountApi = {
     unwrap(apiClient.patch<SuccessEnvelope<AccountWithWarning>>('/account', body)),
   updateProfile: (body: { name?: string; phone?: string | null }) =>
     unwrap(apiClient.patch<SuccessEnvelope<AuthMe>>('/auth/me', body)),
+  compliance: () =>
+    unwrap(apiClient.get<SuccessEnvelope<Schemas['Compliance']>>('/account/compliance')),
+  complianceCsv: async () =>
+    (await apiClient.get<Blob>('/account/compliance/export', { responseType: 'blob' })).data,
   startExport: (body: { password: string; includeRecordings: boolean }) =>
     unwrap(apiClient.post<SuccessEnvelope<Schemas['AccountExport']>>('/account/export', body)),
   exports: () =>
