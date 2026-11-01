@@ -6,6 +6,11 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Phase 15 · Batch 3 (T15.8–T15.10) — dev receiver, end-to-end checks** — 2026-11-01
+  - Phase 15 complete (sign-off in the backend repo, `docs/phases/PHASE_15_SIGNOFF.md`). Webhook form: "Use the dev receiver" when the mock APIs are on.
+  - Fixed: managers had no Integrations menu link to their Google Sheets tab.
+  - Playwright `integrations-*.spec.ts`: keys, webhooks, replay, roles, after-call rule, flow Send WhatsApp. Suite 158 → 163. Tests 1436 → 1442, coverage 96.3 / 92.28 / 94 / 97.02. Bundle (gzip): main 315.2 KB, IntegrationsPage 9.7 KB (lazy).
+
 - **Phase 15 · Batch 2 (T15.7) — Integrations, API key details, WhatsApp after calls** — 2026-10-30
   - Integrations (`/integrations/:tab`, `LIVE_PHASE` 15):
     - Webhooks: secret shown once, send test, delivery log with filters and replay, failing-endpoint banner.
