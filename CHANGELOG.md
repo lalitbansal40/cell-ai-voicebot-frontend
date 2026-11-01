@@ -8,6 +8,9 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 - **Phase 16 · Batch 1 (T16.2) — dependency fixes** — 2026-11-01
   - `npm audit --omit=dev` reports 0 (follow-redirects, zod, fast-uri, seroval).
+- **Superadmin Add account: password instead of invitation** — 2026-11-01
+  - The superadmin sets the owner's password when creating an account; the owner is active at once and no e-mail is sent.
+  - `POST /api/v1/admin/accounts/:id/owner-password` replaces `resend-owner-invite`: it sets a new password and ends the owner's sessions. An owner invited earlier becomes active.
 
 - **Phase 15 · Batch 3 (T15.8–T15.10) — dev receiver, end-to-end checks** — 2026-11-01
   - Phase 15 complete (sign-off in the backend repo, `docs/phases/PHASE_15_SIGNOFF.md`). Webhook form: "Use the dev receiver" when the mock APIs are on.
