@@ -4,7 +4,14 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ## [Unreleased]
 
+### Fixed
+
+- A contact page no longer shows the mask for a sensitive value right after saving.
+
 ### Added
+
+- **Phase 16 · Batch 3 — compliance and hardening** — 2026-11-02
+  - Settings → Compliance, two-step sign-in in Settings → Security, API key limits on the superadmin account page.
 
 - **Phase 16 · Batch 2 (T16.4–T16.6) — data rights** — 2026-11-02
   - Sensitive switch in Contact fields, Erase permanently on contacts, and Your data in Settings → Account (export, delete, grace banner). Superadmin list of accounts waiting to be deleted.
