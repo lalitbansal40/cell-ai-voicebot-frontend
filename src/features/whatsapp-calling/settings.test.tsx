@@ -80,6 +80,38 @@ describe('number → Calling settings', () => {
     );
   });
 
+  it("WhatsApp did not apply the switch: the message, then WhatsApp's state again (Phase 18B)", async () => {
+    api.getSettings.mockResolvedValue(fakeCallingSettings({ status: 'disabled' }));
+    let finish: (v: unknown) => void = () => undefined;
+    api.updateSettings.mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          finish = () =>
+            reject(
+              new ApiError({
+                status: 502,
+                code: 'CALLING_SETTINGS_NOT_APPLIED',
+                message: 'x',
+                kind: 'http',
+                details: [],
+              }),
+            );
+        }),
+    );
+    show();
+    const s = await section();
+    await userEvent.click(within(s).getByRole('switch', { name: 'WhatsApp calling' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Turn on WhatsApp calling?' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Turn on' }));
+    expect(await within(s).findByText('Turning on…')).toBeInTheDocument();
+    const reads = api.getSettings.mock.calls.length;
+    finish(null);
+    expect(await within(s).findByText(/WhatsApp did not apply the change/)).toBeInTheDocument();
+    await waitFor(() => expect(api.getSettings.mock.calls.length).toBeGreaterThan(reads));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(await within(s).findByRole('switch', { name: 'WhatsApp calling' })).not.toBeChecked();
+  });
+
   it('shows Meta restrictions and the business-call country rule', async () => {
     api.getSettings.mockResolvedValue(
       fakeCallingSettings({

@@ -181,7 +181,13 @@ function CallingForm({
               onChange={(e) => (e.target.checked ? setConfirm(true) : toggle('disabled'))}
             />
           }
-          label="WhatsApp calling"
+          label={
+            save.isPending && save.variables?.status
+              ? save.variables.status === 'enabled'
+                ? 'Turning on…'
+                : 'Turning off…'
+              : 'WhatsApp calling'
+          }
         />
       )}
       {enabled && (

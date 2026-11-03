@@ -49,6 +49,8 @@ export const useUpdateCallingSettings = (channelId: string) => {
     mutationFn: (patch: WhatsAppCallingSettingsPatch) =>
       whatsappCallingApi.updateSettings(channelId, patch),
     onSuccess: (settings) => storeSettings(client, settings),
+    // a refused or not-applied change: show WhatsApp's real state again (Phase 18B)
+    onError: () => void client.invalidateQueries({ queryKey: callingKeys.settings(channelId) }),
   });
 };
 
