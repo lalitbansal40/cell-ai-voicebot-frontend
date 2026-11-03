@@ -43,12 +43,22 @@ const storeSettings = (
   void client.invalidateQueries({ queryKey: whatsappKeys.channel(settings.channelId) });
 };
 
+/** Phase 18B readiness checklist (Meta checks are cached 1 h on the server). */
+export const useCallingReadiness = (channelId: string) =>
+  useQuery({
+    queryKey: callingKeys.readiness(channelId),
+    queryFn: () => whatsappCallingApi.readiness(channelId),
+  });
+
 export const useUpdateCallingSettings = (channelId: string) => {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (patch: WhatsAppCallingSettingsPatch) =>
       whatsappCallingApi.updateSettings(channelId, patch),
-    onSuccess: (settings) => storeSettings(client, settings),
+    onSuccess: (settings) => {
+      storeSettings(client, settings);
+      void client.invalidateQueries({ queryKey: callingKeys.readiness(channelId) });
+    },
     // a refused or not-applied change: show WhatsApp's real state again (Phase 18B)
     onError: () => void client.invalidateQueries({ queryKey: callingKeys.settings(channelId) }),
   });

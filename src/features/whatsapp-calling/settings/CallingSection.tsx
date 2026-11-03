@@ -34,6 +34,7 @@ import {
 } from '../labels';
 import { ProgramPicker } from '../ProgramPicker';
 import {
+  useCallingReadiness,
   useCallingSettings,
   useCanManageCalling,
   useSyncCallingSettings,
@@ -41,7 +42,9 @@ import {
 } from '../queries';
 
 import { CallHoursEditor } from './CallHoursEditor';
+import { CallingReadiness } from './CallingReadiness';
 import { CALLING_FORM_LIMITS, draftOf, settingsPatch, settingsProblems, type Draft } from './form';
+import { firstBlocking } from './readiness';
 
 const errorText = (err: unknown) => {
   const e = toApiError(err);
@@ -114,6 +117,7 @@ function CallingForm({
   const dirty = Object.keys(patch).length > 0;
   const setInbound = (p: Partial<Draft['inbound']>) =>
     setDraft({ ...draft, inbound: { ...draft.inbound, ...p } });
+  const blocking = firstBlocking(useCallingReadiness(settings.channelId).data);
   const toggle = (status: 'enabled' | 'disabled') =>
     save.mutate(
       { status },
@@ -172,12 +176,14 @@ function CallingForm({
         </Alert>
       )}
       {settings.lastError && <Alert severity="warning">{settings.lastError}</Alert>}
+      <CallingReadiness channelId={settings.channelId} />
+      {!enabled && blocking && <Alert severity="warning">{blocking.fix ?? blocking.detail}</Alert>}
       {!unavailable && (
         <FormControlLabel
           control={
             <Switch
               checked={enabled}
-              disabled={!canManage || save.isPending}
+              disabled={!canManage || save.isPending || (!enabled && Boolean(blocking))}
               onChange={(e) => (e.target.checked ? setConfirm(true) : toggle('disabled'))}
             />
           }

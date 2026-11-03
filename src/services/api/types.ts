@@ -292,6 +292,7 @@ type Created<P extends keyof paths, M extends keyof paths[P]> = paths[P][M] exte
 
 /** WhatsApp calling (Phase 12). */
 export type WhatsAppCallingSettings = Schemas['WhatsAppCallingSettings'];
+export type WhatsAppCallingReadiness = Schemas['WhatsAppCallingReadiness'];
 export type WhatsAppCallingSettingsPatch = Schemas['WhatsAppCallingSettingsPatch'];
 export type WhatsAppCallHours = WhatsAppCallingSettings['callHours'];
 export type WhatsAppCallHoursEntry = WhatsAppCallHours['weekly'][number];

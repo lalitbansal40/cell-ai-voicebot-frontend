@@ -4,6 +4,7 @@ import type {
   CallPermissionRequestResult,
   StartedWhatsAppCall,
   SuccessEnvelope,
+  WhatsAppCallingReadiness,
   WhatsAppCallingSettings,
   WhatsAppCallingSettingsPatch,
   WhatsAppCallMediaTicket,
@@ -36,6 +37,11 @@ export const whatsappCallingApi = {
   /** Meta first: only the fields that changed go to Meta (409 when calling is unavailable). */
   updateSettings: (channelId: string, body: WhatsAppCallingSettingsPatch) =>
     unwrap(apiClient.patch<SuccessEnvelope<WhatsAppCallingSettings>>(settings(channelId), body)),
+  /** Phase 18B: what calling on the number needs, with the fix for each item. */
+  readiness: (channelId: string) =>
+    unwrap(
+      apiClient.get<SuccessEnvelope<WhatsAppCallingReadiness>>(settings(channelId, '/readiness')),
+    ),
   syncSettings: (channelId: string) =>
     unwrap(apiClient.post<SuccessEnvelope<WhatsAppCallingSettings>>(settings(channelId, '/sync'))),
   /** `refresh` asks Meta again (else ≤ 60 s old). */
