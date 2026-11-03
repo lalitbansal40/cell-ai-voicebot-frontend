@@ -36,6 +36,7 @@ const healthy = (): SystemStatus => ({
   },
   certificate: { daysLeft: 40 },
   superadminsWithoutMfa: 0,
+  sip: null,
 });
 
 const open = () => {
@@ -55,6 +56,30 @@ describe('Admin → System', () => {
     expect(screen.getByText('Done')).toBeInTheDocument();
     expect(screen.getByText(/38 min to restore/)).toBeInTheDocument();
     expect(screen.getByRole('table', { name: 'Queues' })).toHaveTextContent('whatsapp');
+  });
+
+  it('shows the phone line when the install has a trunk (Phase 18)', async () => {
+    api.status.mockResolvedValue({
+      ...healthy(),
+      sip: {
+        ariConnected: true,
+        trunkOnline: false,
+        liveChannels: 4,
+        maxChannels: 30,
+        maxCps: 2,
+        causes24h: { customer_hangup: 12, busy: 3 },
+        avgLossPct: 0.8,
+        avgJitterMs: 12.5,
+      },
+    });
+    open();
+    const card = await screen.findByText('Phone line (SIP)');
+    expect(card).toBeInTheDocument();
+    expect(screen.getByText('Connected')).toBeInTheDocument();
+    expect(screen.getByText('Offline')).toBeInTheDocument();
+    expect(screen.getByText('4 of 30')).toBeInTheDocument();
+    expect(screen.getByText('loss 0.8% · jitter 12.5 ms')).toBeInTheDocument();
+    expect(screen.getByText('customer hangup 12 · busy 3')).toBeInTheDocument();
   });
 
   it('marks what needs attention', async () => {

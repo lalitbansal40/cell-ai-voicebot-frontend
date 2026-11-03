@@ -333,3 +333,6 @@ export type OutcomeRule = Schemas['OutcomeRule'];
 export type AfterCallMessage = Schemas['AfterCallMessage'];
 export type SheetImport = Schemas['SheetImport'];
 export type SheetPreview = Schemas['SheetPreview'];
+
+// Phase 18: SIP line
+export type PhoneNumber = Schemas['PhoneNumber'];

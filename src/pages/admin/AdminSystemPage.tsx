@@ -155,6 +155,46 @@ export function AdminSystemPage() {
               </Fact>
             </Section>
           </Grid>
+          {s.sip && (
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Section title="Phone line (SIP)">
+                <Fact label="Asterisk">
+                  <State
+                    good={s.sip.ariConnected}
+                    label={s.sip.ariConnected ? 'Connected' : 'Down'}
+                  />
+                </Fact>
+                <Fact label="Trunk">
+                  {s.sip.trunkOnline === null ? (
+                    'Unknown'
+                  ) : (
+                    <State
+                      good={s.sip.trunkOnline}
+                      label={s.sip.trunkOnline ? 'Online' : 'Offline'}
+                    />
+                  )}
+                </Fact>
+                <Fact label="Channels in use">
+                  {s.sip.liveChannels < 0
+                    ? 'Unknown'
+                    : `${String(s.sip.liveChannels)} of ${String(s.sip.maxChannels)}`}
+                </Fact>
+                <Fact label="New calls per second">{s.sip.maxCps}</Fact>
+                <Fact label="Audio (24 h)">
+                  {s.sip.avgLossPct === null
+                    ? 'No calls yet'
+                    : `loss ${String(s.sip.avgLossPct)}% · jitter ${String(s.sip.avgJitterMs)} ms`}
+                </Fact>
+                <Fact label="Calls (24 h)">
+                  {Object.keys(s.sip.causes24h).length === 0
+                    ? '—'
+                    : Object.entries(s.sip.causes24h)
+                        .map(([k, n]) => `${k.replace(/_/g, ' ')} ${String(n)}`)
+                        .join(' · ')}
+                </Fact>
+              </Section>
+            </Grid>
+          )}
           <Grid size={{ xs: 12, md: 6 }}>
             <Section title="Queues">
               <Table size="small" aria-label="Queues">
