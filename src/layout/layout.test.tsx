@@ -52,7 +52,9 @@ describe('nav config', () => {
       'admin-system',
       'admin-phone-numbers',
     ]);
-    expect(visibleNavItems(() => true, false, 99)).toHaveLength(NAV_ITEMS.length - 6);
+    expect(visibleNavItems(() => true, false, 99)).toHaveLength(NAV_ITEMS.length - 7);
+    // Phase 19: the reseller item only for reseller accounts
+    expect(visibleNavItems(() => true, false, 99, true).map((i) => i.key)).toContain('reseller');
     // Phase 3 builds did not show the wallet
     expect(visibleNavItems(() => true, false, 3).map((i) => i.key)).not.toContain('wallet');
     // Phase 4 builds hid AI agents and knowledge

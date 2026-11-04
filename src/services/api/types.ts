@@ -339,3 +339,10 @@ export type SheetPreview = Schemas['SheetPreview'];
 
 // Phase 18: SIP line
 export type PhoneNumber = Schemas['PhoneNumber'];
+
+// Phase 19: reseller panel
+export type ResellerCustomer = Schemas['ResellerCustomer'];
+export type ResellerCustomerDetail = Schemas['ResellerCustomerDetail'];
+export type ResellerCreditResult = Schemas['ResellerCreditResult'];
+export type ResellerStatementRow = Schemas['ResellerStatementRow'];
+export type ResellerSummary = Schemas['ResellerSummary'];

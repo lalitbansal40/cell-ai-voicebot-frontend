@@ -166,6 +166,26 @@ export const routes: RouteObject[] = [
               { path: ':tab', element: <ContactsPage /> },
             ],
           },
+          // Phase 19: reseller panel (only reseller accounts; the page redirects others)
+          {
+            path: '/reseller',
+            lazy: async () => ({
+              Component: (await import('@/pages/reseller/ResellerPage')).ResellerPage,
+            }),
+          },
+          {
+            path: '/reseller/customers/:id',
+            lazy: async () => ({
+              Component: (await import('@/pages/reseller/ResellerCustomerPage'))
+                .ResellerCustomerPage,
+            }),
+          },
+          {
+            path: '/reseller/:tab',
+            lazy: async () => ({
+              Component: (await import('@/pages/reseller/ResellerPage')).ResellerPage,
+            }),
+          },
           {
             path: '/wallet',
             element: (
