@@ -27,6 +27,11 @@ vi.mock('@/services/api/admin', () => ({
     setRetentionCap: vi.fn(),
     pauseCampaigns: vi.fn(),
     resumeCampaign: vi.fn(),
+    signupSettings: vi.fn(() => new Promise(() => undefined)),
+    setSignupSettings: vi.fn(),
+    setReseller: vi.fn(),
+    approveReseller: vi.fn(),
+    suspendCustomers: vi.fn(),
   },
 }));
 vi.mock('@/services/api/phone-numbers', async (original) => ({
@@ -47,6 +52,10 @@ const ROW: AdminAccountRow = {
   status: 'active',
   ownerEmail: 'asha@example.com',
   usersCount: 3,
+  kind: 'business',
+  parent: null,
+  customersCount: null,
+  resellerStatus: null,
   createdAt: '2026-10-01T00:00:00Z',
 };
 
@@ -119,6 +128,7 @@ describe('Add account (superadmin)', () => {
       ownerEmail: 'meera@example.com',
       ownerPassword: 'short-enough-now',
       ownerPhone: '+919876543210',
+      kind: 'business',
     });
     expect(await screen.findByText(/The owner can sign in now/)).toBeInTheDocument();
     expect(await screen.findByRole('tab', { name: /overview/i })).toBeInTheDocument();
@@ -145,6 +155,7 @@ describe('Add account (superadmin)', () => {
       ownerName: 'Meera',
       ownerEmail: 'used@example.com',
       ownerPassword: 'long-enough-pass',
+      kind: 'business',
     });
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());

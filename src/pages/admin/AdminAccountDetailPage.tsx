@@ -21,6 +21,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { StatusChip } from '@/components/StatusChip';
 import { adminKeys } from '@/features/admin/keys';
 import { OwnerPasswordDialog } from '@/features/admin/OwnerPasswordDialog';
+import { ResellerCard } from '@/features/admin/ResellerCard';
 import { SuspendDialog } from '@/features/admin/SuspendDialog';
 import { AccountRatesTab } from '@/features/admin-billing/AccountRatesTab';
 import { AccountWalletTab } from '@/features/admin-billing/AccountWalletTab';
@@ -70,6 +71,7 @@ function Overview({ detail }: { detail: AdminAccountDetail }) {
   const [changingPassword, setChangingPassword] = useState(false);
   return (
     <Stack spacing={3}>
+      {account.kind !== 'platform' && <ResellerCard account={account} />}
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 6 }}>
           <Card variant="outlined">
