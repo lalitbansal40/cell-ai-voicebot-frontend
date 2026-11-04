@@ -31877,7 +31877,7 @@ export interface components {
     };
     ContactFilterCondition: {
       /**
-       * @description A custom field key, or `lastDisposition` (eq / neq / exists / not_exists) / `lastCalledAt` (before / after / within_last_days / not_exists = never called)
+       * @description A custom field key, or `lastDisposition` (eq / neq / exists / not_exists) / `lastCalledAt` (before / after / within_last_days / not_exists = never called) / `whatsappCallPermission` (eq / neq: allowed, asked, declined, none)
        * @example days_past_due
        */
       key: string;
@@ -32401,6 +32401,8 @@ export interface components {
       lastCalledAt: string | null;
       callCount: number;
       lastDisposition: string | null;
+      /** @enum {string} */
+      waCallPermission: 'allowed' | 'asked' | 'declined' | 'none';
       /** @description WhatsApp profile (set once the customer wrote on WhatsApp) */
       whatsapp: {
         profileName: string | null;

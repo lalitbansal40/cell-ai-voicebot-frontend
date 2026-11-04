@@ -17,7 +17,7 @@ import { useCan, useSession } from '@/features/auth/hooks';
 import { ExportDialog } from '@/features/contact-exports/ExportDialog';
 import { useCanExport } from '@/features/contact-exports/useExportJob';
 import { AdvancedFilterDialog } from '@/features/segments/AdvancedFilterDialog';
-import { describeFilter, filterSize } from '@/features/segments/segment-filter';
+import { WA_CALL_LABELS, describeFilter, filterSize } from '@/features/segments/segment-filter';
 import { SegmentDialog } from '@/features/segments/SegmentDialog';
 import { contactsApi } from '@/services/api/contacts';
 import type { Contact } from '@/services/api/types';
@@ -142,6 +142,27 @@ export function ContactsTab() {
         ),
       },
       { key: 'status', header: 'Status', render: (c) => <ContactStatusChips contact={c} /> },
+      {
+        key: 'waCall',
+        header: 'WhatsApp calls',
+        render: (c) =>
+          c.waCallPermission === 'none' ? (
+            '—'
+          ) : (
+            <Chip
+              size="small"
+              variant="outlined"
+              color={
+                c.waCallPermission === 'allowed'
+                  ? 'success'
+                  : c.waCallPermission === 'asked'
+                    ? 'info'
+                    : 'default'
+              }
+              label={WA_CALL_LABELS[c.waCallPermission]}
+            />
+          ),
+      },
       ...shownFields.map<Column<Contact>>((f) => ({
         key: `field:${f.key}`,
         header: f.label,
