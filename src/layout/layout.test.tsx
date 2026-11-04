@@ -278,14 +278,42 @@ describe('AppLayout', () => {
     useAuthStore.getState().startImpersonation(
       fakeSession('owner', {
         accessToken: 'imp',
-        impersonation: { impersonatorId: 'u1', expiresAt: '2026-10-08T01:00:00Z' },
+        impersonation: {
+          impersonatorId: 'u1',
+          expiresAt: '2026-10-08T01:00:00Z',
+          mode: 'view',
+          kind: 'superadmin',
+          returnTo: '/admin/accounts/a1',
+        },
       }),
     );
     renderWithProviders({ route: '/' });
-    expect(screen.getByText(/Viewing as Asha Verma \(Demo Finance\)/)).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Stop' }));
+    expect(screen.getByText(/Viewing as Asha Verma/)).toBeInTheDocument();
+    expect(screen.getByText(/Read-only/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Back to admin' }));
     await waitFor(() => expect(useAuthStore.getState().session?.impersonation).toBeNull());
     expect(adminApi.stopImpersonation).toHaveBeenCalled();
+  });
+
+  it('act banner from a reseller: Logged in as + Back to reseller panel (Phase 19)', async () => {
+    signInAs('owner');
+    useAuthStore.getState().startImpersonation(
+      fakeSession('owner', {
+        accessToken: 'imp',
+        impersonation: {
+          impersonatorId: 'u9',
+          expiresAt: '2026-10-08T01:00:00Z',
+          mode: 'act',
+          kind: 'reseller',
+          returnTo: '/reseller/customers/a1',
+        },
+      }),
+    );
+    renderWithProviders({ route: '/' });
+    expect(screen.getByText(/Logged in as Asha Verma/)).toBeInTheDocument();
+    expect(screen.getByText(/API keys and payments are blocked/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Back to reseller panel' }));
+    await waitFor(() => expect(useAuthStore.getState().session?.impersonation).toBeNull());
   });
 
   it('redirects to 403 page content', () => {

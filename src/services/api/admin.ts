@@ -92,8 +92,11 @@ export const adminApi = {
     ),
   enable: (id: string) =>
     unwrap(apiClient.post<SuccessEnvelope<PublicAccount>>(`/admin/accounts/${id}/enable`)),
-  impersonate: (id: string) =>
-    unwrap(apiClient.post<SuccessEnvelope<AuthSession>>(`/admin/accounts/${id}/impersonate`)),
+  /** Phase 19: `view` = read-only, `act` = work in the account (sensitive actions refused). */
+  impersonate: (id: string, mode: 'view' | 'act' = 'view') =>
+    unwrap(
+      apiClient.post<SuccessEnvelope<AuthSession>>(`/admin/accounts/${id}/impersonate`, { mode }),
+    ),
   /** Dialing limits (max concurrent calls, dials per minute); audited. */
   setLimits: (id: string, body: Partial<AccountLimits>) =>
     unwrap(apiClient.patch<SuccessEnvelope<AccountLimits>>(`/admin/accounts/${id}/limits`, body)),

@@ -30615,6 +30615,11 @@ export interface components {
       impersonation: {
         impersonatorId: string;
         expiresAt: string;
+        /** @enum {string} */
+        mode: 'view' | 'act';
+        /** @enum {string} */
+        kind: 'superadmin' | 'reseller';
+        returnTo: string;
       } | null;
     };
     AuthSession: {
@@ -30631,6 +30636,11 @@ export interface components {
       impersonation: {
         impersonatorId: string;
         expiresAt: string;
+        /** @enum {string} */
+        mode: 'view' | 'act';
+        /** @enum {string} */
+        kind: 'superadmin' | 'reseller';
+        returnTo: string;
       } | null;
     };
     AccountWithWarning: components['schemas']['PublicAccount'] & {
