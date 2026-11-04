@@ -1,6 +1,5 @@
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -19,10 +18,10 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router';
 
-import { usePricePreview, useTemplate, useTemplates } from '@/features/templates/queries';
+import { usePricePreview, useTemplate } from '@/features/templates/queries';
 import { useChannels } from '@/features/whatsapp/queries';
 import { getErrorMessage, toApiError } from '@/services/api/errors';
-import type { CallPermissionSkipReason, WhatsAppTemplateListItem } from '@/services/api/types';
+import type { CallPermissionSkipReason } from '@/services/api/types';
 import {
   whatsappCallingApi,
   type BulkCallPermissionInput,
@@ -31,18 +30,10 @@ import {
 import { formatCurrencyMicros, formatNumber } from '@/utils/format';
 
 import { CALL_ERROR_TEXT } from '../labels';
-import { usePermissionRun } from '../queries';
+import { usePermissionRun, usePermissionTemplates } from '../queries';
 
 import { BULK_PERMISSION_MAX, SKIP_REASON_LABELS } from './bulk';
-
-const STATUS_COLOR: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
-  APPROVED: 'success',
-  PENDING: 'warning',
-  IN_APPEAL: 'warning',
-  REJECTED: 'error',
-  PAUSED: 'error',
-  DISABLED: 'error',
-};
+import { PermissionTemplateSelect } from './PermissionTemplates';
 
 const errorText = (err: unknown) => {
   const e = toApiError(err);
@@ -50,25 +41,6 @@ const errorText = (err: unknown) => {
     (e.kind === 'http' && e.code ? CALL_ERROR_TEXT[e.code] : undefined) ?? getErrorMessage(err)
   );
 };
-
-/** One permission template row: name + language, its status, and why WhatsApp rejected it. */
-function TemplateOption({ t }: { t: WhatsAppTemplateListItem }) {
-  return (
-    <Stack spacing={0.25}>
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-        <span>
-          {t.name} · {t.language}
-        </span>
-        <Chip size="small" label={t.status} color={STATUS_COLOR[t.status] ?? 'default'} />
-      </Stack>
-      {t.status === 'REJECTED' && t.statusReason && (
-        <Typography variant="caption" color="error">
-          {t.statusReason.description ?? t.statusReason.reason}
-        </Typography>
-      )}
-    </Stack>
-  );
-}
 
 /**
  * Ask many contacts to allow WhatsApp calls (Phase 18B): a number, an approved call
@@ -91,10 +63,8 @@ export function BulkCallPermissionDialog({
   );
   const [picked, setPicked] = useState('');
   const channelId = (numbers.find((c) => c.id === picked) ?? numbers[0])?.id ?? '';
-  const templates = useTemplates({ channelId, purpose: 'call_permission' }, Boolean(channelId));
-  const rows = (templates.data ?? []).filter((t) => t.status !== 'DELETED');
+  const { approved } = usePermissionTemplates(channelId);
   const [templateId, setTemplateId] = useState('');
-  const approved = rows.filter((t) => t.status === 'APPROVED');
   const chosen = approved.find((t) => t.id === templateId) ?? approved[0] ?? null;
   const detail = useTemplate(chosen?.id ?? null);
   const asks = (detail.data?.variables ?? []).filter((v) => v.defaultSource.kind === 'ask');
@@ -220,37 +190,14 @@ export function BulkCallPermissionDialog({
                     ))}
                   </TextField>
                 )}
-                {templates.isSuccess && !rows.length ? (
-                  <Alert severity="warning">
-                    This number has no call permission template yet. Create one in{' '}
-                    <Link component={RouterLink} to="/whatsapp/templates">
-                      WhatsApp → Templates
-                    </Link>{' '}
-                    (Call permission) and wait for WhatsApp to approve it.
-                  </Alert>
-                ) : (
-                  <TextField
-                    select
-                    size="small"
-                    label="Template"
-                    value={chosen?.id ?? ''}
-                    onChange={(e) => {
-                      setTemplateId(e.target.value);
-                      setValues({});
-                    }}
-                    helperText={
-                      approved.length
-                        ? 'Only approved templates can be sent.'
-                        : 'No template is approved yet — WhatsApp has to approve one first.'
-                    }
-                  >
-                    {rows.map((t) => (
-                      <MenuItem key={t.id} value={t.id} disabled={t.status !== 'APPROVED'}>
-                        <TemplateOption t={t} />
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
+                <PermissionTemplateSelect
+                  channelId={channelId}
+                  value={chosen?.id ?? ''}
+                  onChange={(id) => {
+                    setTemplateId(id);
+                    setValues({});
+                  }}
+                />
                 {asks.map((v) => (
                   <TextField
                     key={v.key}

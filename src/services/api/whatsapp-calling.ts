@@ -25,6 +25,8 @@ export interface RequestCallPermissionInput {
   contactId: string;
   /** The request text (default: the number's permission request text). */
   body?: string;
+  /** Phase 18B: outside the window, this approved permission template. */
+  templateId?: string;
 }
 
 /** Phase 18B: exactly one target. */

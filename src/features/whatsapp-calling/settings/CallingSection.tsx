@@ -32,6 +32,7 @@ import {
   ROUTE_LABELS,
   unavailableText,
 } from '../labels';
+import { PermissionTemplateNotice } from '../panel/PermissionTemplates';
 import { ProgramPicker } from '../ProgramPicker';
 import {
   useCallingReadiness,
@@ -177,6 +178,7 @@ function CallingForm({
       )}
       {settings.lastError && <Alert severity="warning">{settings.lastError}</Alert>}
       <CallingReadiness channelId={settings.channelId} />
+      <PermissionTemplateNotice channelId={settings.channelId} />
       {!enabled && blocking && <Alert severity="warning">{blocking.fix ?? blocking.detail}</Alert>}
       {!unavailable && (
         <FormControlLabel

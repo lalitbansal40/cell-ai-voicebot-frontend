@@ -27294,6 +27294,7 @@ export interface paths {
             channelId: string;
             contactId: string;
             body?: string;
+            templateId?: string;
           };
         };
       };

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { inboxKeys } from '@/features/inbox/keys';
+import { useTemplates } from '@/features/templates/queries';
 import { whatsappKeys } from '@/features/whatsapp/keys';
 import type {
   CallAvailabilityStatus,
@@ -132,4 +133,11 @@ export const useCallingLiveUpdates = (): void => {
   useWsEvent('whatsapp.channel.updated', (event) => {
     void client.invalidateQueries({ queryKey: callingKeys.settings(event.data.channelId) });
   });
+};
+
+/** Phase 18B: A number's call permission templates (not deleted). */
+export const usePermissionTemplates = (channelId: string) => {
+  const q = useTemplates({ channelId, purpose: 'call_permission' }, Boolean(channelId));
+  const rows = (q.data ?? []).filter((t) => t.status !== 'DELETED');
+  return { ...q, rows, approved: rows.filter((t) => t.status === 'APPROVED') };
 };
