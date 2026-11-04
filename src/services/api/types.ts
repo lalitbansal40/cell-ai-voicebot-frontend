@@ -346,3 +346,12 @@ export type ResellerCustomerDetail = Schemas['ResellerCustomerDetail'];
 export type ResellerCreditResult = Schemas['ResellerCreditResult'];
 export type ResellerStatementRow = Schemas['ResellerStatementRow'];
 export type ResellerSummary = Schemas['ResellerSummary'];
+
+// Phase 19: WhatsApp campaigns (bulk template sends)
+export type WhatsAppCampaign = Schemas['WhatsAppCampaign'];
+export type WhatsAppCampaignEstimate = Schemas['WhatsAppCampaignEstimate'];
+export type WhatsAppCampaignRecipient = Schemas['WhatsAppCampaignRecipient'];
+export type WhatsAppCampaignReport = Schemas['WhatsAppCampaignReport'];
+export type WhatsAppCampaignStatus = WhatsAppCampaign['status'];
+export type WhatsAppCampaignPauseReason = NonNullable<WhatsAppCampaign['pauseReason']>;
+export type WhatsAppCampaignRecipientStatus = WhatsAppCampaignRecipient['status'];

@@ -13,6 +13,8 @@ import {
   Stack,
   TextField,
   Tooltip,
+  Tabs,
+  Tab,
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -20,6 +22,7 @@ import { Link as RouterLink, useSearchParams } from 'react-router';
 
 import { DataTable, type Column } from '@/components/DataTable';
 import { PageHeader } from '@/components/PageHeader';
+import { usePermission } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/store';
 import { CampaignActions } from '@/features/campaigns/CampaignActions';
 import {
@@ -34,6 +37,7 @@ import {
 } from '@/features/campaigns/queries';
 import { formatInZone } from '@/features/campaigns/time';
 import { useFlows } from '@/features/flows/queries';
+import { CampaignList } from '@/features/whatsapp-campaigns/CampaignList';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import type { ListCampaignsQuery } from '@/services/api/campaigns';
 import type { CampaignListItem, CampaignStatus } from '@/services/api/types';
@@ -69,6 +73,41 @@ function StatusCell({ c, timezone }: { c: CampaignListItem; timezone: string }) 
 
 /** `/campaigns` — every campaign, filters in the URL, live counters. */
 export function CampaignsPage() {
+  const [params, setParams] = useSearchParams();
+  const canPhone = usePermission('campaigns.read');
+  const canWhatsApp = usePermission('whatsapp.campaigns.read');
+  const line = params.get('line') === 'whatsapp' || !canPhone ? 'whatsapp' : 'phone';
+  return (
+    <>
+      <Tabs
+        value={line}
+        aria-label="Campaign line"
+        onChange={(_e, value: string) => setParams({ line: value })}
+        sx={{ mb: 2 }}
+      >
+        {canPhone && <Tab value="phone" label="Phone" />}
+        {canWhatsApp && <Tab value="whatsapp" label="WhatsApp" />}
+      </Tabs>
+      {line === 'whatsapp' ? (
+        canWhatsApp ? (
+          <>
+            <PageHeader
+              title="WhatsApp campaigns"
+              subtitle="Send approved templates and track delivery and replies"
+            />
+            <CampaignList />
+          </>
+        ) : (
+          <Typography>You do not have access to WhatsApp campaigns.</Typography>
+        )
+      ) : (
+        <PhoneCampaignsPage />
+      )}
+    </>
+  );
+}
+
+function PhoneCampaignsPage() {
   const timezone = useAuthStore((s) => s.session?.account.timezone ?? 'Asia/Kolkata');
   const canWrite = useCanWriteCampaigns();
   const [params, setParams] = useSearchParams();

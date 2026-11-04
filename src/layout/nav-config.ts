@@ -95,7 +95,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Campaigns',
     path: '/campaigns',
     icon: CampaignOutlined,
-    permission: 'campaigns.read',
+    anyPermission: ['campaigns.read', 'whatsapp.campaigns.read'],
     phase: 8,
   },
   {
