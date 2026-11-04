@@ -29,13 +29,8 @@ export function LoginPage() {
       useAuthStore.getState().setSession(session);
       void navigate(safeNext(location.search), { replace: true });
     },
-    onError: (error, values) => {
-      const e = toApiError(error);
-      if (e.code === 'AUTH_EMAIL_NOT_VERIFIED') {
-        void navigate(`/verify-email?email=${encodeURIComponent(values.email)}`);
-        return;
-      }
-      applyFieldErrors(form.setError, e);
+    onError: (error) => {
+      applyFieldErrors(form.setError, toApiError(error));
     },
   });
 

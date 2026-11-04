@@ -21,7 +21,6 @@ import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
-import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
 import { ActivityPage } from '@/pages/contacts/ActivityPage';
 import { ContactDetailPage } from '@/pages/contacts/ContactDetailPage';
 import { ContactsPage } from '@/pages/contacts/ContactsPage';
@@ -75,14 +74,8 @@ export const routes: RouteObject[] = [
           </RedirectIfAuthed>
         ),
       },
-      {
-        path: '/verify-email',
-        element: (
-          <RedirectIfAuthed>
-            <VerifyEmailPage />
-          </RedirectIfAuthed>
-        ),
-      },
+      // Phase 19: signup sends no e-mail code any more
+      { path: '/verify-email', element: <Navigate to="/login" replace /> },
       {
         path: '/forgot-password',
         element: (

@@ -11,7 +11,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Create an account + owner; sends a 6-digit email code (always 202) */
+    /** Sign up as a business or a reseller and sign in at once (Phase 19: no e-mail; 5 / hour per IP) */
     post: {
       parameters: {
         query?: never;
@@ -22,6 +22,11 @@ export interface paths {
       requestBody?: {
         content: {
           'application/json': {
+            /**
+             * @default business
+             * @enum {string}
+             */
+            accountType?: 'business' | 'reseller';
             /** @example Demo Finance */
             businessName: string;
             /** @example Asha Verma */
@@ -36,17 +41,42 @@ export interface paths {
             phone?: string;
             /** @example Asia/Kolkata */
             timezone?: string;
+            /** @enum {boolean} */
+            acceptTerms: true;
+            website?: string;
           };
         };
       };
       responses: {
-        /** @description Accepted */
-        202: {
+        /** @description Signed in. Sets the httpOnly `cav_rt` refresh cookie (Path=/api/v1/auth, SameSite=Strict). */
+        201: {
           headers: {
             [name: string]: unknown;
           };
           content: {
-            'application/json': components['schemas']['Accepted'];
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['AuthSession'];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
           };
         };
         /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
@@ -75,6 +105,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/auth/signup-options': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Whether signup and reseller signup are open (public) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['SignupOptions'];
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/auth/verify-email': {
     parameters: {
       query?: never;
@@ -84,7 +154,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Confirm the email code and sign in */
+    /** Gone (Phase 19): signup no longer sends an e-mail code — always 410 AUTH_ROUTE_GONE */
     post: {
       parameters: {
         query?: never;
@@ -92,44 +162,10 @@ export interface paths {
         path?: never;
         cookie?: never;
       };
-      requestBody?: {
-        content: {
-          'application/json': {
-            /**
-             * Format: email
-             * @example asha@example.com
-             */
-            email: string;
-            /** @example 042917 */
-            code: string;
-          };
-        };
-      };
+      requestBody?: never;
       responses: {
-        /** @description Signed in. Sets the httpOnly `cav_rt` refresh cookie (Path=/api/v1/auth, SameSite=Strict). */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {boolean} */
-              success: true;
-              data: components['schemas']['AuthSession'];
-            };
-          };
-        };
-        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
-        429: {
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        410: {
           headers: {
             [name: string]: unknown;
           };
@@ -587,7 +623,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Send a new email code (always 202; 60 s cooldown, 5 per hour) */
+    /** Gone (Phase 19) — always 410 AUTH_ROUTE_GONE */
     post: {
       parameters: {
         query?: never;
@@ -595,38 +631,10 @@ export interface paths {
         path?: never;
         cookie?: never;
       };
-      requestBody?: {
-        content: {
-          'application/json': {
-            /**
-             * Format: email
-             * @example asha@example.com
-             */
-            email: string;
-          };
-        };
-      };
+      requestBody?: never;
       responses: {
-        /** @description Accepted */
-        202: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['Accepted'];
-          };
-        };
-        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ErrorEnvelope'];
-          };
-        };
-        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
-        429: {
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        410: {
           headers: {
             [name: string]: unknown;
           };
@@ -30508,6 +30516,11 @@ export interface components {
       nextCursor: string | null;
       hasMore: boolean;
     };
+    SignupOptions: {
+      open: boolean;
+      /** @enum {string} */
+      resellerSignup: 'open' | 'approval' | 'closed';
+    };
     Session: {
       /** @description Session (refresh family) id */
       id: string;
@@ -30550,6 +30563,14 @@ export interface components {
       } | null;
       ownerId: string | null;
       isPlatform: boolean;
+      /** @enum {string} */
+      kind: 'platform' | 'reseller' | 'business';
+      parentAccountId: string | null;
+      reseller: {
+        /** @enum {string} */
+        status: 'active' | 'pending_approval';
+        customersCanTopUp: boolean;
+      } | null;
       timezone: string;
       country: string;
       /** @enum {string} */
@@ -31193,7 +31214,27 @@ export interface components {
         | 'phone_number.updated'
         | 'phone_number.assigned'
         | 'phone_number.released'
-        | 'whatsapp.call_permission_bulk_requested';
+        | 'whatsapp.call_permission_bulk_requested'
+        | 'account.signed_up'
+        | 'account.reseller_changed'
+        | 'platform.signup_settings_updated'
+        | 'reseller.approved'
+        | 'reseller.customer_created'
+        | 'reseller.customer_suspended'
+        | 'reseller.customer_enabled'
+        | 'reseller.customer_password_reset'
+        | 'reseller.credit_transferred'
+        | 'reseller.credit_reclaimed'
+        | 'reseller.login_as_started'
+        | 'reseller.login_as_stopped'
+        | 'reseller.settings_updated'
+        | 'whatsapp_campaign.created'
+        | 'whatsapp_campaign.started'
+        | 'whatsapp_campaign.paused'
+        | 'whatsapp_campaign.resumed'
+        | 'whatsapp_campaign.stopped'
+        | 'whatsapp_campaign.completed'
+        | 'whatsapp_campaign.retried';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
@@ -34258,7 +34299,13 @@ export interface components {
         | 'account.delete_scheduled'
         | 'sip.spend_guard_paused'
         | 'sip.trunk_down'
-        | 'whatsapp.call_permission_bulk_done';
+        | 'whatsapp.call_permission_bulk_done'
+        | 'account.reseller_signed_up'
+        | 'reseller.approved'
+        | 'wallet.credit_received'
+        | 'wallet.customer_low_balance'
+        | 'whatsapp_campaign.completed'
+        | 'whatsapp_campaign.paused';
       title: string;
       body: string;
       link: string | null;

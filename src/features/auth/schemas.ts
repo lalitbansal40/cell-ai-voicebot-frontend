@@ -29,6 +29,8 @@ export const signupSchema = z.object({
       'Use the international format, e.g. +919876543210',
     ),
   timezone: z.string().min(1),
+  acceptTerms: z.boolean().refine((v) => v, 'Accept the terms to continue'),
+  website: z.string(),
 });
 export type SignupValues = z.infer<typeof signupSchema>;
 
