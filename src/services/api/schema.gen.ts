@@ -31379,6 +31379,19 @@ export interface components {
         avgLossPct: number | null;
         avgJitterMs: number | null;
       } | null;
+      /** @description Phase 18B: WhatsApp call audio; null when WhatsApp is off */
+      whatsappCalls: {
+        mediaEnabled: boolean;
+        publicIpSet: boolean;
+        portRange: string;
+        liveCalls: number;
+        lastSetupMs: number | null;
+        lastError: {
+          reason: string;
+          at: string;
+        } | null;
+        failedSetups15m: number;
+      } | null;
     };
     AgentFunction: {
       id: string;

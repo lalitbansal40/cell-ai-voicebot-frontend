@@ -195,6 +195,47 @@ export function AdminSystemPage() {
               </Section>
             </Grid>
           )}
+          {s.whatsappCalls && (
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Section title="WhatsApp calls">
+                <Fact label="Call audio">
+                  <State
+                    good={s.whatsappCalls.mediaEnabled}
+                    label={s.whatsappCalls.mediaEnabled ? 'On' : 'Off'}
+                  />
+                </Fact>
+                <Fact label="Public IP">
+                  <State
+                    good={s.whatsappCalls.publicIpSet}
+                    label={s.whatsappCalls.publicIpSet ? 'Set' : 'Not set (WA_MEDIA_PUBLIC_IP)'}
+                  />
+                </Fact>
+                <Fact label="UDP ports">{s.whatsappCalls.portRange}</Fact>
+                <Fact label="Live calls">{s.whatsappCalls.liveCalls}</Fact>
+                <Fact label="Last setup">
+                  {s.whatsappCalls.lastSetupMs === null
+                    ? 'No calls yet'
+                    : `${String(s.whatsappCalls.lastSetupMs)} ms`}
+                </Fact>
+                <Fact label="Last failed setup">
+                  {s.whatsappCalls.lastError ? (
+                    <>
+                      {s.whatsappCalls.lastError.reason.replace(/_/g, ' ')} ·{' '}
+                      <RelativeTime value={s.whatsappCalls.lastError.at} />
+                    </>
+                  ) : (
+                    'None in 24 h'
+                  )}
+                </Fact>
+                <Fact label="Failed setups (15 min)">
+                  <State
+                    good={s.whatsappCalls.failedSetups15m < 3}
+                    label={String(s.whatsappCalls.failedSetups15m)}
+                  />
+                </Fact>
+              </Section>
+            </Grid>
+          )}
           <Grid size={{ xs: 12, md: 6 }}>
             <Section title="Queues">
               <Table size="small" aria-label="Queues">
