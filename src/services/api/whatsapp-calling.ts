@@ -8,6 +8,7 @@ import type {
   WhatsAppCallingSettings,
   WhatsAppCallingSettingsPatch,
   WhatsAppCallMediaTicket,
+  WhatsAppCallPermissionRun,
   WhatsAppCallPermission,
   WhatsAppCallProgram,
 } from './types';
@@ -24,6 +25,17 @@ export interface RequestCallPermissionInput {
   contactId: string;
   /** The request text (default: the number's permission request text). */
   body?: string;
+}
+
+/** Phase 18B: exactly one target. */
+export type BulkPermissionTarget =
+  { contactIds: string[] } | { listId: string } | { segmentId: string };
+
+export interface BulkCallPermissionInput {
+  channelId: string;
+  target: BulkPermissionTarget;
+  templateId: string;
+  variables?: Record<string, string>;
 }
 
 const settings = (channelId: string, action = '') =>
@@ -56,6 +68,19 @@ export const whatsappCallingApi = {
       apiClient.post<SuccessEnvelope<CallPermissionRequestResult>>(
         '/whatsapp/call-permissions/request',
         body,
+      ),
+    ),
+  /** Phase 18B: ask up to 5,000 contacts with an approved permission template (202 + run id). */
+  requestPermissionBulk: (body: BulkCallPermissionInput, idempotencyKey: string) =>
+    unwrap(
+      apiClient.post<SuccessEnvelope<{ runId: string }>>('/whatsapp/call-permissions/bulk', body, {
+        headers: { 'Idempotency-Key': idempotencyKey },
+      }),
+    ),
+  permissionRun: (runId: string) =>
+    unwrap(
+      apiClient.get<SuccessEnvelope<WhatsAppCallPermissionRun>>(
+        `/whatsapp/call-permissions/bulk/${runId}`,
       ),
     ),
   /** One Idempotency-Key per attempt; agent calls return the browser leg's media ticket. */

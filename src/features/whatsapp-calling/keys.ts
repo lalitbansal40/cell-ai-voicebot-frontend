@@ -5,6 +5,7 @@ export const callingKeys = {
   settings: (channelId: string) => ['whatsapp-calling', 'settings', channelId] as const,
   readiness: (channelId: string) => ['whatsapp-calling', 'readiness', channelId] as const,
   permissions: ['whatsapp-calling', 'permission'] as const,
+  permissionRun: (runId: string) => ['whatsapp-calling', 'permission-run', runId] as const,
   permission: (channelId: string, contactId: string) =>
     ['whatsapp-calling', 'permission', channelId, contactId] as const,
 };

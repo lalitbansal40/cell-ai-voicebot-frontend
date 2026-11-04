@@ -21,7 +21,21 @@ export {
   useCanCall,
   useCanManageCalling,
   useCanRequestPermission,
+  useCanRequestPermissionBulk,
 } from './permissions';
+
+/** Phase 18B: a bulk permission run, polled until it is done or stopped. */
+export const PERMISSION_RUN_POLL_MS = 2_000;
+export const usePermissionRun = (runId: string | null) =>
+  useQuery({
+    queryKey: callingKeys.permissionRun(runId ?? ''),
+    queryFn: () => whatsappCallingApi.permissionRun(runId ?? ''),
+    enabled: Boolean(runId),
+    refetchInterval: (q) =>
+      q.state.data && (q.state.data.status === 'done' || q.state.data.status === 'stopped')
+        ? false
+        : PERMISSION_RUN_POLL_MS,
+  });
 
 /** Poll while a permission request waits for the customer (live updates can be off). */
 export const PERMISSION_POLL_MS = 5_000;
