@@ -24,6 +24,7 @@ import { DataTable, type Column } from '@/components/DataTable';
 import { PageHeader } from '@/components/PageHeader';
 import { usePermission } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/store';
+import { CAMPAIGN_TYPES, type CampaignType } from '@/features/calls/capabilities';
 import { CampaignActions } from '@/features/campaigns/CampaignActions';
 import {
   CAMPAIGN_STATUS_LABELS,
@@ -76,7 +77,12 @@ export function CampaignsPage() {
   const [params, setParams] = useSearchParams();
   const canPhone = usePermission('campaigns.read');
   const canWhatsApp = usePermission('whatsapp.campaigns.read');
-  const line = params.get('line') === 'whatsapp' || !canPhone ? 'whatsapp' : 'phone';
+  const raw = params.get('line');
+  const line: CampaignType = !canPhone
+    ? 'whatsapp'
+    : raw === 'whatsapp' || raw === 'whatsapp-call'
+      ? raw
+      : 'phone';
   return (
     <>
       <Tabs
@@ -85,8 +91,11 @@ export function CampaignsPage() {
         onChange={(_e, value: string) => setParams({ line: value })}
         sx={{ mb: 2 }}
       >
-        {canPhone && <Tab value="phone" label="Phone" />}
-        {canWhatsApp && <Tab value="whatsapp" label="WhatsApp" />}
+        {CAMPAIGN_TYPES.filter((type) => (type.value === 'whatsapp' ? canWhatsApp : canPhone)).map(
+          (type) => (
+            <Tab key={type.value} value={type.value} label={type.label} />
+          ),
+        )}
       </Tabs>
       {line === 'whatsapp' ? (
         canWhatsApp ? (
@@ -101,13 +110,13 @@ export function CampaignsPage() {
           <Typography>You do not have access to WhatsApp campaigns.</Typography>
         )
       ) : (
-        <PhoneCampaignsPage />
+        <PhoneCampaignsPage key={line} whatsapp={line === 'whatsapp-call'} />
       )}
     </>
   );
 }
 
-function PhoneCampaignsPage() {
+function PhoneCampaignsPage({ whatsapp }: { whatsapp: boolean }) {
   const timezone = useAuthStore((s) => s.session?.account.timezone ?? 'Asia/Kolkata');
   const canWrite = useCanWriteCampaigns();
   const [params, setParams] = useSearchParams();
@@ -138,6 +147,7 @@ function PhoneCampaignsPage() {
 
   const query: Omit<ListCampaignsQuery, 'cursor'> = {
     limit: PAGE,
+    line: whatsapp ? 'whatsapp' : 'phone',
     ...(status.length ? { status } : {}),
     ...(mode ? { mode: mode as 'dry_run' | 'live' } : {}),
     ...(flowId ? { flowId } : {}),
@@ -161,7 +171,9 @@ function PhoneCampaignsPage() {
             {c.recurring && <Chip size="small" variant="outlined" label="Repeats" />}
           </Stack>
           <Typography variant="caption" color="text.secondary">
-            {c.flow.name || 'Deleted flow'}
+            {c.program?.kind === 'agent'
+              ? c.program.name || 'AI agent'
+              : c.flow.name || 'Deleted flow'}
             {c.flow.version ? ` · v${String(c.flow.version)}` : ''}
           </Typography>
         </Stack>
@@ -218,7 +230,7 @@ function PhoneCampaignsPage() {
   return (
     <>
       <PageHeader
-        title="Campaigns"
+        title={whatsapp ? 'WhatsApp call campaigns' : 'Campaigns'}
         subtitle="Call lists of contacts with a flow, inside your calling window"
         actions={
           canWrite ? (
@@ -226,7 +238,7 @@ function PhoneCampaignsPage() {
               variant="contained"
               startIcon={<AddOutlined />}
               component={RouterLink}
-              to="/campaigns/new"
+              to={whatsapp ? '/campaigns/new?line=whatsapp' : '/campaigns/new'}
             >
               New campaign
             </Button>

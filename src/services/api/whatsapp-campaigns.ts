@@ -24,6 +24,7 @@ export interface WaCampaignVariants {
 
 export interface WaCampaignCreateInput {
   name: string;
+  headerLocation?: { latitude: number; longitude: number; name?: string; address?: string } | null;
   headerMediaToken?: string | null;
   channelId: string;
   variants: WaCampaignVariants[];

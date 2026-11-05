@@ -35,6 +35,6 @@ export const callMethods = (input: {
   phone:
     input.canCall &&
     input.phoneLine?.line === 'sip' &&
-    input.phoneLine.numbers.some((n) => n.status === 'active'),
+    input.phoneLine.numbers.some((n) => n.status === 'active' && n.purpose === 'outbound'),
   whatsapp: input.canCall ? input.channels.filter((n) => whatsappCapabilities(n).calling) : [],
 });

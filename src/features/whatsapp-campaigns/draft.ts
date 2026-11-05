@@ -38,6 +38,7 @@ export interface WaWizardDraft {
   scheduleMode: 'now' | 'at' | 'recurring';
   timezone: string;
   recurrence: NonNullable<WhatsAppCampaign['schedule']['recurrence']>;
+  headerLocation?: { latitude: number; longitude: number; name?: string; address?: string } | null;
   headerMediaToken?: string | null | undefined;
   scheduleAt: string | null;
 }
@@ -97,6 +98,7 @@ const audienceOf = (d: WaWizardDraft) => ({
 export const toCreateInput = (d: WaWizardDraft): WaCampaignCreateInput => ({
   name: d.name.trim(),
   ...(d.headerMediaToken !== undefined ? { headerMediaToken: d.headerMediaToken } : {}),
+  headerLocation: d.headerLocation ?? null,
   channelId: d.channelId,
   variants: d.variants,
   abWinner: d.variants.length > 1 ? d.abWinner : null,
@@ -114,6 +116,7 @@ export const toCreateInput = (d: WaWizardDraft): WaCampaignCreateInput => ({
 /** A saved campaign → the wizard's draft (edit / review). */
 export const draftFromCampaign = (c: WhatsAppCampaign): WaWizardDraft => ({
   name: c.name,
+  headerLocation: c.headerLocation ?? null,
   channelId: c.channelId,
   variants: c.variants.map((v) => ({ ...v })),
   abWinner: c.abWinner ? { metric: c.abWinner.metric, afterHours: c.abWinner.afterHours } : null,

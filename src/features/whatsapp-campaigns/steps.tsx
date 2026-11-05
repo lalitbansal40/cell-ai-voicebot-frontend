@@ -75,6 +75,7 @@ export function NumberStep({ draft, onChange }: StepProps) {
             abWinner: null,
             variables: {},
             headerMediaToken: null,
+            headerLocation: null,
           })
         }
       >
@@ -89,10 +90,9 @@ export function NumberStep({ draft, onChange }: StepProps) {
       </TextField>
       {items.find((c) => c.id === draft.channelId) && (
         <Typography variant="body2">
-          Up to{' '}
-          {items.find((c) => c.id === draft.channelId)?.messageRateLimit ??
-            (items.find((c) => c.id === draft.channelId)?.mode === 'coexistence' ? 18 : 75)}{' '}
-          messages/sec on this number; daily messaging limits still apply.
+          Up to {items.find((c) => c.id === draft.channelId)?.messageRateLimit ?? 18} messages/sec
+          on this number; daily messaging limits still apply. Refresh number settings if
+          classification is unknown.
         </Typography>
       )}
       {items.length === 0 && (
@@ -383,6 +383,37 @@ export function VariablesStep({ draft, onChange }: StepProps) {
           </Box>
         );
       })}
+      {templateQueries.some((t) => t.data && headerFormat(t.data.components) === 'LOCATION') && (
+        <Stack spacing={1}>
+          <Typography variant="subtitle2">Header location</Typography>
+          <TextField
+            label="Latitude"
+            type="number"
+            value={draft.headerLocation?.latitude ?? ''}
+            onChange={(e) =>
+              onChange({
+                headerLocation: {
+                  latitude: Number(e.target.value),
+                  longitude: draft.headerLocation?.longitude ?? 0,
+                },
+              })
+            }
+          />
+          <TextField
+            label="Longitude"
+            type="number"
+            value={draft.headerLocation?.longitude ?? ''}
+            onChange={(e) =>
+              onChange({
+                headerLocation: {
+                  longitude: Number(e.target.value),
+                  latitude: draft.headerLocation?.latitude ?? 0,
+                },
+              })
+            }
+          />
+        </Stack>
+      )}
       {templateQueries.some(
         (t) => t.data && ['IMAGE', 'VIDEO', 'DOCUMENT'].includes(headerFormat(t.data.components)),
       ) && (

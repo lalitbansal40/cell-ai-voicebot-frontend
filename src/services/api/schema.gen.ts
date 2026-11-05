@@ -7797,6 +7797,7 @@ export interface paths {
       requestBody?: {
         content: {
           'application/json': {
+            callerNumberId?: string;
             contactId: string;
             flowId?: string;
             /** @description Flows: `published` (default) or a version number */
@@ -8506,6 +8507,7 @@ export interface paths {
     get: {
       parameters: {
         query?: {
+          line?: 'phone' | 'whatsapp';
           cursor?: string;
           limit?: number;
           status?:
@@ -8595,7 +8597,18 @@ export interface paths {
              * @enum {string}
              */
             mode?: 'dry_run' | 'live';
-            flowId: string;
+            flowId?: string;
+            /** @enum {string} */
+            line?: 'phone' | 'whatsapp';
+            channelId?: string | null;
+            program?: {
+              /** @enum {string} */
+              kind: 'flow' | 'agent';
+              id: string;
+            } | null;
+            askPermissionFirst?: {
+              templateId: string;
+            } | null;
             audience?: {
               listIds?: string[];
               segmentId?: string | null;
@@ -8858,7 +8871,16 @@ export interface paths {
       requestBody?: {
         content: {
           'application/json': {
-            flowId: string;
+            channelId?: string | null;
+            askPermissionFirst?: boolean;
+            /** @enum {string} */
+            line?: 'phone' | 'whatsapp';
+            program?: {
+              /** @enum {string} */
+              kind: 'flow' | 'agent';
+              id: string;
+            } | null;
+            flowId?: string;
             chosenVersion?: number | null;
             audience: {
               listIds?: string[];
@@ -9087,6 +9109,17 @@ export interface paths {
             /** @enum {string} */
             mode?: 'dry_run' | 'live';
             flowId?: string;
+            /** @enum {string} */
+            line?: 'phone' | 'whatsapp';
+            channelId?: string | null;
+            program?: {
+              /** @enum {string} */
+              kind: 'flow' | 'agent';
+              id: string;
+            } | null;
+            askPermissionFirst?: {
+              templateId: string;
+            } | null;
             audience?: {
               listIds?: string[];
               segmentId?: string | null;
@@ -9989,7 +10022,9 @@ export interface paths {
             | 'cap_reached'
             | 'campaign_ended'
             | 'rejected'
-            | 'number_not_allowed';
+            | 'number_not_allowed'
+            | 'no_call_permission'
+            | 'unanswered_limit';
           q?: string;
         };
         header?: never;
@@ -25540,6 +25575,12 @@ export interface paths {
           'application/json': {
             name: string;
             headerMediaToken?: string | null;
+            headerLocation?: {
+              latitude: number;
+              longitude: number;
+              name?: string;
+              address?: string;
+            } | null;
             channelId: string;
             variants: {
               /** @enum {string} */
@@ -25753,6 +25794,12 @@ export interface paths {
           'application/json': {
             name: string;
             headerMediaToken?: string | null;
+            headerLocation?: {
+              latitude: number;
+              longitude: number;
+              name?: string;
+              address?: string;
+            } | null;
             channelId: string;
             variants: {
               /** @enum {string} */
@@ -27169,7 +27216,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Submit a draft to Meta for review (templates.manage) */
+    /** Submit a draft to Meta for review using an owned same-WABA sender (templates.manage) */
     post: {
       parameters: {
         query?: never;
@@ -27179,7 +27226,13 @@ export interface paths {
         };
         cookie?: never;
       };
-      requestBody?: never;
+      requestBody?: {
+        content: {
+          'application/json': {
+            channelId?: string;
+          };
+        };
+      };
       responses: {
         /** @description OK */
         200: {
@@ -27408,6 +27461,7 @@ export interface paths {
           'multipart/form-data': {
             /** Format: binary */
             file: string;
+            channelId?: string;
           };
         };
       };
@@ -34481,6 +34535,18 @@ export interface components {
         | 'flow_not_runnable'
         | null;
       waitingUntil: string | null;
+      /** @enum {string} */
+      line?: 'phone' | 'whatsapp';
+      channelId?: string | null;
+      program?: {
+        /** @enum {string} */
+        kind: 'flow' | 'agent';
+        id: string;
+        name?: string;
+      } | null;
+      askPermissionFirst?: {
+        templateId: string;
+      } | null;
       flow: {
         id: string;
         name: string;
@@ -34678,6 +34744,8 @@ export interface components {
         | 'campaign_ended'
         | 'rejected'
         | 'number_not_allowed'
+        | 'no_call_permission'
+        | 'unanswered_limit'
         | null;
       /**
        * @description Why it waits for nextAttemptAt: window, daily_cap, weekly_cap or min_gap
@@ -34720,6 +34788,7 @@ export interface components {
         expectedAttempts: number;
       };
       walletAvailableMicros: number;
+      transportNote?: string;
     };
     CampaignSummary: {
       running: number;
@@ -36951,6 +37020,12 @@ export interface components {
       };
       parentCampaignId: string | null;
       recurrenceEnabled: boolean;
+      headerLocation?: {
+        latitude: number;
+        longitude: number;
+        name?: string;
+        address?: string;
+      } | null;
       headerMedia: {
         kind: string;
         fileName: string | null;
@@ -37250,6 +37325,7 @@ export interface components {
         | 'TIER_100K'
         | 'TIER_UNLIMITED'
         | null;
+      messageClassificationKnown?: boolean;
       /** @description Application send cap per second, including any lower deployment ceiling */
       messageRateLimit?: number;
       /** @description WhatsApp Business app number (coexistence) — no calling */
@@ -37772,6 +37848,7 @@ export interface components {
       submit?: boolean;
     };
     WhatsAppTemplateEdit: {
+      channelId?: string;
       name?: string;
       language?: string;
       /** @enum {string} */

@@ -201,3 +201,15 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 - **Phase 0** — 2026-10-08
   - Vite 8 + React 19 + MUI 9 + React Router 8 + React Query + notistack scaffold, ESLint 9 / Prettier / Husky / commitlint, Vitest + RTL, generated API types from the backend OpenAPI spec (`npm run gen:api`), GitHub Actions CI.
+
+## Phase 19 continuation (candidate)
+
+Campaigns expose SIP / Normal call, WhatsApp message and WhatsApp call tabs. The message
+wizard supports variables/A-B, uploads/location, recurrence, eligible cost estimates
+and live reports. WhatsApp call campaigns support published flows or active AI agents.
+Template management always shows a WhatsApp sender filter, preserves it in the URL and
+freezes builder approval context. Contact/Calls/Inbox call options share sender-aware
+Normal/WhatsApp choices, retaining per-number consent and AI selection.
+Backend-derived messaging caps are 18/sec for Business App/coexistence/unknown and
+75/sec for confirmed Cloud API numbers; lower limits still apply.
+See the backend channel guide and Phase 19 sign-off for validation and live checks.
