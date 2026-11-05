@@ -124,7 +124,7 @@ test('WhatsApp call campaign stores an agent, completes a dry run and stays sepa
   expect(result.status, result.code).toBe(201);
   expect(result.data.program).toMatchObject({ kind: 'agent', id: agentId });
   expect(result.data.flow.id).toBe('');
-  expect((await api.post(`/campaigns/${result.data.id}/start`, {})).status).toBe(200);
+  expect((await api.postWithKey(`/campaigns/${result.data.id}/start`, {})).status).toBe(200);
   await page.goto(`/campaigns/${result.data.id}`);
   await expect(page.getByText('WhatsApp call', { exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Campaign AI' })).toHaveAttribute(

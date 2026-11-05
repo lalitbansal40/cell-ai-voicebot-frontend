@@ -144,7 +144,7 @@ describe('WhatsApp campaign wizard', () => {
       expect(start).toBeDisabled();
       expect(api.start).not.toHaveBeenCalled();
       if (state === 'short')
-        expect(screen.getByText(/Not enough credit to start/)).toBeInTheDocument();
+        expect(await screen.findByText(/Not enough credit to start/)).toBeInTheDocument();
     },
   );
 

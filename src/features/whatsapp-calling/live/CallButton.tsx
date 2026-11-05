@@ -140,6 +140,10 @@ export function CallButton({
       </Menu>
       {dialog === 'ai' && (
         <CallWithAiDialog
+          key={`${channelId}:${contactId}`}
+          channelId={channelId}
+          contactId={contactId}
+          contactLabel={label}
           phoneE164={phoneE164}
           onCall={(program) => call('ai', program)}
           onClose={() => setDialog(null)}

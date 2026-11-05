@@ -22,7 +22,7 @@ test('reseller signup → customer → credit → log in as → back → reclaim
     await create.getByLabel('Starting credit in ₹ (optional)').fill('100');
     await create.getByRole('button', { name: 'Add customer', exact: true }).click();
     await expect(
-      page.getByRole('heading', { name: 'Synthetic customer', exact: true }),
+      page.getByRole('heading', { name: 'Synthetic customer', exact: true, level: 1 }),
     ).toBeVisible();
     await expect(page.getByRole('region', { name: 'Credit', exact: true })).toContainText(
       '₹100.00',
@@ -40,7 +40,7 @@ test('reseller signup → customer → credit → log in as → back → reclaim
     await expect(page.getByRole('link', { name: 'Customers', exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: 'Back to reseller panel' }).click();
     await expect(
-      page.getByRole('heading', { name: 'Synthetic customer', exact: true }),
+      page.getByRole('heading', { name: 'Synthetic customer', exact: true, level: 1 }),
     ).toBeVisible();
     await page.getByRole('button', { name: 'Take back', exact: true }).click();
     const reclaim = page.getByRole('dialog');

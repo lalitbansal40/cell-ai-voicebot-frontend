@@ -88,3 +88,5 @@ Normal/WhatsApp choices, retaining per-number consent and AI selection.
 Backend-derived messaging caps are 18/sec for Business App/coexistence/unknown and
 75/sec for confirmed Cloud API numbers; lower limits still apply.
 See the backend channel guide and Phase 19 sign-off for validation and live checks.
+
+Phase 19 continuation: `features/calls/CallMethodDialog` is shared across call entry points; sender/contact keys isolate WhatsApp permission and price previews. `features/whatsapp-campaigns` contains message campaign drafts, steps, queries and reports; call campaigns keep the existing engine with an explicit transport/program. Template builders retain their chosen sender.

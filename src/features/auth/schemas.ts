@@ -54,9 +54,9 @@ export const forgotSchema = z.object({ email: emailField });
 export type ForgotValues = z.infer<typeof forgotSchema>;
 
 /** `next` from the query string, only same-app paths. */
-export const safeNext = (search: string): string => {
+export const safeNext = (search: string, fallback = '/'): string => {
   const next = new URLSearchParams(search).get('next');
-  return next?.startsWith('/') && !next.startsWith('//') ? next : '/';
+  return next?.startsWith('/') && !next.startsWith('//') ? next : fallback;
 };
 
 /** "Try again in 3 minutes" from a Retry-After value. */

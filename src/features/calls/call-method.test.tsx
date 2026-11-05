@@ -9,7 +9,7 @@ import { signInAs } from '@/test/auth';
 import { renderWithProviders } from '@/test/render';
 import { fakeChannel } from '@/test/whatsapp';
 
-import { CallMethodContent } from './CallMethodDialog';
+import { CallAction, CallMethodContent } from './CallMethodDialog';
 
 vi.mock('@/features/whatsapp-calling/live/CallButton', () => ({
   CallButton: ({ channelId, contactId }: { channelId: string; contactId: string }) => (
@@ -106,4 +106,23 @@ describe('shared call method and sender choice', () => {
     expect(phoneNumbersApi.line).not.toHaveBeenCalled();
     expect(whatsappApi.channels).not.toHaveBeenCalled();
   });
+});
+
+it('a contact-row call action opens the shared chooser and closes on Close', async () => {
+  signInAs('owner');
+  vi.spyOn(phoneNumbersApi, 'line').mockResolvedValue({ line: 'sip', numbers: [phone] });
+  vi.spyOn(whatsappApi, 'channels').mockResolvedValue({ items: [], counts: {}, limit: 10 });
+  renderWithProviders({
+    routes: [
+      {
+        path: '/',
+        element: <CallAction contactId="contact1" phoneE164="+919000000099" label="Test contact" />,
+      },
+    ],
+  });
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('button', { name: 'Call' }));
+  expect(await screen.findByRole('dialog', { name: 'Call now' })).toBeVisible();
+  await user.click(screen.getByRole('button', { name: 'Close' }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 });

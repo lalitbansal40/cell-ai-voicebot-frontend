@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { signInAs } from '@/test/auth';
 import { fakeRealtime } from '@/test/realtime';
 import { renderWithProviders } from '@/test/render';
-import { fakeWaCampaign } from '@/test/whatsapp-campaigns';
+import { fakeWaCampaign, fakeWaReport } from '@/test/whatsapp-campaigns';
 
 import { api, offsetPage } from './test-setup';
 
@@ -113,4 +113,61 @@ describe('WhatsApp campaign pages', () => {
     expect(screen.queryByRole('link', { name: 'Edit & start' })).not.toBeInTheDocument();
     expect(api.get).toHaveBeenCalledWith('wc1');
   });
+});
+
+it('keeps list filters and pagination in the URL and clears page when status changes', async () => {
+  signInAs('manager');
+  api.list.mockResolvedValue(offsetPage([fakeWaCampaign()], 60));
+  renderWithProviders({ route: '/campaigns?line=whatsapp&page=2' });
+  await screen.findByRole('link', { name: 'November reminders' });
+  expect(api.list).toHaveBeenCalledWith({ page: 2, limit: 25 });
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Status' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Paused' }));
+  await waitFor(() =>
+    expect(api.list).toHaveBeenLastCalledWith({ page: 1, limit: 25, status: 'paused' }),
+  );
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Status' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'All' }));
+  await waitFor(() => expect(api.list).toHaveBeenLastCalledWith({ page: 1, limit: 25 }));
+});
+
+it('downloads a CSV, filters recipients and shows complete report buckets', async () => {
+  signInAs('owner');
+  api.get.mockResolvedValue(fakeWaCampaign({ status: 'completed' }));
+  const report = fakeWaReport();
+  report.skippedByReason = { stopped: 2, dnd: 1 };
+  report.failedByCode = { '130429': 2 };
+  api.report.mockResolvedValue(report);
+  api.export.mockResolvedValue('blob:campaign-csv');
+  const download = vi
+    .spyOn(HTMLAnchorElement.prototype, 'click')
+    .mockImplementation(() => undefined);
+  renderWithProviders({ route: '/campaigns/whatsapp/wc1' });
+  fireEvent.click(await screen.findByRole('button', { name: 'Export CSV' }));
+  await waitFor(() => expect(download).toHaveBeenCalledOnce());
+  expect(api.export).toHaveBeenCalledWith('wc1');
+  download.mockRestore();
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Recipient status' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Read' }));
+  await waitFor(() =>
+    expect(api.recipients).toHaveBeenLastCalledWith('wc1', { page: 1, limit: 50, status: 'read' }),
+  );
+  fireEvent.click(screen.getByRole('tab', { name: 'Report' }));
+  expect(await screen.findByText(/Rate limit/)).toBeVisible();
+  expect(screen.getByText(/do.not.call|do.not.message/i)).toBeVisible();
+});
+
+it('offers retry after recipient and report requests fail', async () => {
+  signInAs('manager');
+  api.get.mockResolvedValue(fakeWaCampaign({ status: 'completed' }));
+  api.recipients
+    .mockRejectedValueOnce(new Error('Recipients offline'))
+    .mockResolvedValue(offsetPage([]));
+  api.report.mockRejectedValueOnce(new Error('Report offline'));
+  renderWithProviders({ route: '/campaigns/whatsapp/wc1' });
+  const retry = await screen.findByRole('button', { name: 'Retry' });
+  fireEvent.click(retry);
+  await waitFor(() => expect(api.recipients).toHaveBeenCalledTimes(2));
+  fireEvent.click(screen.getByRole('tab', { name: 'Report' }));
+  expect(await screen.findByRole('alert')).toBeVisible();
 });

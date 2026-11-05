@@ -355,3 +355,5 @@ export type WhatsAppCampaignReport = Schemas['WhatsAppCampaignReport'];
 export type WhatsAppCampaignStatus = WhatsAppCampaign['status'];
 export type WhatsAppCampaignPauseReason = NonNullable<WhatsAppCampaign['pauseReason']>;
 export type WhatsAppCampaignRecipientStatus = WhatsAppCampaignRecipient['status'];
+
+export type WhatsAppCallPrice = Schemas['WhatsAppCallPrice'];

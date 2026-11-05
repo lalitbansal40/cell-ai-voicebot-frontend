@@ -1,3 +1,4 @@
+import { QueryClient } from '@tanstack/react-query';
 import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -15,6 +16,7 @@ import { fakeChannel, fakeWhatsAppConfig } from '@/test/whatsapp';
 
 import { callPermissionState } from './builder/model';
 import { TemplateBuilder, type TemplateBuilderProps } from './builder/TemplateBuilder';
+import { templateKeys } from './keys';
 
 vi.mock('@/services/api/templates', () => ({
   templatesApi: {
@@ -798,4 +800,18 @@ describe('chips', () => {
     expect(within(table).getByText('Marketing (was Utility)')).toBeInTheDocument();
     expect(within(table).getByText('Quality not rated yet')).toBeInTheDocument();
   });
+});
+
+it('hides cached templates for a sender that is no longer connected, including its language choices', async () => {
+  signInAs('owner');
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  queryClient.setQueryData(templateKeys.list({ channelId: 'old-sender' }), [
+    fakeTemplateListItem('APPROVED', 'UTILITY', { language: 'hi' }),
+  ]);
+  renderWithProviders({ route: '/whatsapp/templates?channelId=old-sender', queryClient });
+  await screen.findByRole('combobox', { name: 'WhatsApp number' });
+  expect(screen.queryByText('emi_reminder')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Create template' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Sync now' })).toBeDisabled();
+  expect(api.list).not.toHaveBeenCalled();
 });

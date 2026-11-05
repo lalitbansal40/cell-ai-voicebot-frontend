@@ -133,6 +133,7 @@ describe('SignupPage (Phase 19: no e-mail)', () => {
     await waitFor(() =>
       expect(api.signup).toHaveBeenCalledWith(expect.objectContaining({ accountType: 'reseller' })),
     );
+    expect(await screen.findByRole('heading', { name: 'Reseller', level: 1 })).toBeVisible();
   });
 
   it('needs the terms tick; shows client rules, server field errors and a taken e-mail', async () => {

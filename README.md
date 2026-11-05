@@ -242,7 +242,7 @@ All project docs (plans, ADRs, conventions) live in the **backend repo** `docs/`
 
 Embedded Signup uses the v4 configuration (`extras: {}` for Cloud API), keeps coexistence options separate and accepts compatible session messages. Graph defaults to v26.0 in the API. Three legal-page browser scenarios supplement the existing suite. See the backend [staging runbook](../cell-ai-voicebot-backend/docs/ops/staging.md) for owner gates and deployment.
 
-## Phase 19 continuation (candidate)
+## Phase 19 continuation
 
 Campaigns expose SIP / Normal call, WhatsApp message and WhatsApp call tabs. The message
 wizard supports variables/A-B, uploads/location, recurrence, eligible cost estimates
@@ -253,3 +253,5 @@ Normal/WhatsApp choices, retaining per-number consent and AI selection.
 Backend-derived messaging caps are 18/sec for Business App/coexistence/unknown and
 75/sec for confirmed Cloud API numbers; lower limits still apply.
 See the backend channel guide and Phase 19 sign-off for validation and live checks.
+
+AI call confirmations wait for the selected sender/contact selling-price quote and offer retry on price errors. Reseller signup/login defaults to the reseller panel; safe same-app return links remain supported.

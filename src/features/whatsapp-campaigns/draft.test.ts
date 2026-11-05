@@ -47,3 +47,23 @@ describe('campaign draft safety', () => {
     expect(toCreateInput(d)).toHaveProperty('headerMediaToken', null);
   });
 });
+
+it('validates A/B winner bounds, recent-send bounds and recurrence dates before saving', () => {
+  const d = emptyDraft();
+  d.variants = [
+    { key: 'A', templateId: 'a', splitPct: 50 },
+    { key: 'B', templateId: 'b', splitPct: 50 },
+  ];
+  expect(stepProblems(1, d)).toContain('Choose the winner metric for A/B');
+  d.abWinner = { metric: 'read', afterHours: 73 };
+  expect(stepProblems(1, d)).toContain('Choose a winner after 1–72 whole hours');
+  d.excludeRecentDays = 91;
+  expect(stepProblems(3, d)).toContain('Skip recent sends must be 0–90 whole days');
+  d.scheduleMode = 'recurring';
+  d.recurrence.time = '25:00';
+  expect(stepProblems(4, d)).toContain('Choose a valid recurring time');
+  d.recurrence.time = '09:00';
+  d.recurrence.until = '2020-01-01T00:00:00Z';
+  expect(stepProblems(4, d)).toContain('The recurrence end must be in the future');
+  expect(stepProblems(5, d)).toEqual([]);
+});

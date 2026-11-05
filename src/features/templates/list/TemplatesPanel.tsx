@@ -180,8 +180,9 @@ export function TemplatesPanel() {
     return null;
   })();
 
-  const rows = (templates.data ?? []).filter((t) => !language || t.language === language);
-  const languages = [...new Set((templates.data ?? []).map((t) => t.language))].sort();
+  const visibleRows = channelId && !selected ? [] : (templates.data ?? []);
+  const rows = visibleRows.filter((t) => !language || t.language === language);
+  const languages = [...new Set(visibleRows.map((t) => t.language))].sort();
   const numberLabel = (ids: string[]) =>
     ids.map((id) => numbers.find((n) => n.id === id)?.label ?? '—').join(', ');
 
@@ -385,7 +386,7 @@ export function TemplatesPanel() {
           <DataTable
             aria-label="Templates"
             columns={columns}
-            rows={templates.data ? rows : undefined}
+            rows={channelId && !selected ? [] : templates.data ? rows : undefined}
             getRowId={(t) => t.id}
             loading={templates.isLoading}
             error={templates.error}

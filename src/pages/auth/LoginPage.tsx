@@ -27,7 +27,10 @@ export function LoginPage() {
     meta: { silent: true },
     onSuccess: (session) => {
       useAuthStore.getState().setSession(session);
-      void navigate(safeNext(location.search), { replace: true });
+      void navigate(
+        safeNext(location.search, session.account.kind === 'reseller' ? '/reseller' : '/'),
+        { replace: true },
+      );
     },
     onError: (error) => {
       applyFieldErrors(form.setError, toApiError(error));

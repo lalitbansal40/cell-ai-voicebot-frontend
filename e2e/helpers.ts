@@ -43,7 +43,11 @@ export async function signUpOwner(
   await page.getByRole('checkbox', { name: /I agree/ }).check();
   await page.getByRole('button', { name: 'Create account' }).click();
   await expect(
-    page.getByRole('heading', { level: 1, name: kind === 'reseller' ? 'Reseller' : 'Dashboard' }),
+    page.getByRole('heading', {
+      level: 1,
+      name: kind === 'reseller' ? 'Reseller' : 'Dashboard',
+      exact: true,
+    }),
   ).toBeVisible();
   await page.unroute('**/api/v1/auth/signup');
   return owner;
