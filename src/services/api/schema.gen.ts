@@ -2017,6 +2017,7 @@ export interface paths {
             aiTextPer1kTokensMicros?: number;
             embeddingPer1kTokensMicros?: number;
             sttPerMinuteMicros?: number;
+            voiceApiPulseMicros?: number;
             note?: string | null;
           };
         };
@@ -2217,6 +2218,7 @@ export interface paths {
             aiTextPer1kTokensMicros?: number;
             embeddingPer1kTokensMicros?: number;
             sttPerMinuteMicros?: number;
+            voiceApiPulseMicros?: number;
             note?: string | null;
           };
         };
@@ -7714,7 +7716,7 @@ export interface paths {
           agentId?: string;
           contactId?: string;
           campaignId?: string;
-          provider?: 'webcall' | 'sip' | 'notifynow' | 'dryrun' | 'whatsapp';
+          provider?: 'webcall' | 'sip' | 'notifynow' | 'dryrun' | 'whatsapp' | 'voice_api';
           direction?: 'inbound' | 'outbound';
           mode?: 'human' | 'ai';
           isTest?: 'true' | 'false';
@@ -8699,7 +8701,7 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          line?: 'phone' | 'whatsapp';
+          line?: 'phone' | 'whatsapp' | 'voice_api';
           cursor?: string;
           limit?: number;
           status?:
@@ -8791,7 +8793,23 @@ export interface paths {
             mode?: 'dry_run' | 'live';
             flowId?: string;
             /** @enum {string} */
-            line?: 'phone' | 'whatsapp';
+            line?: 'phone' | 'whatsapp' | 'voice_api';
+            voiceApi?: {
+              content?:
+                | {
+                    /** @enum {string} */
+                    kind: 'audio';
+                    flowAudioId: string;
+                  }
+                | {
+                    /** @enum {string} */
+                    kind: 'ivr';
+                    ivrId: number;
+                  }
+                | null;
+              retries?: number;
+              retryIntervalMin?: 5 | 10 | 30 | 60 | 180 | 300;
+            } | null;
             channelId?: string | null;
             program?: {
               /** @enum {string} */
@@ -9066,7 +9084,7 @@ export interface paths {
             channelId?: string | null;
             askPermissionFirst?: boolean;
             /** @enum {string} */
-            line?: 'phone' | 'whatsapp';
+            line?: 'phone' | 'whatsapp' | 'voice_api';
             program?: {
               /** @enum {string} */
               kind: 'flow' | 'agent';
@@ -9302,7 +9320,23 @@ export interface paths {
             mode?: 'dry_run' | 'live';
             flowId?: string;
             /** @enum {string} */
-            line?: 'phone' | 'whatsapp';
+            line?: 'phone' | 'whatsapp' | 'voice_api';
+            voiceApi?: {
+              content?:
+                | {
+                    /** @enum {string} */
+                    kind: 'audio';
+                    flowAudioId: string;
+                  }
+                | {
+                    /** @enum {string} */
+                    kind: 'ivr';
+                    ivrId: number;
+                  }
+                | null;
+              retries?: number;
+              retryIntervalMin?: 5 | 10 | 30 | 60 | 180 | 300;
+            } | null;
             channelId?: string | null;
             program?: {
               /** @enum {string} */
@@ -10216,7 +10250,8 @@ export interface paths {
             | 'rejected'
             | 'number_not_allowed'
             | 'no_call_permission'
-            | 'unanswered_limit';
+            | 'unanswered_limit'
+            | 'not_indian_mobile';
           q?: string;
         };
         header?: never;
@@ -22806,7 +22841,7 @@ export interface paths {
             campaignId?: string;
             contactId?: string;
             /** @enum {string} */
-            provider?: 'webcall' | 'sip' | 'notifynow' | 'dryrun' | 'whatsapp';
+            provider?: 'webcall' | 'sip' | 'notifynow' | 'dryrun' | 'whatsapp' | 'voice_api';
             /** @enum {string} */
             direction?: 'inbound' | 'outbound';
             /** @enum {string} */
@@ -25697,6 +25732,460 @@ export interface paths {
         };
       };
     };
+    trace?: never;
+  };
+  '/api/v1/admin/accounts/{id}/voice-api': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Turn recorded-voice campaigns on / off, assign Cell24x7 IVRs (superadmin) */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            enabled?: boolean;
+            ivrIds?: number[];
+            ivrEstimateSec?: number;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['AccountVoiceApi'];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/api/v1/admin/voice-api/status': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Cell24x7 status: token set, webhook registered, last result and error (superadmin) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['AdminVoiceStatus'];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/voice-api/webhook': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Register this server's result webhook with Cell24x7 (superadmin) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                registered: boolean;
+                matches: boolean;
+              };
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/voice-api/ivrs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Every IVR on the platform's Cell24x7 account (superadmin) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['AdminVoiceIvr'][];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/campaigns/{id}/voice-batches/{no}/resolve': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Decide an uncertain Cell24x7 submit: it reached Cell24x7, or it did not (superadmin) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+          no: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json':
+            | {
+                /** @enum {string} */
+                outcome: 'submitted';
+                requestId: string;
+              }
+            | {
+                /** @enum {string} */
+                outcome: 'not_submitted';
+              };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                batchNo: number;
+                state: string;
+              };
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/voice-api/ivrs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** IVR menus this account may use in a recorded-voice campaign */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['VoiceIvr'][];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/webhooks/voice-api/{secret}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Cell24x7 call results (secret path; answered at once, processed in the background) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          secret: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            event?: string;
+            request_id: string;
+            receiver: string | number;
+            status: string;
+            duration?: number | string | null;
+            retry_count?: number | string | null;
+            ivr?:
+              | ({
+                  digits_pressed?: string | null;
+                  disposition?: string | null;
+                } & {
+                  [key: string]: unknown;
+                })
+              | null;
+          } & {
+            [key: string]: unknown;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                received: boolean;
+              };
+            };
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   '/api/v1/whatsapp-campaigns': {
@@ -33205,6 +33694,7 @@ export interface components {
       aiTextPer1kTokensMicros: number;
       embeddingPer1kTokensMicros: number;
       sttPerMinuteMicros: number;
+      voiceApiPulseMicros: number;
       /** @enum {string} */
       source: 'account' | 'default';
       effectiveFrom: string;
@@ -33257,7 +33747,8 @@ export interface components {
         | 'whatsapp_charge'
         | 'whatsapp_call_charge'
         | 'credit_transfer_out'
-        | 'credit_transfer_in';
+        | 'credit_transfer_in'
+        | 'voice_broadcast_charge';
       /** @enum {string} */
       direction: 'credit' | 'debit';
       /** @enum {string} */
@@ -33292,7 +33783,8 @@ export interface components {
           | 'whatsapp_call'
           | 'insights'
           | 'stt'
-          | 'chat_summary';
+          | 'chat_summary'
+          | 'voice_broadcast';
         waCategory?: string;
         waMarket?: string;
         waPricingType?: string;
@@ -33364,6 +33856,7 @@ export interface components {
       aiTextPer1kTokensMicros: number;
       embeddingPer1kTokensMicros: number;
       sttPerMinuteMicros: number;
+      voiceApiPulseMicros: number;
       inheritsDefault: boolean;
       effectiveFrom: string;
       createdBy: string | null;
@@ -33384,6 +33877,7 @@ export interface components {
         aiTextPer1kTokensMicros: number;
         embeddingPer1kTokensMicros: number;
         sttPerMinuteMicros: number;
+        voiceApiPulseMicros: number;
         effectiveFrom: string;
       };
       history: components['schemas']['RateCardVersion'][];
@@ -33408,6 +33902,7 @@ export interface components {
         aiTextPer1kTokensMicros: number;
         embeddingPer1kTokensMicros: number;
         sttPerMinuteMicros: number;
+        voiceApiPulseMicros: number;
         effectiveFrom: string;
       };
       wallet: components['schemas']['Wallet'];
@@ -33446,7 +33941,8 @@ export interface components {
             | 'whatsapp_charge'
             | 'whatsapp_call_charge'
             | 'credit_transfer_out'
-            | 'credit_transfer_in';
+            | 'credit_transfer_in'
+            | 'voice_broadcast_charge';
           amountMicros: number;
         }[];
         totalMicros: number;
@@ -33705,7 +34201,10 @@ export interface components {
         | 'whatsapp_campaign.resumed'
         | 'whatsapp_campaign.stopped'
         | 'whatsapp_campaign.completed'
-        | 'whatsapp_campaign.retried';
+        | 'whatsapp_campaign.retried'
+        | 'account.voice_api_changed'
+        | 'voice_api.webhook_registered'
+        | 'voice_api.batch_resolved';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
@@ -33795,6 +34294,12 @@ export interface components {
       sipSettings: {
         pulseSec: number | null;
         spendMinutesPerHour: number | null;
+      };
+      /** @description VAPI: recorded-voice / IVR campaigns over Cell24x7 */
+      voiceApi: {
+        enabled: boolean;
+        ivrIds: number[];
+        ivrEstimateSec: number;
       };
       usersByStatus: {
         invited: number;
@@ -34412,7 +34917,7 @@ export interface components {
       /** @enum {string} */
       direction: 'outbound' | 'inbound';
       /** @enum {string} */
-      provider: 'webcall' | 'sip' | 'notifynow' | 'dryrun' | 'whatsapp';
+      provider: 'webcall' | 'sip' | 'notifynow' | 'dryrun' | 'whatsapp' | 'voice_api';
       /** @enum {string} */
       mode: 'human' | 'ai';
       agentUserId: string | null;
@@ -34727,10 +35232,17 @@ export interface components {
         | 'too_many_failures'
         | 'admin'
         | 'flow_not_runnable'
+        | 'provider_error'
+        | 'provider_uncertain'
         | null;
       waitingUntil: string | null;
       /** @enum {string} */
-      line?: 'phone' | 'whatsapp';
+      line?: 'phone' | 'whatsapp' | 'voice_api';
+      voice?: {
+        /** @enum {string} */
+        kind: 'audio' | 'ivr';
+        name: string;
+      } | null;
       channelId?: string | null;
       program?: {
         /** @enum {string} */
@@ -34874,6 +35386,8 @@ export interface components {
           | 'too_many_failures'
           | 'admin'
           | 'flow_not_runnable'
+          | 'provider_error'
+          | 'provider_uncertain'
           | null;
         by: {
           id: string;
@@ -34894,6 +35408,35 @@ export interface components {
       canceledAt: string | null;
       pausedAt: string | null;
       walletAvailableMicros: number;
+      /** @description VAPI: recorded-voice / IVR settings and Cell24x7 batches */
+      voiceApi?: {
+        content: {
+          /** @enum {string} */
+          kind: 'audio' | 'ivr';
+          flowAudioId: string | null;
+          ivrId: number | null;
+          name: string;
+        } | null;
+        audioSec: number;
+        retries: number;
+        retryIntervalMin: number;
+        batches: {
+          no: number;
+          /** @enum {string} */
+          state: 'holding' | 'submitting' | 'open' | 'done' | 'uncertain' | 'failed';
+          requestId: string | null;
+          count: number;
+          amountMicros: number;
+          createdAt: string;
+          submittedAt: string | null;
+          doneAt: string | null;
+          error: string | null;
+        }[];
+        lastError: {
+          code: string;
+          at: string;
+        } | null;
+      } | null;
     };
     CampaignContactRow: {
       id: string;
@@ -34940,6 +35483,7 @@ export interface components {
         | 'number_not_allowed'
         | 'no_call_permission'
         | 'unanswered_limit'
+        | 'not_indian_mobile'
         | null;
       /**
        * @description Why it waits for nextAttemptAt: window, daily_cap, weekly_cap or min_gap
@@ -34950,6 +35494,14 @@ export interface components {
       lastCallId: string | null;
       lastAttemptAt: string | null;
       costMicros: number;
+      voice?: {
+        batchNo: number;
+        providerStatus: string | null;
+        durationSec: number;
+        retryCount: number;
+        dtmf: string | null;
+        ivrDisposition: string | null;
+      } | null;
     };
     AudiencePreview: {
       total: number;
@@ -34983,6 +35535,13 @@ export interface components {
       };
       walletAvailableMicros: number;
       transportNote?: string;
+      voice?: {
+        pulsesPerNumber: number;
+        perNumberMicros: number;
+        notPriced: boolean;
+        notIndianMobile: number;
+        etaSec: number;
+      };
     };
     CampaignSummary: {
       running: number;
@@ -35272,6 +35831,9 @@ export interface components {
       /** @enum {string} */
       line: 'sip' | 'dryrun';
       numbers: components['schemas']['PhoneNumber'][];
+      voiceApi: {
+        enabled: boolean;
+      };
     };
     DndEntry: {
       id: string;
@@ -36801,7 +37363,8 @@ export interface components {
         | 'wallet.credit_received'
         | 'wallet.customer_low_balance'
         | 'whatsapp_campaign.completed'
-        | 'whatsapp_campaign.paused';
+        | 'whatsapp_campaign.paused'
+        | 'voice_api.provider_error';
       title: string;
       body: string;
       link: string | null;
@@ -37142,6 +37705,47 @@ export interface components {
         id: string;
         name: string;
         availableMicros: number;
+      }[];
+    };
+    AccountVoiceApi: {
+      enabled: boolean;
+      ivrIds: number[];
+      ivrEstimateSec: number;
+    };
+    VoiceIvr: {
+      id: number;
+      name: string;
+    };
+    AdminVoiceIvr: {
+      id: number;
+      name: string;
+      runnable: boolean;
+    };
+    AdminVoiceStatus: {
+      /** @enum {string} */
+      provider: 'off' | 'fake' | 'cell24x7';
+      tokenConfigured: boolean;
+      webhook: {
+        registered: boolean;
+        /** @description Cell24x7 posts to this server */
+        matches: boolean;
+        error: string | null;
+      };
+      lastWebhookAt: string | null;
+      lastError: {
+        code: string;
+        at: string;
+      } | null;
+      uncertainBatches: {
+        campaignId: string;
+        campaignName: string;
+        accountId: string;
+        batchNo: number;
+        count: number;
+        /** @description Name in the Cell24x7 dashboard */
+        broadcastName: string;
+        error: string | null;
+        createdAt: string;
       }[];
     };
     WhatsAppCampaign: {
