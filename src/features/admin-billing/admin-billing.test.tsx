@@ -107,6 +107,7 @@ const CARD = {
   embeddingPer1kTokensMicros: 10_000,
   sttPerMinuteMicros: 500_000,
   voiceApiPulseMicros: 0,
+  inboundCallPerMinuteMicros: null,
 };
 const VERSION = (overrides: Partial<RateCardVersion> = {}): RateCardVersion => ({
   id: 'rc1',
