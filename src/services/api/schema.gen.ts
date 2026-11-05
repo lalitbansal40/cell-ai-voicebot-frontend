@@ -6892,6 +6892,7 @@ export interface paths {
               | 'reports:read'
               | 'exports:write'
               | 'webhooks:manage'
+              | 'resources:read'
             )[];
             /**
              * @example [
@@ -7033,6 +7034,7 @@ export interface paths {
               | 'reports:read'
               | 'exports:write'
               | 'webhooks:manage'
+              | 'resources:read'
             )[];
             /**
              * @example [
@@ -21919,6 +21921,166 @@ export interface paths {
         };
       };
     };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/resources/flows': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Call flows (ids for calls and campaigns)
+     * @description Published call flows by default (`status=all` adds drafts and archived ones). Use a flow `id` in `POST /calls` (`flowId`) or `POST /campaigns` (`flowId` / `program`). Only flows whose `triggers` include `campaign` can run in a campaign; `api` for single calls. At most 200 rows, newest first. Read limit class (600 / min per key).
+     */
+    get: operations['listFlows'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/resources/agents': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * AI agents (ids for agent calls and campaigns)
+     * @description Active AI agents by default (`active=false` lists all). Use an agent `id` as `agentId` in `POST /calls`, `program: { kind: 'agent', id }` in WhatsApp call campaigns, or in `POST /whatsapp/calls`. Prompts, functions and their secrets are never returned. At most 200 rows, newest first. Read limit class (600 / min per key).
+     */
+    get: operations['listAgents'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/resources/whatsapp-numbers': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Connected WhatsApp numbers (channel ids)
+     * @description Connected WhatsApp numbers of the account. `id` is the `channelId` for template sends, WhatsApp calls and bulk campaigns. `messagesPerSecond` is the bulk-campaign cap of the number (Business App or unconfirmed: 18, Cloud API: 75). `calling.ready` says whether WhatsApp calls can go out now; `unavailableReason` explains why not (e.g. `coexistence`). At most 200 rows, newest first. Read limit class (600 / min per key).
+     */
+    get: operations['listWhatsAppNumbers'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/resources/contact-lists': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Contact lists (audience ids)
+     * @description Contact lists with their live contact counts. Use ids in campaign `audience.listIds`. At most 200 rows, newest first. Read limit class (600 / min per key).
+     */
+    get: operations['listContactLists'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/resources/segments': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Saved segments (audience ids)
+     * @description Saved contact segments (filters). Use an id in campaign `audience.segmentId`; the filter is applied when the campaign starts. At most 200 rows, newest first. Read limit class (600 / min per key).
+     */
+    get: operations['listSegments'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/resources/phone-line': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Phone line, caller numbers and recorded voice
+     * @description Which line phone calls use (`sip` = real phones, `dryrun` = the simulated test line), the caller numbers (`phoneLine.callerNumberId` in campaigns) and whether recorded-voice / IVR campaigns (`line: voice_api`) are on for the account.
+     */
+    get: operations['getPhoneLine'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/resources/ivrs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * IVR menus for recorded-voice campaigns
+     * @description IVR menus assigned to this account for recorded-voice campaigns (`voiceApi.content: { kind: 'ivr', ivrId }`). Empty when recorded voice is off or no menu is assigned.
+     */
+    get: operations['listIvrs'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/resources/wallet': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Wallet balance
+     * @description Balance in micros (₹1 = 1,000,000). `availableMicros` = balance − holds + credit limit: what calls, messages and campaigns can still spend. Holds are money reserved by running calls and unsent batches.
+     */
+    get: operations['getWalletBalance'];
     put?: never;
     post?: never;
     delete?: never;
@@ -37458,6 +37620,77 @@ export interface components {
       externalRef: string | null;
       at: string;
     };
+    PublicFlow: {
+      id: string;
+      name: string;
+      status: string;
+      publishedVersion: number | null;
+      triggers: string[];
+      agents: {
+        id: string;
+        name: string;
+      }[];
+      updatedAt: string;
+    };
+    PublicAgent: {
+      id: string;
+      name: string;
+      language: string;
+      voice: string;
+      isActive: boolean;
+      updatedAt: string;
+    };
+    PublicWhatsAppNumber: {
+      id: string;
+      label: string;
+      displayPhoneNumber: string | null;
+      status: string;
+      mode: string;
+      qualityRating: string;
+      messagingLimitTier: string | null;
+      messagesPerSecond: number;
+      calling: {
+        status: string;
+        ready: boolean;
+        unavailableReason: string | null;
+      };
+    };
+    PublicContactList: {
+      id: string;
+      name: string;
+      contactsCount: number;
+      updatedAt: string;
+    };
+    PublicSegment: {
+      id: string;
+      name: string;
+      updatedAt: string;
+    };
+    PublicPhoneLine: {
+      /** @enum {string} */
+      line: 'sip' | 'dryrun';
+      numbers: {
+        id: string;
+        number: string;
+        kind: string;
+        label: string;
+      }[];
+      voiceApi: {
+        enabled: boolean;
+      };
+    };
+    PublicIvr: {
+      id: number;
+      name: string;
+    };
+    PublicWallet: {
+      balanceMicros: number;
+      availableMicros: number;
+      holdMicros: number;
+      creditLimitMicros: number;
+      /** @enum {string} */
+      currency: 'INR';
+    };
     RbacCatalog: {
       permissions: {
         /** @example team.invite */
@@ -38935,4 +39168,617 @@ export interface components {
   pathItems: never;
 }
 export type $defs = Record<string, never>;
-export type operations = Record<string, never>;
+export interface operations {
+  listFlows: {
+    parameters: {
+      query?: {
+        status?: 'published' | 'all';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "success": true,
+           *       "data": [
+           *         {
+           *           "id": "6720f0a1b2c3d4e5f6a7b8c9",
+           *           "name": "Loan recovery",
+           *           "status": "published",
+           *           "publishedVersion": 3,
+           *           "triggers": [
+           *             "campaign",
+           *             "api"
+           *           ],
+           *           "agents": [
+           *             {
+           *               "id": "6720f0a1b2c3d4e5f6a7b8ca",
+           *               "name": "Recovery agent"
+           *             }
+           *           ],
+           *           "updatedAt": "2026-11-05T09:30:00.000Z"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': {
+            /** @enum {boolean} */
+            success: true;
+            data: components['schemas']['PublicFlow'][];
+          };
+        };
+      };
+      /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Missing permission, disabled user, suspended account or impersonation block */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+    };
+  };
+  listAgents: {
+    parameters: {
+      query?: {
+        active?: 'true' | 'false';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "success": true,
+           *       "data": [
+           *         {
+           *           "id": "6720f0a1b2c3d4e5f6a7b8c9",
+           *           "name": "Recovery agent",
+           *           "language": "hinglish",
+           *           "voice": "coral",
+           *           "isActive": true,
+           *           "updatedAt": "2026-11-05T09:30:00.000Z"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': {
+            /** @enum {boolean} */
+            success: true;
+            data: components['schemas']['PublicAgent'][];
+          };
+        };
+      };
+      /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Missing permission, disabled user, suspended account or impersonation block */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+    };
+  };
+  listWhatsAppNumbers: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "success": true,
+           *       "data": [
+           *         {
+           *           "id": "6720f0a1b2c3d4e5f6a7b8c9",
+           *           "label": "Support",
+           *           "displayPhoneNumber": "+91 90000 00001",
+           *           "status": "connected",
+           *           "mode": "cloud_api",
+           *           "qualityRating": "GREEN",
+           *           "messagingLimitTier": "TIER_10K",
+           *           "messagesPerSecond": 75,
+           *           "calling": {
+           *             "status": "enabled",
+           *             "ready": true,
+           *             "unavailableReason": null
+           *           }
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': {
+            /** @enum {boolean} */
+            success: true;
+            data: components['schemas']['PublicWhatsAppNumber'][];
+          };
+        };
+      };
+      /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Missing permission, disabled user, suspended account or impersonation block */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+    };
+  };
+  listContactLists: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "success": true,
+           *       "data": [
+           *         {
+           *           "id": "6720f0a1b2c3d4e5f6a7b8c9",
+           *           "name": "November dues",
+           *           "contactsCount": 1250,
+           *           "updatedAt": "2026-11-05T09:30:00.000Z"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': {
+            /** @enum {boolean} */
+            success: true;
+            data: components['schemas']['PublicContactList'][];
+          };
+        };
+      };
+      /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Missing permission, disabled user, suspended account or impersonation block */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+    };
+  };
+  listSegments: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "success": true,
+           *       "data": [
+           *         {
+           *           "id": "6720f0a1b2c3d4e5f6a7b8c9",
+           *           "name": "Due this week",
+           *           "updatedAt": "2026-11-05T09:30:00.000Z"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': {
+            /** @enum {boolean} */
+            success: true;
+            data: components['schemas']['PublicSegment'][];
+          };
+        };
+      };
+      /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Missing permission, disabled user, suspended account or impersonation block */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+    };
+  };
+  getPhoneLine: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "success": true,
+           *       "data": {
+           *         "line": "sip",
+           *         "numbers": [
+           *           {
+           *             "id": "6720f0a1b2c3d4e5f6a7b8c9",
+           *             "number": "+911600123456",
+           *             "kind": "1600",
+           *             "label": "Main"
+           *           }
+           *         ],
+           *         "voiceApi": {
+           *           "enabled": true
+           *         }
+           *       }
+           *     }
+           */
+          'application/json': {
+            /** @enum {boolean} */
+            success: true;
+            data: components['schemas']['PublicPhoneLine'];
+          };
+        };
+      };
+      /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Missing permission, disabled user, suspended account or impersonation block */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+    };
+  };
+  listIvrs: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "success": true,
+           *       "data": [
+           *         {
+           *           "id": 101,
+           *           "name": "Press 1 to confirm"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': {
+            /** @enum {boolean} */
+            success: true;
+            data: components['schemas']['PublicIvr'][];
+          };
+        };
+      };
+      /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Missing permission, disabled user, suspended account or impersonation block */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+    };
+  };
+  getWalletBalance: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "success": true,
+           *       "data": {
+           *         "balanceMicros": 2500000000,
+           *         "availableMicros": 2480000000,
+           *         "holdMicros": 20000000,
+           *         "creditLimitMicros": 0,
+           *         "currency": "INR"
+           *       }
+           *     }
+           */
+          'application/json': {
+            /** @enum {boolean} */
+            success: true;
+            data: components['schemas']['PublicWallet'];
+          };
+        };
+      };
+      /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Missing permission, disabled user, suspended account or impersonation block */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+      /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorEnvelope'];
+        };
+      };
+    };
+  };
+}
