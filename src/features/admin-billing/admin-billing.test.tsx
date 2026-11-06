@@ -243,6 +243,7 @@ describe('account rates tab', () => {
       embeddingPer1kTokensMicros: 10_000,
       sttPerMinuteMicros: 500_000,
       voiceApiPulseMicros: 0,
+      inboundCallPerMinuteMicros: null,
       note: 'Festive offer',
     });
     expect(await screen.findByText('New prices saved for Demo Finance')).toBeInTheDocument();
