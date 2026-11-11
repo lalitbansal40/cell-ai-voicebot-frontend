@@ -137,10 +137,12 @@ function TrunkForm({
   accountId,
   view,
   voiceApi,
+  serverSip,
 }: {
   accountId: string;
   view: SipTrunkView;
   voiceApi: VoiceApi | undefined;
+  serverSip: boolean;
 }) {
   const queryClient = useQueryClient();
   const t = view.trunk;
@@ -295,7 +297,7 @@ function TrunkForm({
           <Stack direction="row" spacing={1}>
             <Button
               variant="contained"
-              disabled={save.isPending}
+              disabled={save.isPending || !serverSip}
               onClick={() => {
                 setTouched(true);
                 if (Object.keys(problems).length === 0) save.mutate();
@@ -322,10 +324,13 @@ function TrunkForm({
 export function SipTrunkCard({
   accountId,
   voiceApi,
+  serverSip = true,
 }: {
   accountId: string;
   /** The account's recorded-voice settings (for the Cell24x7 API key option). */
   voiceApi?: VoiceApi;
+  /** CM (D18): this server has a phone line (SIP); without it a trunk can't connect. */
+  serverSip?: boolean;
 }) {
   const trunk = useQuery({
     queryKey: sipTrunkKeys.account(accountId),
@@ -349,6 +354,12 @@ export function SipTrunkCard({
             Enter this account’s SIP carrier login (AI and team calls), or a Cell24x7 API key
             (recorded voice). Saving connects it at once — no server change needed.
           </Typography>
+          {!serverSip && (
+            <Alert severity="warning">
+              This server has no phone line yet (SIP is off), so a SIP trunk can’t connect. The
+              Cell24x7 API key option still works for recorded voice.
+            </Alert>
+          )}
           {trunk.isPending ? (
             <Skeleton variant="rounded" height={160} />
           ) : trunk.error ? (
@@ -359,6 +370,7 @@ export function SipTrunkCard({
               accountId={accountId}
               view={trunk.data}
               voiceApi={voiceApi}
+              serverSip={serverSip}
             />
           )}
         </Stack>

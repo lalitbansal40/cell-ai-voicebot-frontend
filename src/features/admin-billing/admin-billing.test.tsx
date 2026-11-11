@@ -80,6 +80,7 @@ const DETAIL: AdminAccountDetail = {
   usersCount: 3,
   apiLimits: null,
   voiceLine: 'dryrun',
+  phoneLine: { server: 'dryrun', connected: false },
   sipSettings: { pulseSec: null, spendMinutesPerHour: null },
   voiceApi: {
     enabled: false,
