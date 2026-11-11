@@ -71,6 +71,7 @@ const detail = (over: Partial<AdminAccountDetail> = {}): AdminAccountDetail => (
       callerId: null,
       verifiedAt: null,
       webhookRegisteredAt: null,
+      checkError: null,
     },
   },
   usersByStatus: { active: 1, invited: 0, disabled: 0 },

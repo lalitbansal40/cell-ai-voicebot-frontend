@@ -91,6 +91,7 @@ const DETAIL: AdminAccountDetail = {
       callerId: null,
       verifiedAt: null,
       webhookRegisteredAt: null,
+      checkError: null,
     },
   },
   usersByStatus: { active: 3, invited: 0, disabled: 0 },

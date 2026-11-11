@@ -59,14 +59,20 @@ function ApiKeyForm({
         ...(key.trim() ? { token: key.trim() } : {}),
         callerId: callerId.trim() || null,
       });
-      if (!creds.webhookRegisteredAt) await voiceAdminApi.registerAccountWebhook(accountId);
-      return voiceAdminApi.setAccount(accountId, { enabled: true });
+      // not checked (this server cannot reach Cell24x7): the webhook would fail the same way
+      if (!creds.checkError && !creds.webhookRegisteredAt)
+        await voiceAdminApi.registerAccountWebhook(accountId);
+      await voiceAdminApi.setAccount(accountId, { enabled: true });
+      return creds;
     },
     meta: { silent: true },
-    onSuccess: () => {
-      enqueueSnackbar('Cell24x7 API key connected — recorded-voice campaigns are on', {
-        variant: 'success',
-      });
+    onSuccess: (creds) => {
+      enqueueSnackbar(
+        creds.checkError
+          ? 'API key saved — not checked yet (this server cannot reach Cell24x7)'
+          : 'Cell24x7 API key connected — recorded-voice campaigns are on',
+        { variant: creds.checkError ? 'warning' : 'success' },
+      );
       setKey('');
       void queryClient.invalidateQueries({ queryKey: adminKeys.account(accountId) });
     },
@@ -107,6 +113,12 @@ function ApiKeyForm({
         helperText={callerBad ? 'Use the 10-digit caller ID' : 'Empty = the server default'}
         sx={{ maxWidth: 320 }}
       />
+      {own && saved.checkError && (
+        <Alert severity="warning">
+          Key saved but not checked yet. {saved.checkError} Press “Save and connect” again (no new
+          key needed) once it is allowed.
+        </Alert>
+      )}
       {connect.error && <Alert severity="error">{getErrorMessage(connect.error)}</Alert>}
       <div>
         <Button

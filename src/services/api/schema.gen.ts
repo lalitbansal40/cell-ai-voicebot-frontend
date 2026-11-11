@@ -34435,6 +34435,7 @@ export interface components {
       callerId: string | null;
       verifiedAt: string | null;
       webhookRegisteredAt: string | null;
+      checkError: string | null;
     };
     VoiceIvr: {
       id: number;
