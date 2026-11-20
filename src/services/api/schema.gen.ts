@@ -32938,6 +32938,220 @@ export interface paths {
     };
     trace?: never;
   };
+  '/api/v1/whatsapp/channels/{id}/webhook': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** SAC-T4: the last check that Meta delivers this number's events to us (whatsapp.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                /** @enum {string} */
+                provider: 'meta' | 'pinnacle';
+                webhookCheck: {
+                  /** @enum {string} */
+                  status: 'ok' | 'failed' | 'unknown';
+                  appSubscribed: boolean | null;
+                  missingFields: string[];
+                  checkedAt: string | null;
+                  fixedAt: string | null;
+                  error: string | null;
+                };
+              };
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/whatsapp/channels/{id}/webhook/fix': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** SAC-T4: Webhook check / Fix — subscribe our app to the WABA, add missing app webhook fields, check again (whatsapp.manage; 6 / 10 min / number) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                webhookCheck: {
+                  /** @enum {string} */
+                  status: 'ok' | 'failed' | 'unknown';
+                  appSubscribed: boolean | null;
+                  missingFields: string[];
+                  checkedAt: string | null;
+                  fixedAt: string | null;
+                  error: string | null;
+                };
+                steps: {
+                  /** @enum {string} */
+                  key: 'app_subscribed' | 'fields' | 'fix_app' | 'fix_fields';
+                  ok: boolean;
+                  detail: string | null;
+                }[];
+              };
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Meta returned an error (META_API_ERROR) */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/whatsapp/channels/{id}/sync': {
     parameters: {
       query?: never;
@@ -34735,6 +34949,107 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/admin/whatsapp/channels/{id}/webhook/fix': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** SAC-T4: Webhook check / Fix of any account's Meta number (superadmin, audited) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                webhookCheck: {
+                  /** @enum {string} */
+                  status: 'ok' | 'failed' | 'unknown';
+                  appSubscribed: boolean | null;
+                  missingFields: string[];
+                  checkedAt: string | null;
+                  fixedAt: string | null;
+                  error: string | null;
+                };
+                steps: {
+                  /** @enum {string} */
+                  key: 'app_subscribed' | 'fields' | 'fix_app' | 'fix_fields';
+                  ok: boolean;
+                  detail: string | null;
+                }[];
+              };
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/admin/whatsapp/channels/{id}/managed/webhook': {
     parameters: {
       query?: never;
@@ -36194,7 +36509,9 @@ export interface components {
         | 'auth.login_as_full_extended'
         | 'auth.login_as_step_up'
         | 'auth.login_as_step_up_failed'
-        | 'auth.login_as_ring_me_too';
+        | 'auth.login_as_ring_me_too'
+        | 'whatsapp.webhook_fixed'
+        | 'whatsapp.webhook_fix_failed';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
@@ -36399,6 +36716,8 @@ export interface components {
         metaPayer: 'platform' | 'customer';
         creditLineStatus: string;
         creditLineAdminConfirmedAt: string | null;
+        /** @enum {string|null} */
+        webhookStatus: 'ok' | 'failed' | 'unknown' | null;
         statusReasonStep: string | null;
         connectedAt: string | null;
         provider: string;
@@ -36480,6 +36799,7 @@ export interface components {
           at: string;
         } | null;
         failedSetups15m: number;
+        webhookMissing: number;
       } | null;
     };
     AgentFunction: {
@@ -39565,7 +39885,8 @@ export interface components {
         | 'whatsapp_campaign.completed'
         | 'whatsapp_campaign.paused'
         | 'voice_api.provider_error'
-        | 'whatsapp.provider_balance_low';
+        | 'whatsapp.provider_balance_low'
+        | 'whatsapp.webhook_missing';
       title: string;
       body: string;
       link: string | null;
@@ -40445,6 +40766,15 @@ export interface components {
       webhook: {
         lastEventAt: string | null;
         lastField: string | null;
+      };
+      webhookCheck: {
+        /** @enum {string} */
+        status: 'ok' | 'failed' | 'unknown';
+        appSubscribed: boolean | null;
+        missingFields: string[];
+        checkedAt: string | null;
+        fixedAt: string | null;
+        error: string | null;
       };
       connectedBy: string | null;
       connectedAt: string | null;

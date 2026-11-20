@@ -234,6 +234,12 @@ export function AdminSystemPage() {
                     label={String(s.whatsappCalls.failedSetups15m)}
                   />
                 </Fact>
+                <Fact label="Numbers with webhook problems">
+                  <State
+                    good={s.whatsappCalls.webhookMissing === 0}
+                    label={String(s.whatsappCalls.webhookMissing)}
+                  />
+                </Fact>
               </Section>
             </Grid>
           )}

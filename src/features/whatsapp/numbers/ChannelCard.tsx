@@ -14,7 +14,9 @@ import { RelativeTime } from '@/components/RelativeTime';
 import { CallingReadyChip } from '@/features/whatsapp-calling/settings/CallingReadiness';
 import { toApiError } from '@/services/api/errors';
 import type { WhatsAppChannel } from '@/services/api/types';
+import { whatsappApi } from '@/services/api/whatsapp';
 
+import { whatsappKeys } from '../keys';
 import {
   CHANNEL_STATUS_LABELS,
   channelReasonText,
@@ -36,6 +38,7 @@ import {
 } from '../queries';
 
 import { DISCONNECT_TEXT, WHATSAPP_MANAGER_URL } from './texts';
+import { WebhookChip, WebhookFixButton } from './WebhookCheck';
 
 const RETRYABLE_SYNC = new Set(['not_requested', 'failed', 'declined']);
 
@@ -226,6 +229,9 @@ export function ChannelCard({
           />
           <Chip size="small" variant="outlined" label={MODE_LABELS[channel.mode]} />
           {channel.managed && <Chip size="small" color="info" variant="outlined" label="Managed" />}
+          {!channel.managed && status !== 'disconnected' && (
+            <WebhookChip check={channel.webhookCheck} />
+          )}
           {status === 'connected' && <CallingReadyChip channelId={channel.id} />}
         </Stack>
         <Typography sx={{ mt: 1 }}>
@@ -269,6 +275,13 @@ export function ChannelCard({
               >
                 Sync now
               </Button>
+            )}
+            {!channel.managed && ['connected', 'restricted', 'action_needed'].includes(status) && (
+              <WebhookFixButton
+                disabled={working}
+                run={() => whatsappApi.fixWebhook(channel.id)}
+                invalidate={[whatsappKeys.channels, whatsappKeys.channel(channel.id)]}
+              />
             )}
             {needsPin && (
               <Button size="small" variant="contained" onClick={onPin}>
