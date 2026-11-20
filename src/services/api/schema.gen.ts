@@ -797,7 +797,7 @@ export interface paths {
         content: {
           'application/json': {
             /** Format: password */
-            currentPassword: string;
+            currentPassword?: string;
             /** Format: password */
             newPassword: string;
           };
@@ -14425,7 +14425,7 @@ export interface paths {
       requestBody?: {
         content: {
           'application/json': {
-            password: string;
+            password?: string;
             includeRecordings?: boolean;
           };
         };
@@ -14608,7 +14608,7 @@ export interface paths {
       requestBody?: {
         content: {
           'application/json': {
-            password: string;
+            password?: string;
             confirmName: string;
           };
         };
@@ -15471,6 +15471,198 @@ export interface paths {
       };
     };
     put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/login-as/extend': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Superadmin full access: 4 more hours (at most 12 hours from the start) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['AuthSession'];
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/login-as/step-up': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Superadmin full access: confirm with the superadmin's own password (+ two-step code) for 5 minutes */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /** Format: password */
+            password: string;
+            code?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                stepUpUntil: string;
+              };
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/login-as/ring-me-too': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Superadmin full access: let incoming calls of this account ring this session too */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            on: boolean;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                ringMeToo: boolean;
+              };
+            };
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+      };
+    };
     post?: never;
     delete?: never;
     options?: never;
@@ -26800,7 +26992,7 @@ export interface paths {
           'application/json': {
             userId: string;
             /** Format: password */
-            password: string;
+            password?: string;
           };
         };
       };
@@ -35330,10 +35522,13 @@ export interface components {
         impersonatorId: string;
         expiresAt: string;
         /** @enum {string} */
-        mode: 'view' | 'act';
+        mode: 'view' | 'act' | 'full';
         /** @enum {string} */
         kind: 'superadmin' | 'reseller';
         returnTo: string;
+        startedAt?: string;
+        maxUntil?: string;
+        ringMeToo?: boolean;
       } | null;
     };
     AuthSession: {
@@ -35351,10 +35546,13 @@ export interface components {
         impersonatorId: string;
         expiresAt: string;
         /** @enum {string} */
-        mode: 'view' | 'act';
+        mode: 'view' | 'act' | 'full';
         /** @enum {string} */
         kind: 'superadmin' | 'reseller';
         returnTo: string;
+        startedAt?: string;
+        maxUntil?: string;
+        ringMeToo?: boolean;
       } | null;
     };
     AccountWithWarning: components['schemas']['PublicAccount'] & {
@@ -35991,7 +36189,12 @@ export interface components {
         | 'whatsapp.managed_key_replaced'
         | 'whatsapp.managed_webhook_reset'
         | 'whatsapp.credit_line_updated'
-        | 'whatsapp.credit_line_admin_confirmed';
+        | 'whatsapp.credit_line_admin_confirmed'
+        | 'auth.login_as_full_started'
+        | 'auth.login_as_full_extended'
+        | 'auth.login_as_step_up'
+        | 'auth.login_as_step_up_failed'
+        | 'auth.login_as_ring_me_too';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
