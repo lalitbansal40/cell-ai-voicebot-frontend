@@ -139,6 +139,7 @@ export function ChannelCard({
   onRename,
   onPin,
   onReconnect,
+  onSwitchToMeta,
 }: {
   channel: WhatsAppChannel;
   canManage: boolean;
@@ -146,6 +147,8 @@ export function ChannelCard({
   onRename: () => void;
   onPin: () => void;
   onReconnect: () => void;
+  /** SAC-T11: managed numbers only. */
+  onSwitchToMeta?: () => void;
 }) {
   const confirm = useConfirm();
   const sync = useSyncChannel();
@@ -229,6 +232,7 @@ export function ChannelCard({
           />
           <Chip size="small" variant="outlined" label={MODE_LABELS[channel.mode]} />
           {channel.managed && <Chip size="small" color="info" variant="outlined" label="Managed" />}
+          {channel.managed && <Chip size="small" variant="outlined" label="Calls via partner" />}
           {!channel.managed && status !== 'disconnected' && (
             <WebhookChip check={channel.webhookCheck} />
           )}
@@ -282,6 +286,11 @@ export function ChannelCard({
                 run={() => whatsappApi.fixWebhook(channel.id)}
                 invalidate={[whatsappKeys.channels, whatsappKeys.channel(channel.id)]}
               />
+            )}
+            {channel.managed && onSwitchToMeta && status !== 'disconnected' && (
+              <Button size="small" onClick={onSwitchToMeta}>
+                Switch to Meta direct
+              </Button>
             )}
             {needsPin && (
               <Button size="small" variant="contained" onClick={onPin}>

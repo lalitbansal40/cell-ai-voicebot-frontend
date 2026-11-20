@@ -33734,6 +33734,124 @@ export interface paths {
     };
     trace?: never;
   };
+  '/api/v1/whatsapp/channels/{id}/switch-to-meta': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** SAC-T11: switch a managed (partner) number to Meta direct — our Embedded Signup for the same WABA and number; same channel id, the partner credit line keeps paying (whatsapp.manage) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['WhatsAppSwitchToMetaInput'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                channel: components['schemas']['WhatsAppChannel'];
+                outcome: string;
+                partnerWebhookCleared: boolean;
+              };
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Meta returned an error (META_API_ERROR) */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description WhatsApp isn't set up on this server (WHATSAPP_NOT_CONFIGURED) */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/whatsapp/channels/{id}/webhook': {
     parameters: {
       query?: never;
@@ -37309,7 +37427,8 @@ export interface components {
         | 'whatsapp.webhook_fixed'
         | 'whatsapp.webhook_fix_failed'
         | 'whatsapp.incoming_default_updated'
-        | 'whatsapp.ai_calls_stopped';
+        | 'whatsapp.ai_calls_stopped'
+        | 'whatsapp.channel_switched_to_meta';
       actor: {
         /** @enum {string} */
         type: 'user' | 'api_key' | 'system';
@@ -42320,6 +42439,16 @@ export interface components {
     };
     WhatsAppRenameInput: {
       label: string;
+    };
+    WhatsAppSwitchToMetaInput: {
+      /** @description Code from FB.login (single use) */
+      code: string;
+      /** @example 106540352242922 */
+      wabaId: string;
+      /** @example 106540352242922 */
+      phoneNumberId: string;
+      /** @enum {string} */
+      mode?: 'cloud_api' | 'coexistence';
     };
     WhatsAppRegisterPinInput: {
       pin?: string;

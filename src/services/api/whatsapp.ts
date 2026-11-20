@@ -145,6 +145,25 @@ export const whatsappApi = {
     unwrap(apiClient.patch<SuccessEnvelope<WhatsAppChannel>>(channel(id), { label })),
   sync: (id: string) =>
     unwrap(apiClient.post<SuccessEnvelope<ChannelActionResult>>(channel(id, '/sync'))),
+  /** SAC-T11: a managed number moves to Meta direct (our Embedded Signup, same number). */
+  switchToMeta: (
+    id: string,
+    body: {
+      code: string;
+      wabaId: string;
+      phoneNumberId: string;
+      mode?: 'cloud_api' | 'coexistence';
+    },
+  ) =>
+    unwrap(
+      apiClient.post<
+        SuccessEnvelope<{
+          channel: WhatsAppChannel;
+          outcome: string;
+          partnerWebhookCleared: boolean;
+        }>
+      >(channel(id, '/switch-to-meta'), body),
+    ),
   /** SAC-T4: Webhook check / Fix — subscribe our app, add missing fields, check again. */
   fixWebhook: (id: string) =>
     unwrap(apiClient.post<SuccessEnvelope<WebhookFixResult>>(channel(id, '/webhook/fix'))),
