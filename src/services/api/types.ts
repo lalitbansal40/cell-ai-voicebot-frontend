@@ -311,6 +311,33 @@ export type WhatsAppCallHoursEntry = WhatsAppCallHours['weekly'][number];
 export type WhatsAppCallHoliday = WhatsAppCallHours['holidays'][number];
 export type WhatsAppInboundRoute = WhatsAppCallingSettings['inbound']['route'];
 export type WhatsAppCallProgram = NonNullable<WhatsAppCallingSettings['inbound']['aiProgram']>;
+/** SAC-T8: a scheduled AI WhatsApp call. */
+export type WhatsAppScheduledCall = Schemas['WhatsAppScheduledCall'];
+export type ScheduledCallStatus = WhatsAppScheduledCall['status'];
+export interface ScheduledCallWarnings {
+  noPermission: boolean;
+  permissionExpiresBeforeDue: boolean;
+  outsideWindow: boolean;
+  lowWallet: boolean;
+}
+export interface ScheduledCallCreate {
+  channelId: string;
+  contactId: string;
+  conversationId?: string | null;
+  program: WhatsAppCallProgram;
+  purpose?: string | null;
+  dueAt: string;
+  retry?: { max: number; gapMin: number; on: ('no_answer' | 'busy' | 'failed')[] } | null;
+}
+export interface ScheduledCallsFilter {
+  status?: ScheduledCallStatus | 'open';
+  contactId?: string;
+  channelId?: string;
+  from?: string;
+  to?: string;
+  cursor?: string;
+  limit?: number;
+}
 /** SAC-T6: the account default for incoming WhatsApp calls. */
 export interface WhatsAppIncomingDefault {
   route: WhatsAppCallingSettings['inbound']['route'];

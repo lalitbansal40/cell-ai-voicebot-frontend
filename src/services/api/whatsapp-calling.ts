@@ -2,6 +2,10 @@ import { apiClient, unwrap } from './client';
 import type {
   CallAvailabilityStatus,
   CallPermissionRequestResult,
+  ListEnvelope,
+  ScheduledCallCreate,
+  ScheduledCallWarnings,
+  ScheduledCallsFilter,
   StartedWhatsAppCall,
   SuccessEnvelope,
   WhatsAppCallMediaTicket,
@@ -13,6 +17,7 @@ import type {
   WhatsAppCallingSettings,
   WhatsAppCallingSettingsPatch,
   WhatsAppIncomingDefault,
+  WhatsAppScheduledCall,
 } from './types';
 
 export interface StartWhatsAppCallInput {
@@ -53,6 +58,40 @@ export const whatsappCallingApi = {
       apiClient.get<SuccessEnvelope<WhatsAppCallPrice>>(settings(channelId, '/quote'), {
         params: { contactId },
       }),
+    ),
+  /** SAC-T8: scheduled AI calls. */
+  scheduleCall: (body: ScheduledCallCreate, idempotencyKey: string) =>
+    unwrap(
+      apiClient.post<
+        SuccessEnvelope<{
+          scheduledCall: WhatsAppScheduledCall;
+          warnings: ScheduledCallWarnings;
+          replay: boolean;
+        }>
+      >('/whatsapp/scheduled-calls', body, { headers: { 'Idempotency-Key': idempotencyKey } }),
+    ),
+  scheduledCalls: (filter: ScheduledCallsFilter) =>
+    apiClient
+      .get<ListEnvelope<WhatsAppScheduledCall, { nextCursor: string | null; hasMore: boolean }>>(
+        '/whatsapp/scheduled-calls',
+        { params: filter },
+      )
+      .then((r) => r.data),
+  updateScheduledCall: (
+    id: string,
+    body: Partial<Pick<ScheduledCallCreate, 'dueAt' | 'program' | 'purpose' | 'retry'>>,
+  ) =>
+    unwrap(
+      apiClient.patch<SuccessEnvelope<WhatsAppScheduledCall>>(
+        `/whatsapp/scheduled-calls/${id}`,
+        body,
+      ),
+    ),
+  cancelScheduledCall: (id: string) =>
+    unwrap(
+      apiClient.post<SuccessEnvelope<WhatsAppScheduledCall>>(
+        `/whatsapp/scheduled-calls/${id}/cancel`,
+      ),
     ),
   /** SAC-T6: who answers incoming calls on numbers connected from now on. */
   getIncomingDefault: () =>

@@ -29500,6 +29500,8 @@ export interface paths {
               | 'contact.opted_in'
               | 'whatsapp_campaign.completed'
               | 'whatsapp_campaign.paused'
+              | 'whatsapp_call.scheduled'
+              | 'whatsapp_call.scheduled_skipped'
               | '*'
             )[];
             includePersonalData?: boolean;
@@ -29678,6 +29680,8 @@ export interface paths {
               | 'contact.opted_in'
               | 'whatsapp_campaign.completed'
               | 'whatsapp_campaign.paused'
+              | 'whatsapp_call.scheduled'
+              | 'whatsapp_call.scheduled_skipped'
               | '*'
             )[];
             includePersonalData?: boolean;
@@ -29768,7 +29772,9 @@ export interface paths {
               | 'contact.opted_out'
               | 'contact.opted_in'
               | 'whatsapp_campaign.completed'
-              | 'whatsapp_campaign.paused';
+              | 'whatsapp_campaign.paused'
+              | 'whatsapp_call.scheduled'
+              | 'whatsapp_call.scheduled_skipped';
           };
         };
       };
@@ -29961,7 +29967,9 @@ export interface paths {
             | 'contact.opted_out'
             | 'contact.opted_in'
             | 'whatsapp_campaign.completed'
-            | 'whatsapp_campaign.paused';
+            | 'whatsapp_campaign.paused'
+            | 'whatsapp_call.scheduled'
+            | 'whatsapp_call.scheduled_skipped';
           from?: string;
           to?: string;
           cursor?: string;
@@ -32724,6 +32732,574 @@ export interface paths {
           content: {
             'application/json': components['schemas']['ErrorEnvelope'];
           };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/whatsapp/scheduled-calls': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Scheduled AI WhatsApp calls, newest first (calls.read) */
+    get: {
+      parameters: {
+        query?: {
+          status?:
+            | 'open'
+            | 'scheduled'
+            | 'dispatching'
+            | 'calling'
+            | 'done'
+            | 'skipped'
+            | 'failed'
+            | 'cancelled';
+          contactId?: string;
+          channelId?: string;
+          from?: string;
+          to?: string;
+          cursor?: string;
+          limit?: number;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppScheduledCall'][];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description WhatsApp calling or media capacity unavailable */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    /** Schedule an AI WhatsApp call (calls.trigger) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            channelId: string;
+            contactId: string;
+            conversationId?: string | null;
+            program: {
+              /** @enum {string} */
+              kind: 'flow' | 'agent';
+              id: string;
+            };
+            purpose?: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-21T05:30:00.000Z
+             */
+            dueAt: string;
+            retry?: {
+              max: number;
+              gapMin: number;
+              on: ('no_answer' | 'busy' | 'failed')[];
+            } | null;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                scheduledCall: components['schemas']['WhatsAppScheduledCall'];
+                warnings: {
+                  noPermission: boolean;
+                  permissionExpiresBeforeDue: boolean;
+                  outsideWindow: boolean;
+                  lowWallet: boolean;
+                };
+                replay: boolean;
+              };
+            };
+          };
+        };
+        /** @description OK */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: {
+                scheduledCall: components['schemas']['WhatsAppScheduledCall'];
+                warnings: {
+                  noPermission: boolean;
+                  permissionExpiresBeforeDue: boolean;
+                  outsideWindow: boolean;
+                  lowWallet: boolean;
+                };
+                replay: boolean;
+              };
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description WhatsApp calling or media capacity unavailable */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/whatsapp/scheduled-calls/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** One scheduled AI WhatsApp call (calls.read) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppScheduledCall'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description WhatsApp calling or media capacity unavailable */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Reschedule / change a waiting scheduled call (calls.trigger) */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /** Format: date-time */
+            dueAt?: string;
+            program?: {
+              /** @enum {string} */
+              kind: 'flow' | 'agent';
+              id: string;
+            };
+            purpose?: string | null;
+            retry?: {
+              max: number;
+              gapMin: number;
+              on: ('no_answer' | 'busy' | 'failed')[];
+            };
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppScheduledCall'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description WhatsApp calling or media capacity unavailable */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/api/v1/whatsapp/scheduled-calls/{id}/cancel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Cancel a waiting scheduled call (calls.trigger) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {boolean} */
+              success: true;
+              data: components['schemas']['WhatsAppScheduledCall'];
+            };
+          };
+        };
+        /** @description Missing / invalid / expired token (AUTH_UNAUTHENTICATED, AUTH_TOKEN_EXPIRED) */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Missing permission, disabled user, suspended account or impersonation block */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Not found in this account (RESOURCE_NOT_FOUND) */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Conflict (CONFLICT_DUPLICATE / CONFLICT_INVALID_STATE) */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Validation failed / invalid code (VALIDATION_FAILED, AUTH_CODE_INVALID) */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description Rate limited / too many attempts (RATE_LIMITED, AUTH_TOO_MANY_ATTEMPTS) — see Retry-After */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorEnvelope'];
+          };
+        };
+        /** @description WhatsApp calling or media capacity unavailable */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
       };
     };
@@ -40108,7 +40684,8 @@ export interface components {
         | 'whatsapp_campaign.paused'
         | 'voice_api.provider_error'
         | 'whatsapp.provider_balance_low'
-        | 'whatsapp.webhook_missing';
+        | 'whatsapp.webhook_missing'
+        | 'whatsapp.scheduled_call_failed';
       title: string;
       body: string;
       link: string | null;
@@ -40890,6 +41467,44 @@ export interface components {
       startedAt: string | null;
       finishedAt: string | null;
       createdAt: string;
+    };
+    WhatsAppScheduledCall: {
+      id: string;
+      channelId: string;
+      contactId: string;
+      conversationId: string | null;
+      program: {
+        /** @enum {string} */
+        kind: 'flow' | 'agent';
+        id: string;
+      };
+      purpose: string | null;
+      dueAt: string;
+      timezone: string;
+      /** @enum {string} */
+      status: 'scheduled' | 'dispatching' | 'calling' | 'done' | 'skipped' | 'failed' | 'cancelled';
+      skipReason: string | null;
+      /** @enum {string} */
+      origin: 'manual' | 'ai_callback' | 'api';
+      attempt: number;
+      retry: {
+        max: number;
+        gapMin: number;
+        on: ('no_answer' | 'busy' | 'failed')[];
+      };
+      attempts: {
+        at: string;
+        callId: string | null;
+        /** @enum {string} */
+        result: 'answered' | 'no_answer' | 'busy' | 'failed' | 'skipped';
+        reason: string | null;
+      }[];
+      shiftedAt: string | null;
+      callIds: string[];
+      createdBy: string;
+      cancelledAt: string | null;
+      createdAt: string;
+      updatedAt: string;
     };
     WhatsAppChannel: {
       id: string;
