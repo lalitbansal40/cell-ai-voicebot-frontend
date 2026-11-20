@@ -4,14 +4,15 @@ import type {
   CallPermissionRequestResult,
   StartedWhatsAppCall,
   SuccessEnvelope,
+  WhatsAppCallMediaTicket,
+  WhatsAppCallPermission,
+  WhatsAppCallPermissionRun,
+  WhatsAppCallPrice,
+  WhatsAppCallProgram,
   WhatsAppCallingReadiness,
   WhatsAppCallingSettings,
   WhatsAppCallingSettingsPatch,
-  WhatsAppCallMediaTicket,
-  WhatsAppCallPermissionRun,
-  WhatsAppCallPermission,
-  WhatsAppCallProgram,
-  WhatsAppCallPrice,
+  WhatsAppIncomingDefault,
 } from './types';
 
 export interface StartWhatsAppCallInput {
@@ -52,6 +53,18 @@ export const whatsappCallingApi = {
       apiClient.get<SuccessEnvelope<WhatsAppCallPrice>>(settings(channelId, '/quote'), {
         params: { contactId },
       }),
+    ),
+  /** SAC-T6: who answers incoming calls on numbers connected from now on. */
+  getIncomingDefault: () =>
+    unwrap(apiClient.get<SuccessEnvelope<WhatsAppIncomingDefault>>('/whatsapp/incoming-default')),
+  setIncomingDefault: (body: WhatsAppIncomingDefault) =>
+    unwrap(
+      apiClient.put<SuccessEnvelope<WhatsAppIncomingDefault>>('/whatsapp/incoming-default', body),
+    ),
+  /** SAC-T6: end every live AI call on the number (calls with a person stay). */
+  stopAiCalls: (channelId: string) =>
+    unwrap(
+      apiClient.post<SuccessEnvelope<{ stopped: number }>>(settings(channelId, '/stop-ai-calls')),
     ),
   getSettings: (channelId: string) =>
     unwrap(apiClient.get<SuccessEnvelope<WhatsAppCallingSettings>>(settings(channelId))),

@@ -311,6 +311,12 @@ export type WhatsAppCallHoursEntry = WhatsAppCallHours['weekly'][number];
 export type WhatsAppCallHoliday = WhatsAppCallHours['holidays'][number];
 export type WhatsAppInboundRoute = WhatsAppCallingSettings['inbound']['route'];
 export type WhatsAppCallProgram = NonNullable<WhatsAppCallingSettings['inbound']['aiProgram']>;
+/** SAC-T6: the account default for incoming WhatsApp calls. */
+export interface WhatsAppIncomingDefault {
+  route: WhatsAppCallingSettings['inbound']['route'];
+  aiProgram: WhatsAppCallProgram | null;
+  ringTimeoutSec: number;
+}
 export type WhatsAppCallPermission = Schemas['WhatsAppCallPermission'];
 export type WhatsAppCallPermissionStatus = WhatsAppCallPermission['status'];
 export type WhatsAppCallMediaTicket = Schemas['WhatsAppCallMediaTicket'];

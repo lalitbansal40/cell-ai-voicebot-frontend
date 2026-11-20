@@ -6,6 +6,8 @@ export const callingKeys = {
   live: (callId: string) => ['whatsapp-calling', 'live', callId] as const,
   settings: (channelId: string) => ['whatsapp-calling', 'settings', channelId] as const,
   readiness: (channelId: string) => ['whatsapp-calling', 'readiness', channelId] as const,
+  /** SAC-T6: the account default for incoming calls. */
+  incomingDefault: ['whatsapp-calling', 'incoming-default'] as const,
   permissions: ['whatsapp-calling', 'permission'] as const,
   permissionRun: (runId: string) => ['whatsapp-calling', 'permission-run', runId] as const,
   permission: (channelId: string, contactId: string) =>
