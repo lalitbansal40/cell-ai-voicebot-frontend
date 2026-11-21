@@ -37717,6 +37717,8 @@ export interface components {
         } | null;
         failedSetups15m: number;
         webhookMissing: number;
+        turnSet: boolean;
+        aiFirstAudioP95Ms: number | null;
       } | null;
     };
     AgentFunction: {
@@ -38377,6 +38379,7 @@ export interface components {
           jitterMs: number;
           rttMs: number | null;
         };
+        firstAudioMs?: number;
         latency: {
           p50Ms: number | null;
           p95Ms: number | null;
