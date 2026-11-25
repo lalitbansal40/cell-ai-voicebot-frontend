@@ -42593,7 +42593,7 @@ export interface components {
       checkedAt: string;
       steps: {
         /** @enum {string} */
-        key: 'token' | 'phone' | 'settings' | 'webhook' | 'permission';
+        key: 'token' | 'phone' | 'settings' | 'webhook' | 'send' | 'permission';
         ok: boolean;
         detail: string;
         metaCode: number | null;

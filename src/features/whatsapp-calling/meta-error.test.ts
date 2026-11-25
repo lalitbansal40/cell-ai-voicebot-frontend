@@ -27,6 +27,19 @@ describe('metaErrorText', () => {
     );
   });
 
+  it('WCF: code 10 (send on behalf) points to App Review / partner solution, not Check / Fix', () => {
+    const text = metaErrorText({
+      metaCode: 10,
+      metaSubcode: 2593180,
+      op: 'calls.connect',
+      message: 'You do not have the necessary permissions required to send messages',
+    });
+    expect(text).toContain('Meta 10/2593180 (calls.connect)');
+    expect(text).toContain('Advanced access');
+    expect(text).toContain('Multi-Partner Solution');
+    expect(text).not.toContain('Calls via Meta direct → Check / Fix.');
+  });
+
   it('prefers the structured Meta message over the generic API envelope', () => {
     const error = new ApiError({
       status: 502,

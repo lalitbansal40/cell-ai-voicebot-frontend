@@ -8,8 +8,10 @@ type MetaErrorShape = Partial<Pick<ApiErrorDetail, 'metaCode' | 'metaSubcode' | 
 const knownHint = (code: number | undefined): string | undefined => {
   if (code === 131009 || code === 100)
     return 'Call audio ka format Meta ne mana kiya — support ko bhejein.';
-  if (code === 190 || code === 200 || code === 10)
-    return 'Meta access band — Calls via Meta direct → Check / Fix.';
+  // WCF: our app may read the WhatsApp account but not place / answer calls on it
+  if (code === 10 || code === 200)
+    return "Meta ne humare app ko is WhatsApp account par calls ki permission nahi di. Meta App Dashboard → App Review mein whatsapp_business_messaging 'Advanced access' chahiye, aur partner (Pinnacle) credit line wale number ke liye Pinnacle ke saath Multi-Partner Solution — Check / Fix se ye theek nahi hoga.";
+  if (code === 190) return 'Meta access band — Calls via Meta direct → Check / Fix.';
   if (code !== undefined && code >= 138000 && code <= 138999)
     return 'WhatsApp ne is number par calling rok rakhi hai.';
   return undefined;

@@ -43,6 +43,7 @@ import {
 
 import { CallHoursEditor } from './CallHoursEditor';
 import { CallingReadiness } from './CallingReadiness';
+import { DIAGNOSE_STEP_LABELS } from './diagnose-labels';
 import { CALLING_FORM_LIMITS, draftOf, settingsPatch, settingsProblems, type Draft } from './form';
 import { IncomingAnswerFields } from './IncomingAnswerFields';
 import { firstBlocking } from './readiness';
@@ -206,7 +207,7 @@ function CallingForm({
             <Stack spacing={1} sx={{ mt: 2 }}>
               {diagnose.data.steps.map((step) => (
                 <Alert key={step.key} severity={step.ok ? 'success' : 'warning'}>
-                  {step.key}: {step.detail}
+                  {DIAGNOSE_STEP_LABELS[step.key] ?? step.key}: {step.detail}
                   {step.metaCode ? ` (Meta ${step.metaCode})` : ''}
                 </Alert>
               ))}

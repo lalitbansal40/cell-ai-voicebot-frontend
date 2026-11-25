@@ -26,6 +26,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Fixed
 
+- Meta error `10` / `200` on a call now says what it means (our Meta app may not place calls on this WhatsApp account: App Review Advanced access, partner Multi-Partner Solution) instead of "Check / Fix". Test calling API steps have plain names and a new **send** check.
 - Campaign creation now includes **WhatsApp bulk campaign** alongside SIP / Normal call and WhatsApp call in the same selector. The bulk choice opens channel → approved template → variables → audience → schedule → cost/review, preserving the selected audience and campaign name when switching wizards. Added sender/template loading recovery, stale-selection guards, a sender/template review summary and the corrected contact import link.
 - A contact page no longer shows the mask for a sensitive value right after saving.
 
