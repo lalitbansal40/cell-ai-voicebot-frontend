@@ -91,6 +91,7 @@ export const fakeTemplate = (
     nextEditAt: null,
     deletedAt: null,
     createdBy: 'u1',
+    createdByApiKeyId: null,
     ...overrides,
   };
 };

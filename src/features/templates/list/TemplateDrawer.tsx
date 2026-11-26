@@ -298,6 +298,9 @@ export function TemplateDrawer({
                 label={`${languageLabel(t.language)} · ${t.language}`}
               />
               {t.purpose === 'call_permission' && <Chip size="small" label="Call permission" />}
+              {t.createdByApiKeyId && (
+                <Chip size="small" variant="outlined" label="Created by API key" />
+              )}
               <QualityDot quality={t.quality} />
             </Stack>
 

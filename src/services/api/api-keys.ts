@@ -28,6 +28,11 @@ export const API_KEY_SCOPES = [
     description: 'Send WhatsApp messages and templates',
   },
   { key: 'templates:read', group: 'WhatsApp', description: 'Read approved WhatsApp templates' },
+  {
+    key: 'templates:write',
+    group: 'WhatsApp',
+    description: 'Create, submit, edit and delete WhatsApp templates',
+  },
   { key: 'reports:read', group: 'Reports', description: 'Read report numbers' },
   { key: 'exports:write', group: 'Reports', description: 'Create and download exports' },
   { key: 'webhooks:manage', group: 'Webhooks', description: 'Manage outbound webhooks' },

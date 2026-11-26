@@ -22,6 +22,9 @@ export const WEBHOOK_EVENTS = [
   { key: 'contact.opted_in', label: 'Contact opted in' },
   { key: 'whatsapp_campaign.completed', label: 'WhatsApp bulk campaign finished' },
   { key: 'whatsapp_campaign.paused', label: 'WhatsApp bulk campaign paused' },
+  { key: 'whatsapp_call.scheduled', label: 'AI WhatsApp call scheduled' },
+  { key: 'whatsapp_call.scheduled_skipped', label: 'Scheduled AI WhatsApp call not placed' },
+  { key: 'template.status_changed', label: 'WhatsApp template approved / rejected / paused' },
 ] as const;
 export type WebhookEventType = (typeof WEBHOOK_EVENTS)[number]['key'];
 

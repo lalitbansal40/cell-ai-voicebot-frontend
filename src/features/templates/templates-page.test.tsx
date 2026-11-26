@@ -261,6 +261,16 @@ describe('Templates tab', () => {
 });
 
 describe('Template details drawer', () => {
+  it('TPL: a template made with an API key says so', async () => {
+    api.get.mockResolvedValue(
+      fakeTemplate('PENDING', 'UTILITY', undefined, { createdByApiKeyId: 'k1' }),
+    );
+    await openTab();
+    await userEvent.click(screen.getByRole('button', { name: 'emi_reminder' }));
+    const drawer = await screen.findByRole('region', { name: 'Template details' });
+    expect(await within(drawer).findByText('Created by API key')).toBeVisible();
+  });
+
   it('preview, usage, history; variable values saved per source', async () => {
     await openTab();
     await userEvent.click(screen.getByRole('button', { name: 'emi_reminder' }));

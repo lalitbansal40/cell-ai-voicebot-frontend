@@ -24,6 +24,10 @@ describe('API key helpers', () => {
       'calls:write',
       'whatsapp-calls:write',
     ]);
+    // TPL: templates by API
+    expect(groups.find((g) => g.group === 'WhatsApp')?.scopes.map((s) => s.key)).toContain(
+      'templates:write',
+    );
   });
 
   it('accepts IPs and ranges (v4 / v6) and refuses the rest', () => {
