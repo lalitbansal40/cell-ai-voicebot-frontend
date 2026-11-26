@@ -115,7 +115,11 @@ export function CampaignDetailPage() {
           <Tab value="activity" label="Activity" />
         </Tabs>
         {current === 'results' && (
-          <ResultsTab campaignId={c.id} live={ACTIVE_CAMPAIGN_STATUSES.includes(c.status)} />
+          <ResultsTab
+            campaignId={c.id}
+            live={ACTIVE_CAMPAIGN_STATUSES.includes(c.status)}
+            ivrDigits={c.voiceApi?.ivrDigits}
+          />
         )}
         {current === 'runs' && <RunsTab campaignId={c.id} timezone={timezone} />}
         {current === 'settings' && <ReviewStep draft={draftFromCampaign(c)} />}

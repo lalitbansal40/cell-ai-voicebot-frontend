@@ -271,6 +271,25 @@ export function AdminSystemPage() {
               </Section>
             </Grid>
           )}
+          {s.voiceApi && (
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Section title="Recorded voice (Cell24x7)">
+                <Fact label="Accounts with recorded voice on">{s.voiceApi.accountsOn}</Fact>
+                <Fact label="Not answering (1 h)">
+                  <State
+                    good={s.voiceApi.unreachable1h === 0}
+                    label={String(s.voiceApi.unreachable1h)}
+                  />
+                </Fact>
+                <Fact label="Uncertain batches (30 min +)">
+                  <State
+                    good={s.voiceApi.uncertainBatches30m === 0}
+                    label={String(s.voiceApi.uncertainBatches30m)}
+                  />
+                </Fact>
+              </Section>
+            </Grid>
+          )}
           <Grid size={{ xs: 12, md: 6 }}>
             <VoiceProviderSection />
           </Grid>

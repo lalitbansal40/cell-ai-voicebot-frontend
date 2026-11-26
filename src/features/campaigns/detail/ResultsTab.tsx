@@ -1,5 +1,18 @@
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
-import { Box, Button, Chip, InputAdornment, Link, MenuItem, Stack, TextField } from '@mui/material';
+import {
+  Box,
+  Button,
+  ButtonBase,
+  Chip,
+  InputAdornment,
+  LinearProgress,
+  Link,
+  MenuItem,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router';
 
@@ -31,8 +44,80 @@ const promiseText = (r: CampaignContactRow) =>
 const callbackText = (r: CampaignContactRow) =>
   r.callback ? [r.callback.date, r.callback.time].filter(Boolean).join(' ') : '—';
 
+const keyLabel = (k: string) => (k === 'none' ? 'No key' : `Pressed ${k}`);
+
+/** IVR: how many final numbers pressed each key; a bar filters the list below. */
+export function IvrKeyReport({
+  digits,
+  selected,
+  onSelect,
+}: {
+  digits: Record<string, number>;
+  selected: string;
+  onSelect: (key: string) => void;
+}) {
+  const entries = Object.entries(digits).sort(([a], [b]) =>
+    a === 'none' ? 1 : b === 'none' ? -1 : a.localeCompare(b),
+  );
+  const total = entries.reduce((n, [, v]) => n + v, 0);
+  return (
+    <Paper variant="outlined" sx={{ p: 2 }} component="section" aria-label="IVR key presses">
+      <Stack spacing={1}>
+        <Typography variant="subtitle2" component="h3">
+          IVR key presses
+        </Typography>
+        {total === 0 && (
+          <Typography variant="body2" color="text.secondary">
+            No final results yet.
+          </Typography>
+        )}
+        {entries.map(([k, n]) => {
+          const pct = total ? Math.round((n / total) * 100) : 0;
+          return (
+            <ButtonBase
+              key={k}
+              onClick={() => onSelect(selected === k ? '' : k)}
+              aria-pressed={selected === k}
+              aria-label={`${keyLabel(k)}: ${String(n)}`}
+              sx={{
+                display: 'block',
+                textAlign: 'left',
+                borderRadius: 1,
+                p: 0.5,
+                bgcolor: selected === k ? 'action.selected' : undefined,
+              }}
+            >
+              <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between' }}>
+                <Typography variant="body2">{keyLabel(k)}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {n} · {pct}%
+                </Typography>
+              </Stack>
+              <LinearProgress
+                variant="determinate"
+                value={pct}
+                sx={{ height: 6, borderRadius: 3 }}
+              />
+            </ButtonBase>
+          );
+        })}
+      </Stack>
+    </Paper>
+  );
+}
+
 /** Per-contact results: filters, last 4 digits only, call links, Load more. */
-export function ResultsTab({ campaignId, live = false }: { campaignId: string; live?: boolean }) {
+export function ResultsTab({
+  campaignId,
+  live = false,
+  ivrDigits,
+}: {
+  campaignId: string;
+  live?: boolean;
+  /** IVR recorded-voice campaigns: key → final numbers. */
+  ivrDigits?: Record<string, number> | undefined;
+}) {
+  const [digit, setDigit] = useState('');
   const [status, setStatus] = useState<CampaignContactStatus | ''>('');
   const [lastResult, setLastResult] = useState<NonNullable<CampaignContactRow['lastResult']> | ''>(
     '',
@@ -48,9 +133,10 @@ export function ResultsTab({ campaignId, live = false }: { campaignId: string; l
     ...(disposition ? { disposition } : {}),
     ...(skipReason ? { skipReason } : {}),
     ...(q ? { q } : {}),
+    ...(digit ? { digit } : {}),
   };
   const rows = useCampaignContacts(campaignId, query, live);
-  const filtered = Boolean(status || lastResult || disposition || skipReason || q);
+  const filtered = Boolean(status || lastResult || disposition || skipReason || q || digit);
   const columns: Column<CampaignContactRow>[] = [
     {
       key: 'contact',
@@ -132,9 +218,11 @@ export function ResultsTab({ campaignId, live = false }: { campaignId: string; l
     setDisposition('');
     setSkipReason('');
     setSearch('');
+    setDigit('');
   };
   return (
     <Stack spacing={2}>
+      {ivrDigits && <IvrKeyReport digits={ivrDigits} selected={digit} onSelect={setDigit} />}
       <Stack
         direction={{ xs: 'column', md: 'row' }}
         spacing={2}
@@ -215,6 +303,23 @@ export function ResultsTab({ campaignId, live = false }: { campaignId: string; l
             </MenuItem>
           ))}
         </TextField>
+        {ivrDigits && (
+          <TextField
+            select
+            size="small"
+            label="Key pressed"
+            value={digit}
+            sx={{ minWidth: 140 }}
+            onChange={(e) => setDigit(e.target.value)}
+          >
+            <MenuItem value="">All</MenuItem>
+            {['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '*', '#', 'none'].map((k) => (
+              <MenuItem key={k} value={k}>
+                {keyLabel(k)}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
         {filtered && <Button onClick={clear}>Clear filters</Button>}
       </Stack>
       <DataTable

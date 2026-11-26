@@ -130,6 +130,8 @@ export interface ListCampaignContactsQuery {
   disposition?: string;
   skipReason?: string;
   q?: string;
+  /** IVR: numbers that pressed this key (`none` = no key). */
+  digit?: string;
 }
 
 export interface AudiencePreviewInput {

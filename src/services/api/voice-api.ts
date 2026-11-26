@@ -9,10 +9,26 @@ export type AdminVoiceIvr = Schemas['AdminVoiceIvr'];
 /** Which Cell24x7 login an account uses (never the token). */
 export type VoiceCredentials = Schemas['VoiceCredentials'];
 export type VoiceCredentialsInput = Schemas['VoiceCredentialsBody'];
+/** IVR: Test connection / test call / last provider answer of an account. */
+export type VoiceDiagnostics = Schemas['VoiceApiDiagnostics'];
+export type VoiceLastCheck = NonNullable<VoiceDiagnostics['lastCheck']>;
+export type VoiceTestCall = NonNullable<VoiceDiagnostics['lastTestCall']>;
+export type VoiceTestCallInput = Schemas['VoiceTestCallInput'];
+export interface VoiceTestCallResult {
+  test: VoiceTestCall;
+  result: {
+    status: string;
+    durationSec: number;
+    retryCount: number;
+    keyPressed: string | null;
+    ivrDisposition: string | null;
+  } | null;
+}
 
 export const voiceApiKeys = {
   status: ['admin', 'voice-api', 'status'] as const,
   ivrs: ['admin', 'voice-api', 'ivrs'] as const,
+  diagnostics: (accountId: string) => ['admin', 'voice-api', 'diagnostics', accountId] as const,
 };
 
 /** Recorded-voice / IVR campaigns over Cell24x7 — superadmin controls (VAPI). */
@@ -37,6 +53,33 @@ export const voiceAdminApi = {
     unwrap(
       apiClient.post<SuccessEnvelope<VoiceCredentials>>(
         `/admin/accounts/${accountId}/voice-api/webhook`,
+      ),
+    ),
+  /** IVR-T1: `GET /ivrs` with the account's login from our server (saved as the last check). */
+  testConnection: (accountId: string) =>
+    unwrap(
+      apiClient.post<SuccessEnvelope<VoiceLastCheck>>(
+        `/admin/accounts/${accountId}/voice-api/test-connection`,
+      ),
+    ),
+  /** IVR-T2: one real call (owner's OK), 3 / hour, not billed to the wallet. */
+  sendTestCall: (accountId: string, body: VoiceTestCallInput) =>
+    unwrap(
+      apiClient.post<SuccessEnvelope<VoiceTestCall>>(
+        `/admin/accounts/${accountId}/voice-api/test-call`,
+        body,
+      ),
+    ),
+  testCallResult: (accountId: string) =>
+    unwrap(
+      apiClient.get<SuccessEnvelope<VoiceTestCallResult>>(
+        `/admin/accounts/${accountId}/voice-api/test-call`,
+      ),
+    ),
+  diagnostics: (accountId: string) =>
+    unwrap(
+      apiClient.get<SuccessEnvelope<VoiceDiagnostics>>(
+        `/admin/accounts/${accountId}/voice-api/diagnostics`,
       ),
     ),
   status: () => unwrap(apiClient.get<SuccessEnvelope<AdminVoiceStatus>>('/admin/voice-api/status')),

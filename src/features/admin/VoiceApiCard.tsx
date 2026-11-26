@@ -25,6 +25,7 @@ import type { AdminAccountDetail } from '@/services/api/types';
 import { voiceAdminApi, voiceApiKeys, type VoiceCredentials } from '@/services/api/voice-api';
 
 import { adminKeys } from './keys';
+import { VoiceDiagnosticsPanel } from './VoiceDiagnosticsPanel';
 
 const PLATFORM: VoiceCredentials = {
   mode: 'platform',
@@ -247,6 +248,8 @@ export function VoiceApiCard({ detail }: { detail: AdminAccountDetail }) {
             accountId={id}
             saved={initial.credentials}
           />
+          <Divider />
+          <VoiceDiagnosticsPanel accountId={id} ivrIds={initial.ivrIds} />
         </Stack>
       </CardContent>
     </Card>

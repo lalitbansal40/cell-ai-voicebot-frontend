@@ -38,6 +38,7 @@ const healthy = (): SystemStatus => ({
   superadminsWithoutMfa: 0,
   sip: null,
   whatsappCalls: null,
+  voiceApi: null,
 });
 
 const open = () => {
@@ -109,6 +110,17 @@ describe('Admin → System', () => {
     expect(screen.getByText('850 ms')).toBeInTheDocument();
     expect(screen.getByText('Meta call errors (1 h)')).toBeInTheDocument();
     expect(screen.getByText(/media timeout/)).toBeInTheDocument();
+  });
+
+  it('shows recorded voice health (IVR-T8)', async () => {
+    api.status.mockResolvedValue({
+      ...healthy(),
+      voiceApi: { accountsOn: 3, unreachable1h: 1, uncertainBatches30m: 0 },
+    });
+    open();
+    expect(await screen.findByText('Recorded voice (Cell24x7)')).toBeInTheDocument();
+    expect(screen.getByText('Not answering (1 h)')).toBeInTheDocument();
+    expect(screen.getByText('Uncertain batches (30 min +)')).toBeInTheDocument();
   });
 
   it('marks what needs attention', async () => {

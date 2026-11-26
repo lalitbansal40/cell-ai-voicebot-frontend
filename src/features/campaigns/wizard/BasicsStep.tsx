@@ -131,6 +131,12 @@ export function BasicsStep({
               label="Recorded voice or IVR — the same message to everyone"
             />
           </RadioGroup>
+          {voice && (
+            <Typography variant="body2" color="text.secondary">
+              Outgoing only. Incoming calls: not available on Cell24x7 — incoming calls come in on
+              your phone line (SIP) or WhatsApp.
+            </Typography>
+          )}
         </div>
       )}
       {voice && <VoiceContentFields draft={draft} onChange={onChange} lock={lock} />}

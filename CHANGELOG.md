@@ -12,6 +12,12 @@ All notable changes to this project are documented here. Format: [Keep a Changel
   - Content: base URLs, ids, callback, endpoints by group with search, details and curl copy.
   - **Reveal** (own password + code, 60 s) and **Try it** for read-only calls.
 
+- **Recorded voice (Cell24x7) checks and IVR report (IVR)** — 2026-11-26
+  - Admin → account → Recorded voice → **Checks**: Test connection (with the reason), Send test call (owner OK, not billed), Refresh result, Last provider answer (field names, masked sample), 402 count, unknown statuses.
+  - Campaign → Results: **IVR key presses** bars and a **Key pressed** filter.
+  - Admin → System: **Recorded voice (Cell24x7)** health.
+  - "Incoming calls: not available on Cell24x7" on the card and in the campaign wizard.
+
 - **WhatsApp call error diagnostics (WCF)** — 2026-11-21: Call failure popup and Call details show Meta's code/message; number Calling includes read-only **Test calling API** checks; Admin → WhatsApp lists recent Meta call errors and Admin → System shows the one-hour count.
 
 ### Added
