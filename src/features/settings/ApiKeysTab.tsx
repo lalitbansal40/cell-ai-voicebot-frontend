@@ -1,5 +1,7 @@
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
@@ -23,6 +25,7 @@ import { CopyButton } from '@/components/CopyButton';
 import { DataTable } from '@/components/DataTable';
 import { RelativeTime } from '@/components/RelativeTime';
 import { StatusChip } from '@/components/StatusChip';
+import { PartnerApiPanel } from '@/features/admin/partner-api/PartnerApiPanel';
 import { isLimitedImpersonation, usePermission, useSession } from '@/features/auth/hooks';
 import { apiKeysApi, type ApiKeyScope } from '@/services/api/api-keys';
 import { getErrorMessage } from '@/services/api/errors';
@@ -313,6 +316,10 @@ export function ApiKeysTab() {
     },
     onError: (e) => enqueueSnackbar(getErrorMessage(e), { variant: 'error' }),
   });
+  // PIN: a superadmin in full access sees the account's partner API (backend-enforced too)
+  const partnerVisible =
+    session?.impersonation?.mode === 'full' &&
+    (session.impersonation.kind ?? 'superadmin') === 'superadmin';
   return (
     <Stack spacing={2}>
       <Stack
@@ -436,6 +443,16 @@ export function ApiKeysTab() {
         <RequestsDialog apiKey={open.key} onClose={() => setOpen(null)} />
       )}
       {open?.kind === 'test' && <TestKeyDialog onClose={() => setOpen(null)} />}
+      {partnerVisible && (
+        <Card variant="outlined" component="section" aria-label="Partner API superadmin">
+          <CardContent>
+            <Typography variant="subtitle1" component="h2" sx={{ mb: 1 }}>
+              Partner API (Pinnacle) — superadmin only
+            </Typography>
+            <PartnerApiPanel scope={{ kind: 'full' }} />
+          </CardContent>
+        </Card>
+      )}
     </Stack>
   );
 }

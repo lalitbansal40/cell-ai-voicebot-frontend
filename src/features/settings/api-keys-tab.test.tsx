@@ -23,6 +23,23 @@ vi.mock('@/services/api/api-keys', async (importOriginal) => ({
   },
 }));
 
+vi.mock('@/services/api/partner-api', () => ({
+  partnerApi: {
+    info: vi.fn().mockResolvedValue({
+      configured: false,
+      baseUrl: 'https://p.test/v3',
+      voiceBaseUrl: 'https://p.test/v3',
+      authHeader: 'apikey',
+      errorFormat: { example: {}, note: '' },
+      numbers: [],
+      groups: [],
+      endpoints: [],
+    }),
+    reveal: vi.fn(),
+    tryIt: vi.fn(),
+  },
+}));
+
 const api = vi.mocked(apiKeysApi);
 const httpError = (status: number, message: string) =>
   new ApiError({ status, code: 'AUTH_INVALID_TOKEN', message, kind: 'http' });
@@ -226,5 +243,32 @@ describe('API keys tab (Phase 15)', () => {
     show();
     await screen.findByText('Old key');
     expect(screen.queryByRole('button', { name: 'Revoke' })).toBeNull();
+  });
+});
+
+describe('Partner API card (PIN)', () => {
+  it('hidden for the owner; shown for a superadmin in full access', async () => {
+    show();
+    await screen.findByRole('row', { name: /^Old key/ });
+    expect(screen.queryByRole('region', { name: 'Partner API superadmin' })).toBeNull();
+  });
+
+  it('a full-access superadmin sees it', async () => {
+    const HOUR = 3_600_000;
+    signInAs('owner', {
+      impersonation: {
+        impersonatorId: 'sa1',
+        expiresAt: new Date(Date.now() + 3 * HOUR).toISOString(),
+        mode: 'full',
+        kind: 'superadmin',
+        returnTo: '/admin/accounts/a1',
+        startedAt: new Date(Date.now() - HOUR).toISOString(),
+        maxUntil: new Date(Date.now() + 11 * HOUR).toISOString(),
+        ringMeToo: false,
+      },
+    });
+    show();
+    expect(await screen.findByRole('region', { name: 'Partner API superadmin' })).toBeVisible();
+    expect(await screen.findByText(/No partner API key configured/)).toBeVisible();
   });
 });

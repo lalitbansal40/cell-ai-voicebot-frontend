@@ -6,6 +6,12 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ### Added
 
+- **Templates by API key (TPL)** — 2026-11-26: the API key scope `templates:write`; templates made with a key show "Created by API key"; the Webhooks event list has `template.status_changed` (and the scheduled-call events).
+- **Partner API (Pinnacle) for superadmins (PIN)** — 2026-11-26
+  - Admin → account → managed number → **Partner API**, and a superadmin-only card in Settings → API keys (full access).
+  - Content: base URLs, ids, callback, endpoints by group with search, details and curl copy.
+  - **Reveal** (own password + code, 60 s) and **Try it** for read-only calls.
+
 - **WhatsApp call error diagnostics (WCF)** — 2026-11-21: Call failure popup and Call details show Meta's code/message; number Calling includes read-only **Test calling API** checks; Admin → WhatsApp lists recent Meta call errors and Admin → System shows the one-hour count.
 
 ### Added

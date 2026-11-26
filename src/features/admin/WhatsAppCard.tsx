@@ -40,6 +40,7 @@ import type {
 
 import { adminKeys } from './keys';
 import { ManagedNumberDialog } from './ManagedNumberDialog';
+import { PartnerApiPanel } from './partner-api/PartnerApiPanel';
 import { MANAGED_TEXTS } from './whatsapp-texts';
 
 const DAY_MS = 86_400_000;
@@ -100,14 +101,17 @@ function ReplaceKeyDialog({
 /** PN: partner details and actions of a managed number (superadmin). */
 function ManagedDetails({
   row,
+  accountId,
   onReplaceKey,
   onChanged,
 }: {
   row: AdminWhatsAppChannelRow;
+  accountId: string;
   onReplaceKey: () => void;
   onChanged: () => void;
 }) {
   const confirm = useConfirm();
+  const [partnerOpen, setPartnerOpen] = useState(false);
   const fail = (err: unknown) =>
     enqueueSnackbar(whatsappErrorMessage(toApiError(err)), { variant: 'error' });
   const reset = useMutation({
@@ -161,6 +165,10 @@ function ManagedDetails({
           <Button size="small" onClick={onReplaceKey}>
             Replace API key
           </Button>
+          {/* PIN: the partner API reference with this number's key (superadmins) */}
+          <Button size="small" onClick={() => setPartnerOpen(true)}>
+            Partner API
+          </Button>
           <Button size="small" disabled={reset.isPending} onClick={() => reset.mutate()}>
             Reset webhook
           </Button>
@@ -173,6 +181,23 @@ function ManagedDetails({
           </Button>
         </Stack>
       )}
+      <Dialog
+        open={partnerOpen}
+        onClose={() => setPartnerOpen(false)}
+        fullWidth
+        maxWidth="md"
+        aria-label="Partner API (Pinnacle)"
+      >
+        <DialogTitle>Partner API (Pinnacle) — {row.label}</DialogTitle>
+        <DialogContent>
+          {partnerOpen && (
+            <PartnerApiPanel scope={{ kind: 'admin', accountId }} channelId={row.id} />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPartnerOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }
@@ -402,7 +427,12 @@ export function WhatsAppCard({ detail }: { detail: AdminAccountDetail }) {
                     )}
                   </span>
                   {r.managed && (
-                    <ManagedDetails row={r} onReplaceKey={() => setKeyFor(r)} onChanged={refresh} />
+                    <ManagedDetails
+                      row={r}
+                      accountId={id}
+                      onReplaceKey={() => setKeyFor(r)}
+                      onChanged={refresh}
+                    />
                   )}
                 </Stack>
               ),
